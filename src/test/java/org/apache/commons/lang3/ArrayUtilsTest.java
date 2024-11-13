@@ -28,6 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.lang.annotation.ElementType;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
@@ -44,7 +45,7 @@ import org.apache.commons.lang3.function.Suppliers;
 import org.junit.jupiter.api.Test;
 
 /**
- * Unit tests {@link ArrayUtils}.
+ * Tests {@link ArrayUtils}.
  */
 @SuppressWarnings("deprecation") // deliberate use of deprecated code
 public class ArrayUtilsTest extends AbstractLangTest {
@@ -252,7 +253,23 @@ public class ArrayUtilsTest extends AbstractLangTest {
     }
 
     @Test
-    public void testContainsAny() {
+    public void testContainsAnyInt() {
+        final int[] array = {0, 1, 2, 3, 0};
+        assertFalse(ArrayUtils.containsAny((int[]) null, 1));
+        assertTrue(ArrayUtils.containsAny(array, 0));
+        assertTrue(ArrayUtils.containsAny(array, 1));
+        assertTrue(ArrayUtils.containsAny(array, 2));
+        assertTrue(ArrayUtils.containsAny(array, 3));
+    }
+
+    @Test
+    public void testContainsAnyEnum() {
+        assertTrue(ArrayUtils.containsAny(ElementType.values(), ElementType.ANNOTATION_TYPE));
+        assertFalse(ArrayUtils.containsAny(ElementType.values(), (ElementType) null));
+    }
+
+    @Test
+    public void testContainsAnyObject() {
         final Object[] array = {"0", "1", "2", "3", null, "0"};
         assertFalse(ArrayUtils.containsAny(null, (Object) null));
         assertFalse(ArrayUtils.containsAny(null, "1"));
