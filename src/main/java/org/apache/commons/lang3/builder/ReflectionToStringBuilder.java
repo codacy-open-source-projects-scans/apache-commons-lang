@@ -92,7 +92,7 @@ import org.apache.commons.lang3.stream.Streams;
  * </p>
  *
  * <p>
- * <b>Note:</b> the default {@link ToStringStyle} will only do a "shallow" formatting, i.e. composed objects are not
+ * <strong>Note:</strong> the default {@link ToStringStyle} will only do a "shallow" formatting, i.e. composed objects are not
  * further traversed. To get "deep" formatting, use an instance of {@link RecursiveToStringStyle}.
  * </p>
  *
@@ -700,7 +700,6 @@ public class ReflectionToStringBuilder extends ToStringBuilder {
      * @param field
      *            The Field to query.
      * @return The Object from the given Field.
-     *
      * @throws IllegalArgumentException
      *             see {@link java.lang.reflect.Field#get(Object)}
      * @throws IllegalAccessException

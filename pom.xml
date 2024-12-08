@@ -48,12 +48,11 @@
     <system>jira</system>
     <url>https://issues.apache.org/jira/browse/LANG</url>
   </issueManagement>
-
   <scm>
     <connection>scm:git:http://gitbox.apache.org/repos/asf/commons-lang.git</connection>
     <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/commons-lang.git</developerConnection>
     <url>https://gitbox.apache.org/repos/asf?p=commons-lang.git</url>
-    <tag>rel/commons-lang-3.17.0</tag>
+    <tag>rel/commons-lang-3.18.0</tag>
   </scm>
 
   <!-- Lang should depend on very little -->
@@ -79,15 +78,15 @@
     <dependency>
       <groupId>org.easymock</groupId>
       <artifactId>easymock</artifactId>
-      <version>5.4.0</version>
+      <version>5.5.0</version>
       <scope>test</scope>
     </dependency>
     <!-- For Javadoc links -->
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-text</artifactId>
-      <version>1.12.0</version>
-      <scope>provided</scope>
+      <version>${commons.text.version}</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.openjdk.jmh</groupId>
@@ -175,6 +174,7 @@
     <commons.jacoco.branchRatio>0.92</commons.jacoco.branchRatio>
     <commons.jacoco.lineRatio>0.95</commons.jacoco.lineRatio>
     <commons.jacoco.complexityRatio>0.90</commons.jacoco.complexityRatio>
+    <commons.text.version>1.12.0</commons.text.version>
   </properties>
 
   <build>
@@ -227,6 +227,13 @@
               </manifest>
             </archive>
             <doclint>all</doclint>
+            <additionalDependencies>
+              <additionalDependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-text</artifactId>
+                <version>${commons.text.version}</version>
+              </additionalDependency>
+            </additionalDependencies>
           </configuration>
           <executions>
             <execution>
@@ -461,7 +468,7 @@
       <properties>
         <!-- LANG-1265: allow tests to access private fields/methods of java.base classes via reflection -->
         <!-- LANG-1667: allow tests to access private fields/methods of java.base/java.util such as ArrayList via reflection -->
-        <argLine>-Xmx512m --add-opens java.base/java.lang.reflect=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED</argLine>
+        <argLine>-Xmx512m --add-opens java.base/java.lang.reflect=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.time=ALL-UNNAMED --add-opens java.base/java.time.chrono=ALL-UNNAMED</argLine>
       </properties>
     </profile>
     <profile>

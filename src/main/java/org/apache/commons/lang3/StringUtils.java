@@ -37,57 +37,57 @@ import org.apache.commons.lang3.stream.Streams;
  * {@code null} safe.
  *
  * <ul>
- *  <li><b>IsEmpty/IsBlank</b>
+ *  <li><strong>IsEmpty/IsBlank</strong>
  *      - checks if a String contains text</li>
- *  <li><b>Trim/Strip</b>
+ *  <li><strong>Trim/Strip</strong>
  *      - removes leading and trailing whitespace</li>
- *  <li><b>Equals/Compare</b>
+ *  <li><strong>Equals/Compare</strong>
  *      - compares two strings in a null-safe manner</li>
- *  <li><b>startsWith</b>
+ *  <li><strong>startsWith</strong>
  *      - check if a String starts with a prefix in a null-safe manner</li>
- *  <li><b>endsWith</b>
+ *  <li><strong>endsWith</strong>
  *      - check if a String ends with a suffix in a null-safe manner</li>
- *  <li><b>IndexOf/LastIndexOf/Contains</b>
+ *  <li><strong>IndexOf/LastIndexOf/Contains</strong>
  *      - null-safe index-of checks
- *  <li><b>IndexOfAny/LastIndexOfAny/IndexOfAnyBut/LastIndexOfAnyBut</b>
+ *  <li><strong>IndexOfAny/LastIndexOfAny/IndexOfAnyBut/LastIndexOfAnyBut</strong>
  *      - index-of any of a set of Strings</li>
- *  <li><b>ContainsOnly/ContainsNone/ContainsAny</b>
+ *  <li><strong>ContainsOnly/ContainsNone/ContainsAny</strong>
  *      - checks if String contains only/none/any of these characters</li>
- *  <li><b>Substring/Left/Right/Mid</b>
+ *  <li><strong>Substring/Left/Right/Mid</strong>
  *      - null-safe substring extractions</li>
- *  <li><b>SubstringBefore/SubstringAfter/SubstringBetween</b>
+ *  <li><strong>SubstringBefore/SubstringAfter/SubstringBetween</strong>
  *      - substring extraction relative to other strings</li>
- *  <li><b>Split/Join</b>
+ *  <li><strong>Split/Join</strong>
  *      - splits a String into an array of substrings and vice versa</li>
- *  <li><b>Remove/Delete</b>
+ *  <li><strong>Remove/Delete</strong>
  *      - removes part of a String</li>
- *  <li><b>Replace/Overlay</b>
+ *  <li><strong>Replace/Overlay</strong>
  *      - Searches a String and replaces one String with another</li>
- *  <li><b>Chomp/Chop</b>
+ *  <li><strong>Chomp/Chop</strong>
  *      - removes the last part of a String</li>
- *  <li><b>AppendIfMissing</b>
+ *  <li><strong>AppendIfMissing</strong>
  *      - appends a suffix to the end of the String if not present</li>
- *  <li><b>PrependIfMissing</b>
+ *  <li><strong>PrependIfMissing</strong>
  *      - prepends a prefix to the start of the String if not present</li>
- *  <li><b>LeftPad/RightPad/Center/Repeat</b>
+ *  <li><strong>LeftPad/RightPad/Center/Repeat</strong>
  *      - pads a String</li>
- *  <li><b>UpperCase/LowerCase/SwapCase/Capitalize/Uncapitalize</b>
+ *  <li><strong>UpperCase/LowerCase/SwapCase/Capitalize/Uncapitalize</strong>
  *      - changes the case of a String</li>
- *  <li><b>CountMatches</b>
+ *  <li><strong>CountMatches</strong>
  *      - counts the number of occurrences of one String in another</li>
- *  <li><b>IsAlpha/IsNumeric/IsWhitespace/IsAsciiPrintable</b>
+ *  <li><strong>IsAlpha/IsNumeric/IsWhitespace/IsAsciiPrintable</strong>
  *      - checks the characters in a String</li>
- *  <li><b>DefaultString</b>
+ *  <li><strong>DefaultString</strong>
  *      - protects against a null input String</li>
- *  <li><b>Rotate</b>
+ *  <li><strong>Rotate</strong>
  *      - rotate (circular shift) a String</li>
- *  <li><b>Reverse/ReverseDelimited</b>
+ *  <li><strong>Reverse/ReverseDelimited</strong>
  *      - reverses a String</li>
- *  <li><b>Abbreviate</b>
+ *  <li><strong>Abbreviate</strong>
  *      - abbreviates a string using ellipses or another given String</li>
- *  <li><b>Difference</b>
+ *  <li><strong>Difference</strong>
  *      - compares Strings and reports on their differences</li>
- *  <li><b>LevenshteinDistance</b>
+ *  <li><strong>LevenshteinDistance</strong>
  *      - the number of changes needed to change one String into another</li>
  * </ul>
  *
@@ -1335,6 +1335,15 @@ public class StringUtils {
      * Tests whether the given CharSequence contains any whitespace characters.
      *
      * <p>Whitespace is defined by {@link Character#isWhitespace(char)}.</p>
+     *
+     * <pre>
+     * StringUtils.containsWhitespace(null)       = false
+     * StringUtils.containsWhitespace("")         = false
+     * StringUtils.containsWhitespace("ab")       = false
+     * StringUtils.containsWhitespace(" ab")      = true
+     * StringUtils.containsWhitespace("a b")      = true
+     * StringUtils.containsWhitespace("ab ")      = true
+     * </pre>
      *
      * @param seq the CharSequence to check (may be {@code null})
      * @return {@code true} if the CharSequence is not empty and
@@ -3095,7 +3104,7 @@ public class StringUtils {
      * @deprecated Use {@link Strings#indexOf(CharSequence, CharSequence, int) Strings.CI.indexOf(CharSequence, CharSequence, int)}
      */
     @Deprecated
-    public static int indexOfIgnoreCase(final CharSequence str, final CharSequence searchStr, int startPos) {
+    public static int indexOfIgnoreCase(final CharSequence str, final CharSequence searchStr, final int startPos) {
         return Strings.CI.indexOf(str, searchStr, startPos);
     }
 
@@ -3330,7 +3339,7 @@ public class StringUtils {
         final int sz = cs.length();
         for (int i = 0; i < sz; i++) {
             final char nowChar = cs.charAt(i);
-            if (nowChar != ' ' && !Character.isLetterOrDigit(nowChar) ) {
+            if (nowChar != ' ' && !Character.isLetterOrDigit(nowChar)) {
                 return false;
             }
         }
@@ -4295,7 +4304,7 @@ public class StringUtils {
         if (!iterator.hasNext()) {
             return EMPTY;
         }
-        return Streams.of(iterator).collect(LangCollectors.joining(toStringOrEmpty(String.valueOf(separator)), EMPTY, EMPTY, StringUtils::toStringOrEmpty));
+        return Streams.of(iterator).collect(LangCollectors.joining(toString(String.valueOf(separator)), EMPTY, EMPTY, StringUtils::toString));
     }
 
     /**
@@ -4319,7 +4328,7 @@ public class StringUtils {
         if (!iterator.hasNext()) {
             return EMPTY;
         }
-        return Streams.of(iterator).collect(LangCollectors.joining(toStringOrEmpty(separator), EMPTY, EMPTY, StringUtils::toStringOrEmpty));
+        return Streams.of(iterator).collect(LangCollectors.joining(toString(separator), EMPTY, EMPTY, StringUtils::toString));
     }
 
     /**
@@ -4556,7 +4565,7 @@ public class StringUtils {
      * @return the joined String, {@code null} if null array input
      */
     public static String join(final Object[] array, final String delimiter) {
-        return array != null ? join(array, toStringOrEmpty(delimiter), 0, array.length) : null;
+        return array != null ? join(array, toString(delimiter), 0, array.length) : null;
     }
 
     /**
@@ -4596,7 +4605,7 @@ public class StringUtils {
      */
     public static String join(final Object[] array, final String delimiter, final int startIndex, final int endIndex) {
         return array != null ? Streams.of(array).skip(startIndex).limit(Math.max(0, endIndex - startIndex))
-            .collect(LangCollectors.joining(delimiter, EMPTY, EMPTY, StringUtils::toStringOrEmpty)) : null;
+            .collect(LangCollectors.joining(delimiter, EMPTY, EMPTY, StringUtils::toString)) : null;
     }
 
     /**
@@ -4997,7 +5006,7 @@ public class StringUtils {
      * @deprecated Use {@link Strings#lastIndexOf(CharSequence, CharSequence, int) Strings.CI.lastIndexOf(CharSequence, CharSequence, int)}
      */
     @Deprecated
-    public static int lastIndexOfIgnoreCase(final CharSequence str, final CharSequence searchStr, int startPos) {
+    public static int lastIndexOfIgnoreCase(final CharSequence str, final CharSequence searchStr, final int startPos) {
         return Strings.CI.lastIndexOf(str, searchStr, startPos);
     }
 
@@ -5381,7 +5390,6 @@ public class StringUtils {
      *      href="https://www.w3.org/TR/xpath/#function-normalize-space">https://www.w3.org/TR/xpath/#function-normalize-space</a>
      * @param str the source String to normalize whitespaces from, may be null
      * @return the modified string with whitespace normalized, {@code null} if null String input
-     *
      * @since 3.0
      */
     public static String normalizeSpace(final String str) {
@@ -5418,7 +5426,7 @@ public class StringUtils {
     /**
      * Finds the n-th index within a CharSequence, handling {@code null}.
      * This method uses {@link String#indexOf(String)} if possible.
-     * <p><b>Note:</b> The code starts looking for a match at the start of the target,
+     * <p><strong>Note:</strong> The code starts looking for a match at the start of the target,
      * incrementing the starting index by one after each successful match
      * (unless {@code searchStr} is an empty string in which case the position
      * is never incremented and {@code 0} is returned immediately).
@@ -5752,7 +5760,6 @@ public class StringUtils {
      * @see java.util.regex.Pattern
      * @see java.util.regex.Pattern#DOTALL
      * @since 3.5
-     *
      * @deprecated Moved to RegExUtils.
      */
     @Deprecated
@@ -5863,7 +5870,6 @@ public class StringUtils {
      * @see java.util.regex.Pattern
      * @see java.util.regex.Pattern#DOTALL
      * @since 3.5
-     *
      * @deprecated Moved to RegExUtils.
      */
     @Deprecated
@@ -5936,7 +5942,6 @@ public class StringUtils {
      * @see Pattern#DOTALL
      * @since 3.2
      * @since 3.5 Changed {@code null} reference passed to this method is a no-op.
-     *
      * @deprecated Moved to RegExUtils.
      */
     @Deprecated
@@ -6052,16 +6057,16 @@ public class StringUtils {
      * consider using {@link #repeat(String, int)} instead.
      * </p>
      *
-     * @param ch  character to repeat
-     * @param repeat  number of times to repeat char, negative treated as zero
+     * @param repeat  character to repeat
+     * @param count  number of times to repeat char, negative treated as zero
      * @return String with repeated character
      * @see #repeat(String, int)
      */
-    public static String repeat(final char ch, final int repeat) {
-        if (repeat <= 0) {
+    public static String repeat(final char repeat, final int count) {
+        if (count <= 0) {
             return EMPTY;
         }
-        return new String(ArrayFill.fill(new char[repeat], ch));
+        return new String(ArrayFill.fill(new char[count], repeat));
     }
 
     /**
@@ -6077,44 +6082,44 @@ public class StringUtils {
      * StringUtils.repeat("a", -2) = ""
      * </pre>
      *
-     * @param str  the String to repeat, may be null
-     * @param repeat  number of times to repeat str, negative treated as zero
+     * @param repeat  the String to repeat, may be null
+     * @param count  number of times to repeat str, negative treated as zero
      * @return a new String consisting of the original String repeated,
      *  {@code null} if null String input
      */
-    public static String repeat(final String str, final int repeat) {
+    public static String repeat(final String repeat, final int count) {
         // Performance tuned for 2.0 (JDK1.4)
-        if (str == null) {
+        if (repeat == null) {
             return null;
         }
-        if (repeat <= 0) {
+        if (count <= 0) {
             return EMPTY;
         }
-        final int inputLength = str.length();
-        if (repeat == 1 || inputLength == 0) {
-            return str;
+        final int inputLength = repeat.length();
+        if (count == 1 || inputLength == 0) {
+            return repeat;
         }
-        if (inputLength == 1 && repeat <= PAD_LIMIT) {
-            return repeat(str.charAt(0), repeat);
+        if (inputLength == 1 && count <= PAD_LIMIT) {
+            return repeat(repeat.charAt(0), count);
         }
 
-        final int outputLength = inputLength * repeat;
+        final int outputLength = inputLength * count;
         switch (inputLength) {
             case 1 :
-                return repeat(str.charAt(0), repeat);
+                return repeat(repeat.charAt(0), count);
             case 2 :
-                final char ch0 = str.charAt(0);
-                final char ch1 = str.charAt(1);
+                final char ch0 = repeat.charAt(0);
+                final char ch1 = repeat.charAt(1);
                 final char[] output2 = new char[outputLength];
-                for (int i = repeat * 2 - 2; i >= 0; i--, i--) {
+                for (int i = count * 2 - 2; i >= 0; i--, i--) {
                     output2[i] = ch0;
                     output2[i + 1] = ch1;
                 }
                 return new String(output2);
             default :
                 final StringBuilder buf = new StringBuilder(outputLength);
-                for (int i = 0; i < repeat; i++) {
-                    buf.append(str);
+                for (int i = 0; i < count; i++) {
+                    buf.append(repeat);
                 }
                 return buf.toString();
         }
@@ -6133,19 +6138,19 @@ public class StringUtils {
      * StringUtils.repeat("?", ", ", 3)  = "?, ?, ?"
      * </pre>
      *
-     * @param str        the String to repeat, may be null
+     * @param repeat        the String to repeat, may be null
      * @param separator  the String to inject, may be null
-     * @param repeat     number of times to repeat str, negative treated as zero
+     * @param count     number of times to repeat str, negative treated as zero
      * @return a new String consisting of the original String repeated,
      *  {@code null} if null String input
      * @since 2.5
      */
-    public static String repeat(final String str, final String separator, final int repeat) {
-        if (str == null || separator == null) {
-            return repeat(str, repeat);
+    public static String repeat(final String repeat, final String separator, final int count) {
+        if (repeat == null || separator == null) {
+            return repeat(repeat, count);
         }
         // given that repeat(String, int) is quite optimized, better to rely on it than try and splice this into it
-        final String result = repeat(str + separator, repeat);
+        final String result = repeat(repeat + separator, count);
         return Strings.CS.removeEnd(result, separator);
     }
 
@@ -6259,7 +6264,6 @@ public class StringUtils {
      * @see java.util.regex.Pattern
      * @see java.util.regex.Pattern#DOTALL
      * @since 3.5
-     *
      * @deprecated Moved to RegExUtils.
      */
     @Deprecated
@@ -6334,9 +6338,7 @@ public class StringUtils {
         if (isEmpty(str) || isEmpty(searchChars)) {
             return str;
         }
-        if (replaceChars == null) {
-            replaceChars = EMPTY;
-        }
+        replaceChars = toString(replaceChars);
         boolean modified = false;
         final int replaceCharsLength = replaceChars.length();
         final int strLength = str.length();
@@ -6608,7 +6610,7 @@ public class StringUtils {
      * @since 2.4
      */
     public static String replaceEachRepeatedly(final String text, final String[] searchList, final String[] replacementList) {
-        int timeToLive = Math.max(ArrayUtils.getLength(searchList), DEFAULT_TTL);
+        final int timeToLive = Math.max(ArrayUtils.getLength(searchList), DEFAULT_TTL);
         return replaceEach(text, searchList, replacementList, true, timeToLive);
     }
 
@@ -6657,7 +6659,6 @@ public class StringUtils {
      * @see java.util.regex.Pattern
      * @see java.util.regex.Pattern#DOTALL
      * @since 3.5
-     *
      * @deprecated Moved to RegExUtils.
      */
     @Deprecated
@@ -6828,7 +6829,6 @@ public class StringUtils {
      * @see Pattern#DOTALL
      * @since 3.2
      * @since 3.5 Changed {@code null} reference passed to this method is a no-op.
-     *
      * @deprecated Moved to RegExUtils.
      */
     @Deprecated
@@ -7338,7 +7338,7 @@ public class StringUtils {
      *  array. A zero or negative value implies no limit.
      * @return an array of parsed Strings, {@code null} if null String was input
      */
-    public static String[] splitByWholeSeparator( final String str, final String separator, final int max) {
+    public static String[] splitByWholeSeparator(final String str, final String separator, final int max) {
         return splitByWholeSeparatorWorker(str, separator, max, false);
     }
 
@@ -7927,7 +7927,6 @@ public class StringUtils {
      *
      * @param input String to be stripped
      * @return input text with diacritics removed
-     *
      * @since 3.0
      */
     // See also Lucene's ASCIIFoldingFilter (Lucene 2.9) that replaces accented characters by their unaccented equivalent (and uncommitted bug fix: https://issues.apache.org/jira/browse/LUCENE-1343?focusedCommentId=12858907&page=com.atlassian.jira.plugin.system.issuetabpanels%3Acomment-tabpanel#action_12858907).
@@ -8790,7 +8789,14 @@ public class StringUtils {
         return new String(bytes, Charsets.toCharset(charsetName));
     }
 
-    private static String toStringOrEmpty(final Object obj) {
+    /**
+     * Returns the result of calling {@code toString} on the first argument if the first argument is not {@code null} and returns the empty String otherwise.
+     *
+     * @param o           an object
+     * @return the result of calling {@code toString} on the first argument if it is not {@code null} and the empty String otherwise.
+     * @see Objects#toString(Object)
+     */
+    private static String toString(final Object obj) {
         return Objects.toString(obj, EMPTY);
     }
 

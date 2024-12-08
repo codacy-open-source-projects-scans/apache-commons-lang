@@ -1150,7 +1150,7 @@ public class StrBuilder implements CharSequence, Appendable, Serializable, Build
      * By default, the new line is the system default from {@link System#lineSeparator()}.
      * </p>
      * <p>
-     * The new line string can be changed using {@link #setNewLineText(String)}. For example, you can use this to force the output to always use UNIX line
+     * The new line string can be changed using {@link #setNewLineText(String)}. For example, you can use this to force the output to always use Unix line
      * endings even when on Windows.
      * </p>
      *
@@ -1372,7 +1372,6 @@ public class StrBuilder implements CharSequence, Appendable, Serializable, Build
      *
      * @param appendable  the appendable to append data to
      * @throws IOException  if an I/O error occurs
-     *
      * @since 3.4
      * @see #readFrom(Readable)
      */
@@ -2486,7 +2485,6 @@ public class StrBuilder implements CharSequence, Appendable, Serializable, Build
      * @param readable  object to read from
      * @return the number of characters read
      * @throws IOException if an I/O error occurs.
-     *
      * @since 3.4
      * @see #appendTo(Appendable)
      */
