@@ -6,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,10 +16,6 @@
  */
 package org.apache.commons.lang3.time;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.greaterThanOrEqualTo;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.startsWith;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -30,6 +26,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -42,7 +40,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Tests {@link StopWatch}.
  */
-public class StopWatchTest extends AbstractLangTest {
+class StopWatchTest extends AbstractLangTest {
 
     private static final int SPLIT_CLOCK_STR_LEN = 12;
     private static final Duration MIN_DURATION = Duration.ofMillis(20);
@@ -73,8 +71,11 @@ public class StopWatchTest extends AbstractLangTest {
     private StopWatch set(final StopWatch watch, final long nanos) {
         try {
             final long currentNanos = System.nanoTime();
+            final List<StopWatch.Split> splits = new ArrayList<>();
+            splits.add(new StopWatch.Split(String.valueOf(0), Duration.ofNanos(nanos)));
             FieldUtils.writeField(watch, "startTimeNanos", currentNanos - nanos, true);
             FieldUtils.writeField(watch, "stopTimeNanos", currentNanos, true);
+            FieldUtils.writeField(watch, "splits", splits, true);
         } catch (final IllegalAccessException e) {
             return null;
         }
@@ -95,7 +96,7 @@ public class StopWatchTest extends AbstractLangTest {
      * Tests bad states.
      */
     @Test
-    public void testBadStates() {
+    void testBadStates() {
         final StopWatch watch = new StopWatch();
         assertThrows(IllegalStateException.class, watch::stop, "Calling stop on an unstarted StopWatch should throw an exception.");
         assertThrows(IllegalStateException.class, watch::suspend, "Calling suspend on an unstarted StopWatch should throw an exception.");
@@ -113,7 +114,7 @@ public class StopWatchTest extends AbstractLangTest {
     }
 
     @Test
-    public void testBooleanStates() {
+    void testBooleanStates() {
         final StopWatch watch = new StopWatch();
         assertFalse(watch.isStarted());
         assertFalse(watch.isSuspended());
@@ -136,43 +137,43 @@ public class StopWatchTest extends AbstractLangTest {
     }
 
     @Test
-    public void testFormatSplitTime() {
+    void testFormatSplitTime() {
         final StopWatch watch = StopWatch.createStarted();
         ThreadUtils.sleepQuietly(MIN_DURATION);
         watch.split();
         final String formatSplitTime = watch.formatSplitTime();
         assertNotEquals(ZERO_TIME_ELAPSED, formatSplitTime);
-        assertThat("formatSplitTime", formatSplitTime, startsWith(ZERO_HOURS_PREFIX));
+        assertTrue(formatSplitTime.startsWith(ZERO_HOURS_PREFIX), "formatSplitTime");
     }
 
     @Test
-    public void testFormatSplitTimeWithMessage() {
+    void testFormatSplitTimeWithMessage() {
         final StopWatch watch = new StopWatch(MESSAGE);
         watch.start();
         ThreadUtils.sleepQuietly(MIN_DURATION);
         watch.split();
         final String formatSplitTime = watch.formatSplitTime();
-        assertThat("formatSplitTime", formatSplitTime, not(startsWith(MESSAGE)));
-        assertThat("formatSplitTime", formatSplitTime, startsWith(ZERO_HOURS_PREFIX));
+        assertFalse(formatSplitTime.startsWith(MESSAGE), "formatSplitTime");
+        assertTrue(formatSplitTime.startsWith(ZERO_HOURS_PREFIX), "formatSplitTime");
     }
 
     @Test
-    public void testFormatTime() {
+    void testFormatTime() {
         final StopWatch watch = StopWatch.create();
         final String formatTime = watch.formatTime();
         assertEquals(ZERO_TIME_ELAPSED, formatTime);
-        assertThat("formatTime", formatTime, startsWith(ZERO_HOURS_PREFIX));
+        assertTrue(formatTime.startsWith(ZERO_HOURS_PREFIX), "formatTime");
     }
 
     @Test
-    public void testFormatTimeWithMessage() {
+    void testFormatTimeWithMessage() {
         final StopWatch watch = new StopWatch(MESSAGE);
         final String formatTime = watch.formatTime();
-        assertThat("formatTime", formatTime, not(startsWith(MESSAGE)));
+        assertFalse(formatTime.startsWith(MESSAGE), "formatTime");
     }
 
     @Test
-    public void testGet() throws Throwable {
+    void testGet() throws Throwable {
         final StopWatch watch = new StopWatch();
         final AtomicInteger i = new AtomicInteger();
         assertEquals(1, watch.get(i::incrementAndGet));
@@ -199,7 +200,7 @@ public class StopWatchTest extends AbstractLangTest {
     }
 
     @Test
-    public void testGetDuration() throws InterruptedException {
+    void testGetDuration() throws InterruptedException {
         final StopWatch watch = new StopWatch();
         assertEquals(Duration.ZERO, watch.getDuration());
         assertEquals(ZERO_TIME_ELAPSED, watch.toString());
@@ -211,7 +212,7 @@ public class StopWatchTest extends AbstractLangTest {
     }
 
     @Test
-    public void testGetSplitDuration() {
+    void testGetSplitDuration() {
         // Create a mock StopWatch with a time of 2:59:01.999
         final StopWatch watch = StopWatch.createStarted();
         watch.split();
@@ -220,14 +221,31 @@ public class StopWatchTest extends AbstractLangTest {
     }
 
     @Test
-    public void testGetStartInstant() {
+    void testGetSplits() {
+        final StopWatch stopWatch = StopWatch.create();
+        assertTrue(stopWatch.getSplits().isEmpty());
+        stopWatch.start();
+        testGetSplits(stopWatch);
+        testGetSplits(StopWatch.createStarted());
+    }
+
+    private void testGetSplits(final StopWatch watch) {
+        assertTrue(watch.getSplits().isEmpty());
+        watch.split();
+        assertEquals(1, watch.getSplits().size());
+        watch.unsplit();
+        assertTrue(watch.getSplits().isEmpty());
+    }
+
+    @Test
+    void testGetStartInstant() {
         final long beforeStopWatchMillis = System.currentTimeMillis();
         final StopWatch watch = new StopWatch();
         assertThrows(IllegalStateException.class, watch::getStartInstant, "Calling getStartInstant on an unstarted StopWatch should throw an exception");
         watch.start();
 
         watch.getStartInstant();
-        assertThat("getStartInstant", watch.getStartInstant(), greaterThanOrEqualTo(Instant.ofEpochMilli(beforeStopWatchMillis)));
+        assertTrue(watch.getStartInstant().compareTo(Instant.ofEpochMilli(beforeStopWatchMillis)) >= 0);
 
         watch.reset();
         assertThrows(IllegalStateException.class, watch::getStartInstant,
@@ -235,21 +253,21 @@ public class StopWatchTest extends AbstractLangTest {
     }
 
     @Test
-    public void testGetStartTime() {
+    void testGetStartTime() {
         final long beforeStopWatchMillis = System.currentTimeMillis();
         final StopWatch watch = new StopWatch();
         assertThrows(IllegalStateException.class, watch::getStartTime, "Calling getStartTime on an unstarted StopWatch should throw an exception");
         watch.start();
 
         watch.getStartTime();
-        assertThat("getStartTime", watch.getStartTime(), greaterThanOrEqualTo(beforeStopWatchMillis));
+        assertTrue(watch.getStartTime() >= beforeStopWatchMillis, "getStartTime");
 
         watch.reset();
         assertThrows(IllegalStateException.class, watch::getStartTime, "Calling getStartTime on a reset, but unstarted StopWatch should throw an exception");
     }
 
     @RepeatedTest(10)
-    public void testGetTime() throws InterruptedException {
+    void testGetTime() throws InterruptedException {
         final StopWatch watch = new StopWatch();
         assertEquals(0, watch.getTime());
         assertEquals(ZERO_TIME_ELAPSED, watch.toString());
@@ -261,7 +279,7 @@ public class StopWatchTest extends AbstractLangTest {
     }
 
     @Test
-    public void testGetWithTimeUnit() {
+    void testGetWithTimeUnit() {
         // Create a mock StopWatch with a time of 2:59:01.999
         // @formatter:off
         final StopWatch watch = createMockStopWatch(
@@ -277,7 +295,7 @@ public class StopWatchTest extends AbstractLangTest {
     }
 
     @Test
-    public void testLang315() throws InterruptedException {
+    void testLang315() throws InterruptedException {
         final StopWatch watch = StopWatch.createStarted();
         sleepPlus1(MIN_DURATION);
         watch.suspend();
@@ -292,18 +310,18 @@ public class StopWatchTest extends AbstractLangTest {
     }
 
     @Test
-    public void testMessage() {
+    void testMessage() {
         assertNull(StopWatch.create().getMessage());
         final StopWatch stopWatch = new StopWatch(MESSAGE);
         assertEquals(MESSAGE, stopWatch.getMessage());
-        assertThat("stopWatch.toString", stopWatch.toString(), startsWith(MESSAGE));
+        assertTrue(stopWatch.toString().startsWith(MESSAGE), "stopWatch.toString");
         stopWatch.start();
         stopWatch.split();
-        assertThat("stopWatch.toSplitString", stopWatch.toSplitString(), startsWith(MESSAGE));
+        assertTrue(stopWatch.toSplitString().startsWith(MESSAGE), "stopWatch.toSplitString");
     }
 
     @Test
-    public void testRun() throws Throwable {
+    void testRun() throws Throwable {
         final StopWatch watch = new StopWatch();
         final AtomicInteger i = new AtomicInteger();
         watch.run(i::incrementAndGet);
@@ -334,7 +352,7 @@ public class StopWatchTest extends AbstractLangTest {
     }
 
     @Test
-    public void testSimple() throws InterruptedException {
+    void testSimple() throws InterruptedException {
         final StopWatch watch = StopWatch.createStarted();
         final Duration sleepDuration = MIN_DURATION;
         sleepPlus1(sleepDuration);
@@ -350,7 +368,7 @@ public class StopWatchTest extends AbstractLangTest {
     }
 
     @Test
-    public void testSplit() throws InterruptedException {
+    void testSplit() throws InterruptedException {
         final StopWatch watch = StopWatch.createStarted();
         final Duration sleepDuration = MIN_DURATION;
         final long sleepMillis = sleepDuration.toMillis();
@@ -375,13 +393,13 @@ public class StopWatchTest extends AbstractLangTest {
     }
 
     @Test
-    public void testStatic() {
+    void testStatic() {
         final StopWatch watch = StopWatch.createStarted();
         assertTrue(watch.isStarted());
     }
 
     @Test
-    public void testStopInstantSimple() throws InterruptedException {
+    void testStopInstantSimple() throws InterruptedException {
         final StopWatch watch = StopWatch.createStarted();
         final long testStartMillis = System.currentTimeMillis();
         sleepPlus1(MIN_DURATION);
@@ -395,7 +413,7 @@ public class StopWatchTest extends AbstractLangTest {
     }
 
     @Test
-    public void testStopTimeSimple() throws InterruptedException {
+    void testStopTimeSimple() throws InterruptedException {
         final StopWatch watch = StopWatch.createStarted();
         final long testStartMillis = System.currentTimeMillis();
         sleepPlus1(MIN_DURATION);
@@ -408,7 +426,7 @@ public class StopWatchTest extends AbstractLangTest {
     }
 
     @Test
-    public void testSuspend() throws InterruptedException {
+    void testSuspend() throws InterruptedException {
         // Watch out comparing measurements from System.currentTimeMillis() vs. System.nanoTime()
         final StopWatch watch = StopWatch.createStarted();
         final long testStartMillis = System.currentTimeMillis();
@@ -464,7 +482,7 @@ public class StopWatchTest extends AbstractLangTest {
     }
 
     @Test
-    public void testToSplitString() throws InterruptedException {
+    void testToSplitString() throws InterruptedException {
         final StopWatch watch = StopWatch.createStarted();
         sleepPlus1(MIN_DURATION);
         watch.split();
@@ -473,7 +491,7 @@ public class StopWatchTest extends AbstractLangTest {
     }
 
     @Test
-    public void testToSplitStringWithMessage() throws InterruptedException {
+    void testToSplitStringWithMessage() throws InterruptedException {
         final StopWatch watch = new StopWatch(MESSAGE);
         watch.start();
         sleepPlus1(MIN_DURATION);
@@ -483,7 +501,7 @@ public class StopWatchTest extends AbstractLangTest {
     }
 
     @Test
-    public void testToString() throws InterruptedException {
+    void testToString() throws InterruptedException {
         //
         final StopWatch watch = StopWatch.createStarted();
         sleepPlus1(MIN_DURATION);
@@ -493,8 +511,8 @@ public class StopWatchTest extends AbstractLangTest {
     }
 
     @Test
-    public void testToStringWithMessage() throws InterruptedException {
-        assertThat("message", new StopWatch(MESSAGE).toString(), startsWith(MESSAGE));
+    void testToStringWithMessage() throws InterruptedException {
+        assertTrue(new StopWatch(MESSAGE).toString().startsWith(MESSAGE), "message");
         //
         final StopWatch watch = new StopWatch(MESSAGE);
         watch.start();
@@ -502,6 +520,36 @@ public class StopWatchTest extends AbstractLangTest {
         watch.split();
         final String splitStr = watch.toString();
         assertEquals(SPLIT_CLOCK_STR_LEN + MESSAGE.length() + 1, splitStr.length(), "Formatted split string not the correct length");
+    }
+
+    @Test
+    void testSplitsWithStringLabels() {
+        final StopWatch watch = new StopWatch();
+        final String firstLabel = "one";
+        final String secondLabel = "two";
+        final String thirdLabel = "three";
+        watch.start();
+        // starting splits
+        watch.split(firstLabel);
+        watch.split(secondLabel);
+        watch.split(thirdLabel);
+        watch.stop();
+        // getting splits
+        final List<StopWatch.Split> splits = watch.getSplits();
+        // check size
+        assertEquals(3, splits.size());
+        // check labels
+        assertEquals(firstLabel, splits.get(0).getLabel());
+        assertEquals(secondLabel, splits.get(1).getLabel());
+        assertEquals(thirdLabel, splits.get(2).getLabel());
+        // check time in nanos
+        assertTrue(splits.get(0).getDuration().toNanos() > 0);
+        assertTrue(splits.get(1).getDuration().toNanos() > 0);
+        assertTrue(splits.get(2).getDuration().toNanos() > 0);
+        // We can only unsplit once
+        watch.unsplit();
+        assertEquals(2, watch.getSplits().size());
+        assertThrows(IllegalStateException.class, watch::unsplit);
     }
 
     private int throwIOException() throws IOException {

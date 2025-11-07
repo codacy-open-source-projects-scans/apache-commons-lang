@@ -6,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -157,7 +157,7 @@ public abstract class AbstractConcurrentInitializer<T, E extends Exception> impl
     /**
      * Gets an Exception with a type of E as defined by a concrete subclass of this class.
      *
-     * @param e The actual exception that was thrown
+     * @param e The actual exception that was thrown.
      * @return a new exception with the actual type of E, that wraps e.
      */
     protected abstract E getTypedException(Exception e);
@@ -170,8 +170,8 @@ public abstract class AbstractConcurrentInitializer<T, E extends Exception> impl
      * Subclasses and clients that do not provide an initializer are expected to implement this method.
      * </p>
      *
-     * @return the managed data object
-     * @throws E if an error occurs during object creation
+     * @return the managed data object.
+     * @throws E if an error occurs during object creation.
      */
     @SuppressWarnings("unchecked")
     protected T initialize() throws E {
@@ -180,7 +180,6 @@ public abstract class AbstractConcurrentInitializer<T, E extends Exception> impl
         } catch (final Exception e) {
             // Do this first so we don't pass a RuntimeException or Error into an exception constructor
             ExceptionUtils.throwUnchecked(e);
-
             // Depending on the subclass of AbstractConcurrentInitializer E can be Exception or ConcurrentException
             // if E is Exception the if statement below will always be true, and the new Exception object created
             // in getTypedException will never be thrown. If E is ConcurrentException and the if statement is false
@@ -194,11 +193,11 @@ public abstract class AbstractConcurrentInitializer<T, E extends Exception> impl
     }
 
     /**
-     * Returns true if initialization has been completed. If initialization threw an exception this will return false, but it will return true if a subsequent
+     * Tests whether initialization has been completed. If initialization threw an exception this will return false, but it will return true if a subsequent
      * call to initialize completes successfully. If the implementation of ConcurrentInitializer can initialize multiple objects, this will only return true if
      * all objects have been initialized.
      *
-     * @return true if all initialization is complete, otherwise false
+     * @return true if all initialization is complete, otherwise false.
      */
     protected abstract boolean isInitialized();
 

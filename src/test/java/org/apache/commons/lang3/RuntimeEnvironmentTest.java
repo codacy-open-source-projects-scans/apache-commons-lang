@@ -6,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -30,11 +30,10 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-
 /**
  * Tests {@link RuntimeEnvironment}.
  */
-public class RuntimeEnvironmentTest {
+class RuntimeEnvironmentTest {
 
     private static final String simpleEnviron = "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin\u0000" +
             "HOSTNAME=d62718b69f37\u0000TERM=xterm\u0000HOME=/root\u0000";
@@ -80,7 +79,7 @@ public class RuntimeEnvironmentTest {
 
     @ParameterizedTest
     @MethodSource
-    public void testIsContainer(final String label, final String environ, final String fileToCreate, final boolean expected) throws IOException {
+    void testIsContainer(final String label, final String environ, final String fileToCreate, final boolean expected) throws IOException {
         assertEquals(expected, doTestInContainer(environ, fileToCreate), label);
     }
 }

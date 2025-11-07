@@ -6,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -26,7 +26,7 @@ import org.junit.jupiter.api.Test;
 /**
  * JUnit tests for DefaultExceptionContext.
  */
-public class DefaultExceptionContextTest extends AbstractExceptionContextTest<DefaultExceptionContext> {
+class DefaultExceptionContextTest extends AbstractExceptionContextTest<DefaultExceptionContext> {
 
     @Override
     @BeforeEach
@@ -36,7 +36,7 @@ public class DefaultExceptionContextTest extends AbstractExceptionContextTest<De
     }
 
     @Test
-    public void testFormattedExceptionMessageExceptionHandling() {
+    void testFormattedExceptionMessageExceptionHandling() {
         exceptionContext = new DefaultExceptionContext();
         final String label1 = "throws 1";
         final String label2 = "throws 2";
@@ -49,13 +49,13 @@ public class DefaultExceptionContextTest extends AbstractExceptionContextTest<De
     }
 
     @Test
-    public void testFormattedExceptionMessageNull() {
+    void testFormattedExceptionMessageNull() {
         exceptionContext = new DefaultExceptionContext();
         assertEquals("", exceptionContext.getFormattedExceptionMessage(null));
     }
 
     @Test
-    public void testFormattedExceptionMessageNullValue() {
+    void testFormattedExceptionMessageNullValue() {
         exceptionContext = new DefaultExceptionContext();
         final String label1 = "throws 1";
         final String label2 = "throws 2";

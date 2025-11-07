@@ -6,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -66,8 +66,8 @@ import org.apache.commons.lang3.function.FailableSupplier;
  * method are pretty fast because no synchronization is needed (only an access to a <strong>volatile</strong> member field).
  * </p>
  *
- * @since 3.0
  * @param <T> the type of the object managed by the initializer.
+ * @since 3.0
  */
 public class LazyInitializer<T> extends AbstractConcurrentInitializer<T, ConcurrentException> {
 
@@ -133,17 +133,16 @@ public class LazyInitializer<T> extends AbstractConcurrentInitializer<T, Concurr
     }
 
     /**
-     * Returns the object wrapped by this instance. On first access the object is created. After that it is cached and can be accessed pretty fast.
+     * Gets the object wrapped by this instance. On first access the object is created. After that it is cached and can be accessed pretty fast.
      *
-     * @return the object initialized by this {@link LazyInitializer}
-     * @throws ConcurrentException if an error occurred during initialization of the object
+     * @return the object initialized by this {@link LazyInitializer}.
+     * @throws ConcurrentException if an error occurred during initialization of the object.
      */
     @Override
     public T get() throws ConcurrentException {
         // use a temporary variable to reduce the number of reads of the
         // volatile field
         T result = object;
-
         if (result == NO_INIT) {
             synchronized (this) {
                 result = object;
@@ -152,7 +151,6 @@ public class LazyInitializer<T> extends AbstractConcurrentInitializer<T, Concurr
                 }
             }
         }
-
         return result;
     }
 

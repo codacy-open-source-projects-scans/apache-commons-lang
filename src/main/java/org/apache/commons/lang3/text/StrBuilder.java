@@ -6,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,6 +21,7 @@ import java.io.Reader;
 import java.io.Serializable;
 import java.io.Writer;
 import java.nio.CharBuffer;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
@@ -77,9 +78,9 @@ import org.apache.commons.lang3.builder.Builder;
  * </p>
  *
  * @since 2.2
- * @deprecated As of 3.6, use Apache Commons Text
+ * @deprecated As of <a href="https://commons.apache.org/proper/commons-lang/changes-report.html#a3.6">3.6</a>, use Apache Commons Text
  * <a href="https://commons.apache.org/proper/commons-text/javadocs/api-release/org/apache/commons/text/TextStringBuilder.html">
- * TextStringBuilder</a> instead
+ * TextStringBuilder</a>.
  */
 @Deprecated
 public class StrBuilder implements CharSequence, Appendable, Serializable, Builder<String> {
@@ -257,16 +258,19 @@ public class StrBuilder implements CharSequence, Appendable, Serializable, Build
             StrBuilder.this.append(str, off, len);
         }
     }
+
     /**
      * The extra capacity for new builders.
      */
     static final int CAPACITY = 32;
+
     /**
      * Required for serialization support.
      *
      * @see java.io.Serializable
      */
     private static final long serialVersionUID = 7628716375283629643L;
+
     /** Internal data storage. */
     protected char[] buffer; // TODO make private?
 
@@ -866,10 +870,9 @@ public class StrBuilder implements CharSequence, Appendable, Serializable, Build
                 str.getChars(strLen - width, strLen, buffer, size);
             } else {
                 final int padLen = width - strLen;
-                for (int i = 0; i < padLen; i++) {
-                    buffer[size + i] = padChar;
-                }
-                str.getChars(0, strLen, buffer, size + padLen);
+                final int toIndex = size + padLen;
+                Arrays.fill(buffer, size, toIndex, padChar);
+                str.getChars(0, strLen, buffer, toIndex);
             }
             size += width;
         }
@@ -912,11 +915,9 @@ public class StrBuilder implements CharSequence, Appendable, Serializable, Build
             if (strLen >= width) {
                 str.getChars(0, width, buffer, size);
             } else {
-                final int padLen = width - strLen;
                 str.getChars(0, strLen, buffer, size);
-                for (int i = 0; i < padLen; i++) {
-                    buffer[size + strLen + i] = padChar;
-                }
+                final int fromIndex = size + strLen;
+                Arrays.fill(buffer, fromIndex, fromIndex + width - strLen, padChar);
             }
             size += width;
         }
@@ -2807,11 +2808,8 @@ public class StrBuilder implements CharSequence, Appendable, Serializable, Build
             size = length;
         } else if (length > size) {
             ensureCapacity(length);
-            final int oldEnd = size;
+            Arrays.fill(buffer, size, length, CharUtils.NUL);
             size = length;
-            for (int i = oldEnd; i < length; i++) {
-                buffer[i] = CharUtils.NUL;
-            }
         }
         return this;
     }

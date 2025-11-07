@@ -6,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -689,7 +689,7 @@ public class Streams {
     }
 
     /**
-     * Creates a stream on the given Iterable.
+     * Creates a sequential stream on the given Iterable.
      *
      * @param <E> the type of elements in the Iterable.
      * @param iterable the Iterable to stream or null.
@@ -701,7 +701,7 @@ public class Streams {
     }
 
     /**
-     * Creates a stream on the given Iterator.
+     * Creates a sequential stream on the given Iterator.
      *
      * @param <E> the type of elements in the Iterator.
      * @param iterator the Iterator to stream or null.
@@ -834,11 +834,11 @@ public class Streams {
     /**
      * Returns a {@link Collector} that accumulates the input elements into a new array.
      *
-     * @param elementType Type of an element in the array.
      * @param <T> the type of the input elements
+     * @param elementType Type of an element in the array.
      * @return a {@link Collector} which collects all the input elements into an array, in encounter order
      */
-    public static <T> Collector<T, ?, T[]> toArray(final Class<T> elementType) {
+    public static <T> Collector<T, List<T>, T[]> toArray(final Class<T> elementType) {
         return new ArrayCollector<>(elementType);
     }
 

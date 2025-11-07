@@ -6,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -38,14 +38,14 @@ import org.apache.commons.lang3.text.translate.UnicodeUnpairedSurrogateRemover;
  * @since 2.0
  * @deprecated As of 3.6, use Apache Commons Text
  * <a href="https://commons.apache.org/proper/commons-text/javadocs/api-release/org/apache/commons/text/StringEscapeUtils.html">
- * StringEscapeUtils</a> instead
+ * StringEscapeUtils</a> instead.
  */
 @Deprecated
 public class StringEscapeUtils {
 
     /* ESCAPE TRANSLATORS */
 
-    static class CsvEscaper extends CharSequenceTranslator {
+    private static final class CsvEscaper extends CharSequenceTranslator {
 
         private static final char CSV_DELIMITER = ',';
         private static final char CSV_QUOTE = '"';
@@ -54,11 +54,9 @@ public class StringEscapeUtils {
 
         @Override
         public int translate(final CharSequence input, final int index, final Writer out) throws IOException {
-
             if (index != 0) {
                 throw new IllegalStateException("CsvEscaper should never reach the [1] index");
             }
-
             if (StringUtils.containsNone(input.toString(), CSV_SEARCH_CHARS)) {
                 out.write(input.toString());
             } else {
@@ -70,7 +68,7 @@ public class StringEscapeUtils {
         }
     }
 
-    static class CsvUnescaper extends CharSequenceTranslator {
+    private static final class CsvUnescaper extends CharSequenceTranslator {
 
         private static final char CSV_DELIMITER = ',';
         private static final char CSV_QUOTE = '"';
@@ -79,19 +77,15 @@ public class StringEscapeUtils {
 
         @Override
         public int translate(final CharSequence input, final int index, final Writer out) throws IOException {
-
             if (index != 0) {
                 throw new IllegalStateException("CsvUnescaper should never reach the [1] index");
             }
-
             if (input.charAt(0) != CSV_QUOTE || input.charAt(input.length() - 1) != CSV_QUOTE) {
                 out.write(input.toString());
                 return Character.codePointCount(input, 0, input.length());
             }
-
             // strip quotes
             final String quoteless = input.subSequence(1, input.length() - 1).toString();
-
             if (StringUtils.containsAny(quoteless, CSV_SEARCH_CHARS)) {
                 // deal with escaped quotes; ie) ""
                 out.write(Strings.CS.replace(quoteless, CSV_QUOTE_STR + CSV_QUOTE_STR, CSV_QUOTE_STR));
@@ -173,7 +167,7 @@ public class StringEscapeUtils {
      * as the foundation for a custom translator.
      *
      * @since 3.0
-     * @deprecated use {@link #ESCAPE_XML10} or {@link #ESCAPE_XML11} instead.
+     * @deprecated Use {@link #ESCAPE_XML10} or {@link #ESCAPE_XML11} instead.
      */
     @Deprecated
     public static final CharSequenceTranslator ESCAPE_XML =
@@ -575,7 +569,7 @@ public class StringEscapeUtils {
      * @param input  the {@link String} to escape, may be null
      * @return a new escaped {@link String}, {@code null} if null string input
      * @see #unescapeXml(String)
-     * @deprecated use {@link #escapeXml10(java.lang.String)} or {@link #escapeXml11(java.lang.String)} instead.
+     * @deprecated Use {@link #escapeXml10(java.lang.String)} or {@link #escapeXml11(java.lang.String)} instead.
      */
     @Deprecated
     public static final String escapeXml(final String input) {

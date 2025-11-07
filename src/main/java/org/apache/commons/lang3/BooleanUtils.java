@@ -6,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -707,7 +707,7 @@ public class BooleanUtils {
      * if unboxed to a {@code boolean}.</p>
      *
      * <pre>
-     *   // N.B. case is not significant
+     *   // Case is not significant
      *   BooleanUtils.toBooleanObject(null)    = null
      *   BooleanUtils.toBooleanObject("true")  = Boolean.TRUE
      *   BooleanUtils.toBooleanObject("T")     = Boolean.TRUE // i.e. T[RUE]
@@ -735,7 +735,7 @@ public class BooleanUtils {
         // Previously used equalsIgnoreCase, which was fast for interned 'true'.
         // Non interned 'true' matched 15 times slower.
         //
-        // Optimisation provides same performance as before for interned 'true'.
+        // Optimization provides same performance as before for interned 'true'.
         // Similar performance for null, 'false', and other strings not length 2/3/4.
         // 'true'/'TRUE' match 4 times slower, 'tRUE'/'True' 7 times slower.
         if (str == TRUE) {

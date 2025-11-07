@@ -6,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -81,6 +81,31 @@ public final class LongRange extends NumberRange<Long> {
      */
     private LongRange(final Long number1, final Long number2) {
         super(number1, number2, null);
+    }
+
+    /**
+     * Fits the given value into this range by returning the given value or, if out of bounds, the range minimum if
+     * below, or the range maximum if above.
+     *
+     * <pre>{@code
+     * LongRange range = LongRange.of(16, 64);
+     * range.fit(-9) -->  16
+     * range.fit(0)  -->  16
+     * range.fit(15) -->  16
+     * range.fit(16) -->  16
+     * range.fit(17) -->  17
+     * ...
+     * range.fit(63) -->  63
+     * range.fit(64) -->  64
+     * range.fit(99) -->  64
+     * }</pre>
+     *
+     * @param element the element to test.
+     * @return the minimum, the element, or the maximum depending on the element's location relative to the range.
+     * @since 3.19.0
+     */
+    public long fit(final long element) {
+        return super.fit(element).longValue();
     }
 
     /**

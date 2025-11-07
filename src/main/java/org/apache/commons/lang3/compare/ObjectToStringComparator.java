@@ -6,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -30,7 +30,7 @@ import java.util.Comparator;
 public final class ObjectToStringComparator implements Comparator<Object>, Serializable {
 
     /**
-     * Singleton instance.
+     * The singleton instance.
      *
      * This class is stateless.
      */
@@ -53,7 +53,7 @@ public final class ObjectToStringComparator implements Comparator<Object>, Seria
 
     @Override
     public int compare(final Object o1, final Object o2) {
-        if (o1 == null && o2 == null) {
+        if (o1 == o2) {
             return 0;
         }
         if (o1 == null) {
@@ -65,7 +65,7 @@ public final class ObjectToStringComparator implements Comparator<Object>, Seria
         final String string1 = o1.toString();
         final String string2 = o2.toString();
         // No guarantee that toString() returns a non-null value, despite what Spotbugs thinks.
-        if (string1 == null && string2 == null) {
+        if (string1 == string2) {
             return 0;
         }
         if (string1 == null) {

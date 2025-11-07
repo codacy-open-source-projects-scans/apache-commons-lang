@@ -6,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -19,6 +19,9 @@ package org.apache.commons.lang3.time;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
@@ -27,6 +30,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.function.FailableConsumer;
 import org.apache.commons.lang3.function.FailableRunnable;
 import org.apache.commons.lang3.function.FailableSupplier;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 
 /**
  * {@link StopWatch} provides a convenient API for timings.
@@ -60,7 +64,7 @@ import org.apache.commons.lang3.function.FailableSupplier;
  * </ol>
  *
  * <p>
- * This class is not thread-safe
+ * This class is not thread-safe.
  * </p>
  *
  * @see DurationUtils#of(FailableRunnable)
@@ -249,6 +253,11 @@ public class StopWatch {
     private long stopTimeNanos;
 
     /**
+     * The split list.
+     */
+    private final List<Split> splits = new ArrayList<>();
+
+    /**
      * Constructs a new instance.
      */
     public StopWatch() {
@@ -327,6 +336,16 @@ public class StopWatch {
     }
 
     /**
+     * Gets the split list.
+     *
+     * @return the list of splits.
+     * @since 3.20.0
+     */
+    public List<Split> getSplits() {
+        return Collections.unmodifiableList(splits);
+    }
+
+    /**
      * Gets the <em>elapsed</em> time in nanoseconds.
      *
      * <p>
@@ -359,7 +378,7 @@ public class StopWatch {
      * This is the Duration between start and latest split.
      * </p>
      *
-     * @return the split Duration
+     * @return the split Duration.
      * @throws IllegalStateException if this StopWatch has not yet been split.
      * @since 3.16.0
      */
@@ -374,7 +393,7 @@ public class StopWatch {
      * This is the time between start and latest split.
      * </p>
      *
-     * @return the split time in nanoseconds
+     * @return the split time in nanoseconds.
      * @throws IllegalStateException if this StopWatch has not yet been split.
      * @since 3.0
      */
@@ -382,7 +401,7 @@ public class StopWatch {
         if (splitState != SplitState.SPLIT) {
             throw new IllegalStateException("Stopwatch must be split to get the split time.");
         }
-        return stopTimeNanos - startTimeNanos;
+        return splits.get(splits.size() - 1).getRight().toNanos();
     }
 
     /**
@@ -392,7 +411,7 @@ public class StopWatch {
      * This is the time between start and latest split.
      * </p>
      *
-     * @return the split time in milliseconds
+     * @return the split time in milliseconds.
      * @throws IllegalStateException if this StopWatch has not yet been split.
      * @since 2.1
      * @deprecated Use {@link #getSplitDuration()}.
@@ -406,56 +425,55 @@ public class StopWatch {
      * Gets the Instant this StopWatch was started, between the current time and midnight, January 1, 1970 UTC.
      *
      * @return the Instant this StopWatch was started, between the current time and midnight, January 1, 1970 UTC.
-     * @throws IllegalStateException if this StopWatch has not been started
+     * @throws IllegalStateException if this StopWatch has not been started.
      * @since 3.16.0
      */
     public Instant getStartInstant() {
-        return Instant.ofEpochMilli(getStartTime());
+        if (runningState == State.UNSTARTED) {
+            throw new IllegalStateException("Stopwatch has not been started");
+        }
+        return startInstant;
     }
 
     /**
      * Gets the time this StopWatch was started in milliseconds, between the current time and midnight, January 1, 1970 UTC.
      *
      * @return the time this StopWatch was started in milliseconds, between the current time and midnight, January 1, 1970 UTC.
-     * @throws IllegalStateException if this StopWatch has not been started
+     * @throws IllegalStateException if this StopWatch has not been started.
      * @since 2.4
      * @deprecated Use {@link #getStartInstant()}.
      */
     @Deprecated
     public long getStartTime() {
-        if (runningState == State.UNSTARTED) {
-            throw new IllegalStateException("Stopwatch has not been started");
-        }
-        // stopTimeNanos stores System.nanoTime() for elapsed time
-        return startInstant.toEpochMilli();
+        return getStartInstant().toEpochMilli();
     }
 
     /**
      * Gets the Instant this StopWatch was stopped, between the current time and midnight, January 1, 1970 UTC.
      *
      * @return the Instant this StopWatch was stopped in milliseconds, between the current time and midnight, January 1, 1970 UTC.
-     * @throws IllegalStateException if this StopWatch has not been started
+     * @throws IllegalStateException if this StopWatch has not been started.
      * @since 3.16.0
      */
     public Instant getStopInstant() {
-        return Instant.ofEpochMilli(getStopTime());
+        if (runningState == State.UNSTARTED) {
+            throw new IllegalStateException("Stopwatch has not been started");
+        }
+        return stopInstant;
     }
 
     /**
      * Gets the time this StopWatch was stopped in milliseconds, between the current time and midnight, January 1, 1970 UTC.
      *
      * @return the time this StopWatch was stopped in milliseconds, between the current time and midnight, January 1, 1970 UTC.
-     * @throws IllegalStateException if this StopWatch has not been started
+     * @throws IllegalStateException if this StopWatch has not been started.
      * @since 3.12.0
      * @deprecated Use {@link #getStopInstant()}.
      */
     @Deprecated
     public long getStopTime() {
-        if (runningState == State.UNSTARTED) {
-            throw new IllegalStateException("Stopwatch has not been started");
-        }
         // stopTimeNanos stores System.nanoTime() for elapsed time
-        return stopInstant.toEpochMilli();
+        return getStopInstant().toEpochMilli();
     }
 
     /**
@@ -484,7 +502,7 @@ public class StopWatch {
      * This is either the time between the start and the moment this method is called, or the amount of time between start and stop.
      * </p>
      *
-     * @return the time in milliseconds
+     * @return the time in milliseconds.
      * @see #getDuration()
      */
     public long getTime() {
@@ -500,8 +518,8 @@ public class StopWatch {
      * is 59 minutes, then the result returned will be {@code 0}.
      * </p>
      *
-     * @param timeUnit the unit of time, not null
-     * @return the time in the specified TimeUnit, rounded down
+     * @param timeUnit the unit of time, not null.
+     * @return the time in the specified TimeUnit, rounded down.
      * @since 3.5
      */
     public long getTime(final TimeUnit timeUnit) {
@@ -558,6 +576,7 @@ public class StopWatch {
     public void reset() {
         runningState = State.UNSTARTED;
         splitState = SplitState.UNSPLIT;
+        splits.clear();
     }
 
     /**
@@ -625,6 +644,28 @@ public class StopWatch {
         }
         stopTimeNanos = System.nanoTime();
         splitState = SplitState.SPLIT;
+        splits.add(new Split(String.valueOf(splits.size()), Duration.ofNanos(stopTimeNanos - startTimeNanos)));
+    }
+
+    /**
+     * Splits the time with a label.
+     *
+     * <p>
+     * This method sets the stop time of the watch to allow a time to be extracted. The start time is unaffected, enabling {@link #unsplit()} to continue the
+     * timing from the original start point.
+     * </p>
+     *
+     * @param label A message for string presentation.
+     * @throws IllegalStateException if the StopWatch is not running.
+     * @since 3.20.0
+     */
+    public void split(final String label) {
+        if (runningState != State.RUNNING) {
+            throw new IllegalStateException("Stopwatch is not running.");
+        }
+        stopTimeNanos = System.nanoTime();
+        splitState = SplitState.SPLIT;
+        splits.add(new Split(label, Duration.ofNanos(stopTimeNanos - startTimeNanos)));
     }
 
     /**
@@ -646,6 +687,7 @@ public class StopWatch {
         startTimeNanos = System.nanoTime();
         startInstant = Instant.now();
         runningState = State.RUNNING;
+        splits.clear();
     }
 
     /**
@@ -698,13 +740,13 @@ public class StopWatch {
     }
 
     /**
-     * Gets a summary of the split time that this StopWatch recorded as a string.
+     * Gets a summary of the last split time that this StopWatch recorded as a string.
      *
      * <p>
      * The format used is ISO 8601-like, [<em>message</em> ]<em>hours</em>:<em>minutes</em>:<em>seconds</em>.<em>milliseconds</em>.
      * </p>
      *
-     * @return the split time as a String
+     * @return the split time as a String.
      * @since 2.1
      * @since 3.10 Returns the prefix {@code "message "} if the message is set.
      */
@@ -721,7 +763,7 @@ public class StopWatch {
      * The format used is ISO 8601-like, [<em>message</em> ]<em>hours</em>:<em>minutes</em>:<em>seconds</em>.<em>milliseconds</em>.
      * </p>
      *
-     * @return the time as a String
+     * @return the time as a String.
      * @since 3.10 Returns the prefix {@code "message "} if the message is set.
      */
     @Override
@@ -745,6 +787,53 @@ public class StopWatch {
             throw new IllegalStateException("Stopwatch has not been split.");
         }
         splitState = SplitState.UNSPLIT;
+        splits.remove(splits.size() - 1);
+    }
+
+    /**
+     * Stores a split as a label and duration.
+     *
+     * @since 3.20.0
+     */
+    public static final class Split extends ImmutablePair<String, Duration> {
+
+        /**
+         * Constructs a Split object with label and duration.
+         *
+         * @param label Label for this split.
+         * @param duration Duration for this split.
+         */
+        public Split(String label, Duration duration) {
+            super(label, duration);
+        }
+
+        /**
+         * Gets the label of this split.
+         *
+         * @return The label of this split.
+         */
+        public String getLabel() {
+            return getLeft();
+        }
+
+        /**
+         * Gets the duration of this split.
+         *
+         * @return The duration of this split..
+         */
+        public Duration getDuration() {
+            return getRight();
+        }
+
+        /**
+         * Converts this instance to a string.
+         *
+         * @return this instance to a string.
+         */
+        @Override
+        public String toString() {
+            return String.format("Split [%s, %s])", getLabel(), getDuration());
+        }
     }
 
 }

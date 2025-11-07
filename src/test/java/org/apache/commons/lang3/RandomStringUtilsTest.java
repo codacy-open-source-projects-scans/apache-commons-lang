@@ -6,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,16 +16,10 @@
  */
 package org.apache.commons.lang3;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.greaterThanOrEqualTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.lessThan;
-import static org.hamcrest.Matchers.lessThanOrEqualTo;
+import static org.apache.commons.lang3.LangAssertions.assertIllegalArgumentException;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -35,15 +29,20 @@ import java.util.Random;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 /**
  * Tests {@link RandomStringUtils}.
  */
-public class RandomStringUtilsTest extends AbstractLangTest {
+class RandomStringUtilsTest extends AbstractLangTest {
 
     private static final int LOOP_COUNT = 1_000;
+    /** Maximum safe value for count to avoid overflow: (21x + 3) / 5 + 10 < 0x0FFF_FFFF */
+    private static final int MAX_SAFE_COUNT = 63_913_201;
+
 
     static Stream<RandomStringUtils> randomProvider() {
         return Stream.of(RandomStringUtils.secure(), RandomStringUtils.secureStrong(), RandomStringUtils.insecure());
@@ -68,7 +67,7 @@ public class RandomStringUtilsTest extends AbstractLangTest {
      * Test for LANG-1286. Creates situation where old code would overflow a char and result in a code point outside the specified range.
      */
     @Test
-    public void testCharOverflow() {
+    void testCharOverflow() {
         final int start = Character.MAX_VALUE;
         final int end = Integer.MAX_VALUE;
 
@@ -87,95 +86,95 @@ public class RandomStringUtilsTest extends AbstractLangTest {
     }
 
     @Test
-    public void testConstructor() {
+    void testConstructor() {
         assertNotNull(new RandomStringUtils());
     }
 
     @Test
-    public void testExceptionsRandom() {
-        assertThrows(IllegalArgumentException.class, () -> RandomStringUtils.random(-1));
-        assertThrows(IllegalArgumentException.class, () -> RandomStringUtils.random(-1, true, true));
-        assertThrows(IllegalArgumentException.class, () -> RandomStringUtils.random(-1, new char[] { 'a' }));
-        assertThrows(IllegalArgumentException.class, () -> RandomStringUtils.random(1, new char[0]));
-        assertThrows(IllegalArgumentException.class, () -> RandomStringUtils.random(-1, ""));
-        assertThrows(IllegalArgumentException.class, () -> RandomStringUtils.random(-1, (String) null));
-        assertThrows(IllegalArgumentException.class, () -> RandomStringUtils.random(-1, 'a', 'z', false, false));
-        assertThrows(IllegalArgumentException.class, () -> RandomStringUtils.random(-1, 'a', 'z', false, false, new char[] { 'a' }));
-        assertThrows(IllegalArgumentException.class, () -> RandomStringUtils.random(-1, 'a', 'z', false, false, new char[] { 'a' }, new Random()));
-        assertThrows(IllegalArgumentException.class, () -> RandomStringUtils.random(8, 32, 48, false, true));
-        assertThrows(IllegalArgumentException.class, () -> RandomStringUtils.random(8, 32, 65, true, false));
-        assertThrows(IllegalArgumentException.class, () -> RandomStringUtils.random(1, Integer.MIN_VALUE, -10, false, false, null));
+    void testExceptionsRandom() {
+        assertIllegalArgumentException(() -> RandomStringUtils.random(-1));
+        assertIllegalArgumentException(() -> RandomStringUtils.random(-1, true, true));
+        assertIllegalArgumentException(() -> RandomStringUtils.random(-1, new char[] { 'a' }));
+        assertIllegalArgumentException(() -> RandomStringUtils.random(1, new char[0]));
+        assertIllegalArgumentException(() -> RandomStringUtils.random(-1, ""));
+        assertIllegalArgumentException(() -> RandomStringUtils.random(-1, (String) null));
+        assertIllegalArgumentException(() -> RandomStringUtils.random(-1, 'a', 'z', false, false));
+        assertIllegalArgumentException(() -> RandomStringUtils.random(-1, 'a', 'z', false, false, new char[] { 'a' }));
+        assertIllegalArgumentException(() -> RandomStringUtils.random(-1, 'a', 'z', false, false, new char[] { 'a' }, new Random()));
+        assertIllegalArgumentException(() -> RandomStringUtils.random(8, 32, 48, false, true));
+        assertIllegalArgumentException(() -> RandomStringUtils.random(8, 32, 65, true, false));
+        assertIllegalArgumentException(() -> RandomStringUtils.random(1, Integer.MIN_VALUE, -10, false, false, null));
     }
 
     @ParameterizedTest
     @MethodSource("randomProvider")
-    public void testExceptionsRandom(final RandomStringUtils rsu) {
-        assertThrows(IllegalArgumentException.class, () -> rsu.next(-1));
-        assertThrows(IllegalArgumentException.class, () -> rsu.next(-1, true, true));
-        assertThrows(IllegalArgumentException.class, () -> rsu.next(-1, new char[] { 'a' }));
-        assertThrows(IllegalArgumentException.class, () -> rsu.next(1, new char[0]));
-        assertThrows(IllegalArgumentException.class, () -> rsu.next(-1, ""));
-        assertThrows(IllegalArgumentException.class, () -> rsu.next(-1, (String) null));
-        assertThrows(IllegalArgumentException.class, () -> rsu.next(-1, 'a', 'z', false, false));
-        assertThrows(IllegalArgumentException.class, () -> rsu.next(-1, 'a', 'z', false, false, new char[] { 'a' }));
-        assertThrows(IllegalArgumentException.class, () -> rsu.next(8, 32, 48, false, true));
-        assertThrows(IllegalArgumentException.class, () -> rsu.next(8, 32, 65, true, false));
-        assertThrows(IllegalArgumentException.class, () -> rsu.next(1, Integer.MIN_VALUE, -10, false, false, null));
+    void testExceptionsRandom(final RandomStringUtils rsu) {
+        assertIllegalArgumentException(() -> rsu.next(-1));
+        assertIllegalArgumentException(() -> rsu.next(-1, true, true));
+        assertIllegalArgumentException(() -> rsu.next(-1, new char[] { 'a' }));
+        assertIllegalArgumentException(() -> rsu.next(1, new char[0]));
+        assertIllegalArgumentException(() -> rsu.next(-1, ""));
+        assertIllegalArgumentException(() -> rsu.next(-1, (String) null));
+        assertIllegalArgumentException(() -> rsu.next(-1, 'a', 'z', false, false));
+        assertIllegalArgumentException(() -> rsu.next(-1, 'a', 'z', false, false, new char[] { 'a' }));
+        assertIllegalArgumentException(() -> rsu.next(8, 32, 48, false, true));
+        assertIllegalArgumentException(() -> rsu.next(8, 32, 65, true, false));
+        assertIllegalArgumentException(() -> rsu.next(1, Integer.MIN_VALUE, -10, false, false, null));
     }
 
     @Test
-    public void testExceptionsRandomAlphabetic() {
-        assertThrows(IllegalArgumentException.class, () -> RandomStringUtils.randomAlphabetic(-1));
+    void testExceptionsRandomAlphabetic() {
+        assertIllegalArgumentException(() -> RandomStringUtils.randomAlphabetic(-1));
     }
 
     @ParameterizedTest
     @MethodSource("randomProvider")
-    public void testExceptionsRandomAlphabetic(final RandomStringUtils rsu) {
-        assertThrows(IllegalArgumentException.class, () -> rsu.nextAlphabetic(-1));
+    void testExceptionsRandomAlphabetic(final RandomStringUtils rsu) {
+        assertIllegalArgumentException(() -> rsu.nextAlphabetic(-1));
     }
 
     @Test
-    public void testExceptionsRandomAscii() {
-        assertThrows(IllegalArgumentException.class, () -> RandomStringUtils.randomAscii(-1));
+    void testExceptionsRandomAscii() {
+        assertIllegalArgumentException(() -> RandomStringUtils.randomAscii(-1));
     }
 
     @ParameterizedTest
     @MethodSource("randomProvider")
-    public void testExceptionsRandomAscii(final RandomStringUtils rsu) {
-        assertThrows(IllegalArgumentException.class, () -> rsu.nextAscii(-1));
+    void testExceptionsRandomAscii(final RandomStringUtils rsu) {
+        assertIllegalArgumentException(() -> rsu.nextAscii(-1));
     }
 
     @Test
-    public void testExceptionsRandomGraph() {
-        assertThrows(IllegalArgumentException.class, () -> RandomStringUtils.randomGraph(-1));
+    void testExceptionsRandomGraph() {
+        assertIllegalArgumentException(() -> RandomStringUtils.randomGraph(-1));
     }
 
     @ParameterizedTest
     @MethodSource("randomProvider")
-    public void testExceptionsRandomGraph(final RandomStringUtils rsu) {
-        assertThrows(IllegalArgumentException.class, () -> rsu.nextGraph(-1));
+    void testExceptionsRandomGraph(final RandomStringUtils rsu) {
+        assertIllegalArgumentException(() -> rsu.nextGraph(-1));
     }
 
     @Test
-    public void testExceptionsRandomNumeric() {
-        assertThrows(IllegalArgumentException.class, () -> RandomStringUtils.randomNumeric(-1));
+    void testExceptionsRandomNumeric() {
+        assertIllegalArgumentException(() -> RandomStringUtils.randomNumeric(-1));
     }
 
     @ParameterizedTest
     @MethodSource("randomProvider")
-    public void testExceptionsRandomNumeric(final RandomStringUtils rsu) {
-        assertThrows(IllegalArgumentException.class, () -> rsu.nextNumeric(-1));
+    void testExceptionsRandomNumeric(final RandomStringUtils rsu) {
+        assertIllegalArgumentException(() -> rsu.nextNumeric(-1));
     }
 
     @Test
-    public void testExceptionsRandomPrint() {
-        assertThrows(IllegalArgumentException.class, () -> RandomStringUtils.randomPrint(-1));
+    void testExceptionsRandomPrint() {
+        assertIllegalArgumentException(() -> RandomStringUtils.randomPrint(-1));
     }
 
     @ParameterizedTest
     @MethodSource("randomProvider")
-    public void testExceptionsRandomPrint(final RandomStringUtils rsu) {
-        assertThrows(IllegalArgumentException.class, () -> rsu.nextPrint(-1));
+    void testExceptionsRandomPrint(final RandomStringUtils rsu) {
+        assertIllegalArgumentException(() -> rsu.nextPrint(-1));
     }
 
     /**
@@ -186,7 +185,7 @@ public class RandomStringUtilsTest extends AbstractLangTest {
      */
     @ParameterizedTest
     @MethodSource("randomProvider")
-    public void testHomogeneity(final RandomStringUtils rsu) {
+    void testHomogeneity(final RandomStringUtils rsu) {
         final String set = "abc";
         final char[] chars = set.toCharArray();
         final int[] counts = { 0, 0, 0 };
@@ -216,7 +215,15 @@ public class RandomStringUtilsTest extends AbstractLangTest {
         // Perform chi-square test with degrees of freedom = 3-1 = 2, testing at 1e-5 level.
         // This expects a failure rate of 1 in 100,000.
         // critical value: from scipy.stats import chi2; chi2(2).isf(1e-5)
-        assertThat("test homogeneity -- will fail about 1 in 100,000 times", chiSquare(expected, counts), lessThan(23.025850929940457d));
+        assertTrue(chiSquare(expected, counts) < 23.025850929940457d, "test homogeneity -- will fail about 1 in 100,000 times");
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {MAX_SAFE_COUNT, MAX_SAFE_COUNT + 1})
+    @EnabledIfSystemProperty(named = "test.large.heap", matches = "true")
+    void testHugeStrings(final int expectedLength) {
+        final String hugeString = RandomStringUtils.random(expectedLength);
+        assertEquals(expectedLength, hugeString.length(), "hugeString.length() == expectedLength");
     }
 
     /**
@@ -225,7 +232,7 @@ public class RandomStringUtilsTest extends AbstractLangTest {
      * @see <a href="https://issues.apache.org/jira/browse/LANG-100">LANG-100</a>
      */
     @Test
-    public void testLang100() {
+    void testLang100() {
         final int size = 5000;
         final Charset charset = StandardCharsets.UTF_8;
         final String orig = RandomStringUtils.random(size);
@@ -253,7 +260,7 @@ public class RandomStringUtilsTest extends AbstractLangTest {
      */
     @ParameterizedTest
     @MethodSource("randomProvider")
-    public void testLang100(final RandomStringUtils rsu) {
+    void testLang100(final RandomStringUtils rsu) {
         final int size = 5000;
         final Charset charset = StandardCharsets.UTF_8;
         final String orig = rsu.next(size);
@@ -274,15 +281,15 @@ public class RandomStringUtilsTest extends AbstractLangTest {
     }
 
     @Test
-    public void testLANG805() {
+    void testLANG805() {
         final long seedMillis = System.currentTimeMillis();
         assertEquals("aaa", RandomStringUtils.random(3, 0, 0, false, false, new char[] { 'a' }, new Random(seedMillis)));
     }
 
     @ParameterizedTest
     @MethodSource("randomProvider")
-    public void testLANG807(final RandomStringUtils rsu) {
-        final IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> rsu.next(3, 5, 5, false, false));
+    void testLANG807(final RandomStringUtils rsu) {
+        final IllegalArgumentException ex = assertIllegalArgumentException(() -> rsu.next(3, 5, 5, false, false));
         final String msg = ex.getMessage();
         assertTrue(msg.contains("start"), "Message (" + msg + ") must contain 'start'");
         assertTrue(msg.contains("end"), "Message (" + msg + ") must contain 'end'");
@@ -362,7 +369,7 @@ public class RandomStringUtilsTest extends AbstractLangTest {
      * Make sure boundary alpha characters are generated by randomAlphabetic This test will fail randomly with probability = 4 * (51/52)**1000 ~ 1.58E-8
      */
     @Test
-    public void testRandomAlphabetic() {
+    void testRandomAlphabetic() {
         final char[] testChars = { 'a', 'z', 'A', 'Z' };
         final boolean[] found = { false, false, false, false };
         for (int i = 0; i < LOOP_COUNT; i++) {
@@ -385,7 +392,7 @@ public class RandomStringUtilsTest extends AbstractLangTest {
      */
     @ParameterizedTest
     @MethodSource("randomProvider")
-    public void testRandomAlphabetic(final RandomStringUtils rsu) {
+    void testRandomAlphabetic(final RandomStringUtils rsu) {
         final char[] testChars = { 'a', 'z', 'A', 'Z' };
         final boolean[] found = { false, false, false, false };
         for (int i = 0; i < LOOP_COUNT; i++) {
@@ -402,7 +409,7 @@ public class RandomStringUtilsTest extends AbstractLangTest {
     }
 
     @Test
-    public void testRandomAlphabeticRange() {
+    void testRandomAlphabeticRange() {
         final int expectedMinLengthInclusive = 1;
         final int expectedMaxLengthExclusive = 11;
         final String pattern = "^\\p{Alpha}{" + expectedMinLengthInclusive + ',' + expectedMaxLengthExclusive + "}$";
@@ -411,7 +418,8 @@ public class RandomStringUtilsTest extends AbstractLangTest {
         int minCreatedLength = expectedMaxLengthExclusive - 1;
         for (int i = 0; i < LOOP_COUNT; i++) {
             final String s = RandomStringUtils.randomAlphabetic(expectedMinLengthInclusive, expectedMaxLengthExclusive);
-            assertThat("within range", s.length(), allOf(greaterThanOrEqualTo(expectedMinLengthInclusive), lessThanOrEqualTo(expectedMaxLengthExclusive - 1)));
+            assertTrue(s.length() >= expectedMinLengthInclusive, "within range");
+            assertTrue(s.length() <= expectedMaxLengthExclusive - 1, "within range");
             assertTrue(s.matches(pattern), s);
 
             if (s.length() < minCreatedLength) {
@@ -422,13 +430,13 @@ public class RandomStringUtilsTest extends AbstractLangTest {
                 maxCreatedLength = s.length();
             }
         }
-        assertThat("min generated, may fail randomly rarely", minCreatedLength, is(expectedMinLengthInclusive));
-        assertThat("max generated, may fail randomly rarely", maxCreatedLength, is(expectedMaxLengthExclusive - 1));
+        assertEquals(expectedMinLengthInclusive, minCreatedLength, "min generated, may fail randomly rarely");
+        assertEquals(expectedMaxLengthExclusive - 1, maxCreatedLength, "max generated, may fail randomly rarely");
     }
 
     @ParameterizedTest
     @MethodSource("randomProvider")
-    public void testRandomAlphabeticRange(final RandomStringUtils rsu) {
+    void testRandomAlphabeticRange(final RandomStringUtils rsu) {
         final int expectedMinLengthInclusive = 1;
         final int expectedMaxLengthExclusive = 11;
         final String pattern = "^\\p{Alpha}{" + expectedMinLengthInclusive + ',' + expectedMaxLengthExclusive + "}$";
@@ -437,7 +445,9 @@ public class RandomStringUtilsTest extends AbstractLangTest {
         int minCreatedLength = expectedMaxLengthExclusive - 1;
         for (int i = 0; i < LOOP_COUNT; i++) {
             final String s = rsu.nextAlphabetic(expectedMinLengthInclusive, expectedMaxLengthExclusive);
-            assertThat("within range", s.length(), allOf(greaterThanOrEqualTo(expectedMinLengthInclusive), lessThanOrEqualTo(expectedMaxLengthExclusive - 1)));
+            assertTrue(s.length() >= expectedMinLengthInclusive, "within range");
+            assertTrue(s.length() <= expectedMaxLengthExclusive - 1, "within range");
+
             assertTrue(s.matches(pattern), s);
 
             if (s.length() < minCreatedLength) {
@@ -448,15 +458,15 @@ public class RandomStringUtilsTest extends AbstractLangTest {
                 maxCreatedLength = s.length();
             }
         }
-        assertThat("min generated, may fail randomly rarely", minCreatedLength, is(expectedMinLengthInclusive));
-        assertThat("max generated, may fail randomly rarely", maxCreatedLength, is(expectedMaxLengthExclusive - 1));
+        assertEquals(expectedMinLengthInclusive, minCreatedLength, "min generated, may fail randomly rarely");
+        assertEquals(expectedMaxLengthExclusive - 1, maxCreatedLength, "max generated, may fail randomly rarely");
     }
 
     /**
      * Make sure boundary alphanumeric characters are generated by randomAlphaNumeric This test will fail randomly with probability = 6 * (61/62)**1000 ~ 5.2E-7
      */
     @Test
-    public void testRandomAlphaNumeric() {
+    void testRandomAlphaNumeric() {
         final char[] testChars = { 'a', 'z', 'A', 'Z', '0', '9' };
         final boolean[] found = { false, false, false, false, false, false };
         for (int i = 0; i < LOOP_COUNT; i++) {
@@ -479,7 +489,7 @@ public class RandomStringUtilsTest extends AbstractLangTest {
      */
     @ParameterizedTest
     @MethodSource("randomProvider")
-    public void testRandomAlphaNumeric(final RandomStringUtils rsu) {
+    void testRandomAlphaNumeric(final RandomStringUtils rsu) {
         final char[] testChars = { 'a', 'z', 'A', 'Z', '0', '9' };
         final boolean[] found = { false, false, false, false, false, false };
         for (int i = 0; i < LOOP_COUNT; i++) {
@@ -496,7 +506,7 @@ public class RandomStringUtilsTest extends AbstractLangTest {
     }
 
     @Test
-    public void testRandomAlphanumericRange() {
+    void testRandomAlphanumericRange() {
         final int expectedMinLengthInclusive = 1;
         final int expectedMaxLengthExclusive = 11;
         final String pattern = "^\\p{Alnum}{" + expectedMinLengthInclusive + ',' + expectedMaxLengthExclusive + "}$";
@@ -505,7 +515,8 @@ public class RandomStringUtilsTest extends AbstractLangTest {
         int minCreatedLength = expectedMaxLengthExclusive - 1;
         for (int i = 0; i < LOOP_COUNT; i++) {
             final String s = RandomStringUtils.randomAlphanumeric(expectedMinLengthInclusive, expectedMaxLengthExclusive);
-            assertThat("within range", s.length(), allOf(greaterThanOrEqualTo(expectedMinLengthInclusive), lessThanOrEqualTo(expectedMaxLengthExclusive - 1)));
+            assertTrue(s.length() >= expectedMinLengthInclusive, "within range");
+            assertTrue(s.length() <= expectedMaxLengthExclusive - 1, "within range");
             assertTrue(s.matches(pattern), s);
 
             if (s.length() < minCreatedLength) {
@@ -516,8 +527,8 @@ public class RandomStringUtilsTest extends AbstractLangTest {
                 maxCreatedLength = s.length();
             }
         }
-        assertThat("min generated, may fail randomly rarely", minCreatedLength, is(expectedMinLengthInclusive));
-        assertThat("max generated, may fail randomly rarely", maxCreatedLength, is(expectedMaxLengthExclusive - 1));
+        assertEquals(expectedMinLengthInclusive, minCreatedLength, "min generated, may fail randomly rarely");
+        assertEquals(expectedMaxLengthExclusive - 1, maxCreatedLength, "max generated, may fail randomly rarely");
     }
 
     /**
@@ -527,7 +538,7 @@ public class RandomStringUtilsTest extends AbstractLangTest {
      */
     @ParameterizedTest
     @MethodSource("randomProvider")
-    public void testRandomApis(final RandomStringUtils rsu) {
+    void testRandomApis(final RandomStringUtils rsu) {
         String r1 = rsu.next(50);
         assertEquals(50, r1.length(), "random(50) length");
         String r2 = rsu.next(50);
@@ -537,7 +548,9 @@ public class RandomStringUtilsTest extends AbstractLangTest {
         r1 = rsu.nextAscii(50);
         assertEquals(50, r1.length(), "randomAscii(50) length");
         for (int i = 0; i < r1.length(); i++) {
-            assertThat("char >= 32 && <= 127", (int) r1.charAt(i), allOf(greaterThanOrEqualTo(32), lessThanOrEqualTo(127)));
+            final int ch = r1.charAt(i);
+            assertTrue(ch >= 32, "char >= 32");
+            assertTrue(ch <= 127, "char <= 127");
         }
         r2 = rsu.nextAscii(50);
         assertNotEquals(r1, r2, "!r1.equals(r2)");
@@ -623,7 +636,7 @@ public class RandomStringUtilsTest extends AbstractLangTest {
      */
     @ParameterizedTest
     @MethodSource("randomProvider")
-    public void testRandomAscii(final RandomStringUtils rsu) {
+    void testRandomAscii(final RandomStringUtils rsu) {
         final char[] testChars = { (char) 32, (char) 126 };
         final boolean[] found = { false, false };
         // Test failures have been observed on GitHub builds with a 100 limit.
@@ -642,7 +655,7 @@ public class RandomStringUtilsTest extends AbstractLangTest {
 
     @ParameterizedTest
     @MethodSource("randomProvider")
-    public void testRandomAsciiRange(final RandomStringUtils rsu) {
+    void testRandomAsciiRange(final RandomStringUtils rsu) {
         final int expectedMinLengthInclusive = 1;
         final int expectedMaxLengthExclusive = 11;
         final String pattern = "^\\p{ASCII}{" + expectedMinLengthInclusive + ',' + expectedMaxLengthExclusive + "}$";
@@ -651,7 +664,8 @@ public class RandomStringUtilsTest extends AbstractLangTest {
         int minCreatedLength = expectedMaxLengthExclusive - 1;
         for (int i = 0; i < LOOP_COUNT; i++) {
             final String s = rsu.nextAscii(expectedMinLengthInclusive, expectedMaxLengthExclusive);
-            assertThat("within range", s.length(), allOf(greaterThanOrEqualTo(expectedMinLengthInclusive), lessThanOrEqualTo(expectedMaxLengthExclusive - 1)));
+            assertTrue(s.length() >= expectedMinLengthInclusive, "within range");
+            assertTrue(s.length() <= expectedMaxLengthExclusive - 1, "within range");
             assertTrue(s.matches(pattern), s);
 
             if (s.length() < minCreatedLength) {
@@ -662,13 +676,13 @@ public class RandomStringUtilsTest extends AbstractLangTest {
                 maxCreatedLength = s.length();
             }
         }
-        assertThat("min generated, may fail randomly rarely", minCreatedLength, is(expectedMinLengthInclusive));
-        assertThat("max generated, may fail randomly rarely", maxCreatedLength, is(expectedMaxLengthExclusive - 1));
+        assertEquals(expectedMinLengthInclusive, minCreatedLength, "min generated, may fail randomly rarely");
+        assertEquals(expectedMaxLengthExclusive - 1, maxCreatedLength, "max generated, may fail randomly rarely");
     }
 
     @ParameterizedTest
     @MethodSource("randomProvider")
-    public void testRandomGraphRange(final RandomStringUtils rsu) {
+    void testRandomGraphRange(final RandomStringUtils rsu) {
         final int expectedMinLengthInclusive = 1;
         final int expectedMaxLengthExclusive = 11;
         final String pattern = "^\\p{Graph}{" + expectedMinLengthInclusive + ',' + expectedMaxLengthExclusive + "}$";
@@ -677,7 +691,8 @@ public class RandomStringUtilsTest extends AbstractLangTest {
         int minCreatedLength = expectedMaxLengthExclusive - 1;
         for (int i = 0; i < LOOP_COUNT; i++) {
             final String s = rsu.nextGraph(expectedMinLengthInclusive, expectedMaxLengthExclusive);
-            assertThat("within range", s.length(), allOf(greaterThanOrEqualTo(expectedMinLengthInclusive), lessThanOrEqualTo(expectedMaxLengthExclusive - 1)));
+            assertTrue(s.length() >= expectedMinLengthInclusive, "within range");
+            assertTrue(s.length() <= expectedMaxLengthExclusive - 1, "within range");
             assertTrue(s.matches(pattern), s);
 
             if (s.length() < minCreatedLength) {
@@ -688,8 +703,8 @@ public class RandomStringUtilsTest extends AbstractLangTest {
                 maxCreatedLength = s.length();
             }
         }
-        assertThat("min generated, may fail randomly rarely", minCreatedLength, is(expectedMinLengthInclusive));
-        assertThat("max generated, may fail randomly rarely", maxCreatedLength, is(expectedMaxLengthExclusive - 1));
+        assertEquals(expectedMinLengthInclusive, minCreatedLength, "min generated, may fail randomly rarely");
+        assertEquals(expectedMaxLengthExclusive - 1, maxCreatedLength, "max generated, may fail randomly rarely");
     }
 
     /**
@@ -699,7 +714,7 @@ public class RandomStringUtilsTest extends AbstractLangTest {
      */
     @ParameterizedTest
     @MethodSource("randomProvider")
-    public void testRandomNumeric(final RandomStringUtils rsu) {
+    void testRandomNumeric(final RandomStringUtils rsu) {
         final char[] testChars = { '0', '9' };
         final boolean[] found = { false, false };
         for (int i = 0; i < LOOP_COUNT; i++) {
@@ -717,7 +732,7 @@ public class RandomStringUtilsTest extends AbstractLangTest {
 
     @ParameterizedTest
     @MethodSource("randomProvider")
-    public void testRandomNumericRange(final RandomStringUtils rsu) {
+    void testRandomNumericRange(final RandomStringUtils rsu) {
         final int expectedMinLengthInclusive = 1;
         final int expectedMaxLengthExclusive = 11;
         final String pattern = "^\\p{Digit}{" + expectedMinLengthInclusive + ',' + expectedMaxLengthExclusive + "}$";
@@ -726,7 +741,8 @@ public class RandomStringUtilsTest extends AbstractLangTest {
         int minCreatedLength = expectedMaxLengthExclusive - 1;
         for (int i = 0; i < LOOP_COUNT; i++) {
             final String s = rsu.nextNumeric(expectedMinLengthInclusive, expectedMaxLengthExclusive);
-            assertThat("within range", s.length(), allOf(greaterThanOrEqualTo(expectedMinLengthInclusive), lessThanOrEqualTo(expectedMaxLengthExclusive - 1)));
+            assertTrue(s.length() >= expectedMinLengthInclusive, "within range");
+            assertTrue(s.length() <= expectedMaxLengthExclusive - 1, "within range");
             assertTrue(s.matches(pattern), s);
 
             if (s.length() < minCreatedLength) {
@@ -737,12 +753,12 @@ public class RandomStringUtilsTest extends AbstractLangTest {
                 maxCreatedLength = s.length();
             }
         }
-        assertThat("min generated, may fail randomly rarely", minCreatedLength, is(expectedMinLengthInclusive));
-        assertThat("max generated, may fail randomly rarely", maxCreatedLength, is(expectedMaxLengthExclusive - 1));
+        assertEquals(expectedMinLengthInclusive, minCreatedLength, "min generated, may fail randomly rarely");
+        assertEquals(expectedMaxLengthExclusive - 1, maxCreatedLength, "max generated, may fail randomly rarely");
     }
 
     @Test
-    public void testRandomParameter() {
+    void testRandomParameter() {
         final long seedMillis = System.currentTimeMillis();
         final String r1 = RandomStringUtils.random(50, 0, 0, true, true, null, new Random(seedMillis));
         final String r2 = RandomStringUtils.random(50, 0, 0, true, true, null, new Random(seedMillis));
@@ -751,7 +767,7 @@ public class RandomStringUtilsTest extends AbstractLangTest {
 
     @ParameterizedTest
     @MethodSource("randomProvider")
-    public void testRandomPrintRange(final RandomStringUtils rsu) {
+    void testRandomPrintRange(final RandomStringUtils rsu) {
         final int expectedMinLengthInclusive = 1;
         final int expectedMaxLengthExclusive = 11;
         final String pattern = "^\\p{Print}{" + expectedMinLengthInclusive + ',' + expectedMaxLengthExclusive + "}$";
@@ -760,7 +776,8 @@ public class RandomStringUtilsTest extends AbstractLangTest {
         int minCreatedLength = expectedMaxLengthExclusive - 1;
         for (int i = 0; i < LOOP_COUNT; i++) {
             final String s = rsu.nextPrint(expectedMinLengthInclusive, expectedMaxLengthExclusive);
-            assertThat("within range", s.length(), allOf(greaterThanOrEqualTo(expectedMinLengthInclusive), lessThanOrEqualTo(expectedMaxLengthExclusive - 1)));
+            assertTrue(s.length() >= expectedMinLengthInclusive, "within range");
+            assertTrue(s.length() <= expectedMaxLengthExclusive - 1, "within range");
             assertTrue(s.matches(pattern), s);
 
             if (s.length() < minCreatedLength) {
@@ -771,8 +788,8 @@ public class RandomStringUtilsTest extends AbstractLangTest {
                 maxCreatedLength = s.length();
             }
         }
-        assertThat("min generated, may fail randomly rarely", minCreatedLength, is(expectedMinLengthInclusive));
-        assertThat("max generated, may fail randomly rarely", maxCreatedLength, is(expectedMaxLengthExclusive - 1));
+        assertEquals(expectedMinLengthInclusive, minCreatedLength, "min generated, may fail randomly rarely");
+        assertEquals(expectedMaxLengthExclusive - 1, maxCreatedLength, "max generated, may fail randomly rarely");
     }
 
     /**
@@ -782,22 +799,19 @@ public class RandomStringUtilsTest extends AbstractLangTest {
      */
     @ParameterizedTest
     @MethodSource("randomProvider")
-    public void testRandomWithChars(final RandomStringUtils rsu) {
+    void testRandomWithChars(final RandomStringUtils rsu) {
         final char[] digitChars = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
-
-        String r1, r2, r3;
-
-        r1 = rsu.next(50, 0, 0, true, true, digitChars);
+        final String r1 = rsu.next(50, 0, 0, true, true, digitChars);
         assertEquals(50, r1.length(), "randomNumeric(50)");
         for (int i = 0; i < r1.length(); i++) {
             assertTrue(
                     Character.isDigit(r1.charAt(i)) && !Character.isLetter(r1.charAt(i)),
                     "r1 contains numeric");
         }
-        r2 = rsu.nextNumeric(50);
+        final String r2 = rsu.nextNumeric(50);
         assertNotEquals(r1, r2);
 
-        r3 = rsu.next(50, 0, 0, true, true, digitChars);
+        final String r3 = rsu.next(50, 0, 0, true, true, digitChars);
         assertNotEquals(r1, r3);
         assertNotEquals(r2, r3);
     }

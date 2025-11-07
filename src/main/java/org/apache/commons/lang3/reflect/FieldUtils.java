@@ -6,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -51,7 +51,7 @@ public class FieldUtils {
      *            the {@link Class} to query
      * @return an array of Fields (possibly empty).
      * @throws NullPointerException
-     *             if the class is {@code null}
+     *             if the class is {@code null}.
      * @since 3.2
      */
     public static Field[] getAllFields(final Class<?> cls) {
@@ -65,7 +65,7 @@ public class FieldUtils {
      *            the {@link Class} to query
      * @return a list of Fields (possibly empty).
      * @throws NullPointerException
-     *             if the class is {@code null}
+     *             if the class is {@code null}.
      * @since 3.2
      */
     public static List<Field> getAllFieldsList(final Class<?> cls) {
@@ -73,8 +73,7 @@ public class FieldUtils {
         final List<Field> allFields = new ArrayList<>();
         Class<?> currentClass = cls;
         while (currentClass != null) {
-            final Field[] declaredFields = currentClass.getDeclaredFields();
-            Collections.addAll(allFields, declaredFields);
+            Collections.addAll(allFields, currentClass.getDeclaredFields());
             currentClass = currentClass.getSuperclass();
         }
         return allFields;
@@ -86,12 +85,12 @@ public class FieldUtils {
      * @param cls
      *            the {@link Class} to reflect, must not be {@code null}
      * @param fieldName
-     *            the field name to obtain
-     * @return the Field object
+     *            the field name to obtain.
+     * @return the Field object.
      * @throws NullPointerException
-     *             if the class is {@code null}
+     *             if the class is {@code null}.
      * @throws IllegalArgumentException
-     *             if the field name is {@code null}, blank, or empty
+     *             if the field name is {@code null}, blank, or empty.
      * @throws SecurityException if an underlying accessible object's method denies the request.
      * @see SecurityManager#checkPermission
      */
@@ -104,18 +103,18 @@ public class FieldUtils {
      * considered.
      *
      * @param cls
-     *            the {@link Class} to reflect, must not be {@code null}
+     *            the {@link Class} to reflect, must not be {@code null}.
      * @param fieldName
-     *            the field name to obtain
+     *            the field name to obtain.
      * @param forceAccess
      *            whether to break scope restrictions using the
      *            {@link AccessibleObject#setAccessible(boolean)} method. {@code false} will only
      *            match {@code public} fields.
      * @return the Field object
      * @throws NullPointerException
-     *             if the class is {@code null}
+     *             if the class is {@code null}.
      * @throws IllegalArgumentException
-     *             if the field name is {@code null}, blank, or empty
+     *             if the field name is {@code null}, blank, or empty.
      * @throws SecurityException if an underlying accessible object's method denies the request.
      * @see SecurityManager#checkPermission
      */
@@ -142,12 +141,12 @@ public class FieldUtils {
      * Gets an accessible {@link Field} by name respecting scope. Superclasses/interfaces will be considered.
      *
      * @param cls
-     *            the {@link Class} to reflect, must not be {@code null}
+     *            the {@link Class} to reflect, must not be {@code null}.
      * @param fieldName
-     *            the field name to obtain
-     * @return the Field object
+     *            the field name to obtain.
+     * @return the Field object.
      * @throws NullPointerException
-     *             if the class is {@code null}
+     *             if the class is {@code null}.
      * @throws IllegalArgumentException
      *             if the field name is {@code null}, blank, or empty
      * @throws SecurityException if an underlying accessible object's method denies the request.
@@ -162,17 +161,17 @@ public class FieldUtils {
      * considered.
      *
      * @param cls
-     *            the {@link Class} to reflect, must not be {@code null}
+     *            the {@link Class} to reflect, must not be {@code null}.
      * @param fieldName
-     *            the field name to obtain
+     *            the field name to obtain.
      * @param forceAccess
      *            whether to break scope restrictions using the
      *            {@link AccessibleObject#setAccessible(boolean)} method. {@code false} will only
      *            match {@code public} fields.
-     * @return the Field object
-     * @throws NullPointerException if the class is {@code null}
+     * @return the Field object.
+     * @throws NullPointerException if the class is {@code null}.
      * @throws IllegalArgumentException if the field name is blank or empty or is matched at multiple places
-     * in the inheritance hierarchy
+     * in the inheritance hierarchy.
      * @throws SecurityException if an underlying accessible object's method denies the request.
      * @see SecurityManager#checkPermission
      */
@@ -217,8 +216,8 @@ public class FieldUtils {
         for (final Class<?> class1 : ClassUtils.getAllInterfaces(cls)) {
             try {
                 final Field test = class1.getField(fieldName);
-                Validate.isTrue(match == null, "Reference to field %s is ambiguous relative to %s"
-                        + "; a matching field exists on two or more implemented interfaces.", fieldName, cls);
+                Validate.isTrue(match == null,
+                        "Reference to field %s is ambiguous relative to %s; a matching field exists on two or more implemented interfaces.", fieldName, cls);
                 match = test;
             } catch (final NoSuchFieldException ignored) {
                 // ignore
@@ -230,12 +229,12 @@ public class FieldUtils {
     /**
      * Gets all fields of the given class and its parents (if any) that are annotated with the given annotation.
      * @param cls
-     *            the {@link Class} to query
+     *            the {@link Class} to query.
      * @param annotationCls
-     *            the {@link Annotation} that must be present on a field to be matched
+     *            the {@link Annotation} that must be present on a field to be matched.
      * @return a list of Fields (possibly empty).
      * @throws NullPointerException
-     *            if the class or annotation are {@code null}
+     *            if the class or annotation are {@code null}.
      * @since 3.4
      */
     public static List<Field> getFieldsListWithAnnotation(final Class<?> cls, final Class<? extends Annotation> annotationCls) {
@@ -246,12 +245,12 @@ public class FieldUtils {
     /**
      * Gets all fields of the given class and its parents (if any) that are annotated with the given annotation.
      * @param cls
-     *            the {@link Class} to query
+     *            the {@link Class} to query.
      * @param annotationCls
      *            the {@link Annotation} that must be present on a field to be matched
      * @return an array of Fields (possibly empty).
      * @throws NullPointerException
-     *            if the class or annotation are {@code null}
+     *            if the class or annotation are {@code null}.
      * @since 3.4
      */
     public static Field[] getFieldsWithAnnotation(final Class<?> cls, final Class<? extends Annotation> annotationCls) {
@@ -262,14 +261,14 @@ public class FieldUtils {
      * Reads the named {@code public} {@link Field}. Only the class of the specified object will be considered.
      *
      * @param target
-     *            the object to reflect, must not be {@code null}
+     *            the object to reflect, must not be {@code null}.
      * @param fieldName
-     *            the field name to obtain
-     * @return the value of the field
+     *            the field name to obtain.
+     * @return the value of the field.
      * @throws NullPointerException
-     *             if {@code target} is {@code null}
+     *             if {@code target} is {@code null}.
      * @throws IllegalArgumentException
-     *             if {@code fieldName} is {@code null}, blank or empty, or could not be found
+     *             if {@code fieldName} is {@code null}, blank or empty, or could not be found.
      * @throws IllegalAccessException
      *             if the named field is not {@code public}
      * @throws SecurityException if an underlying accessible object's method denies the request.
@@ -283,20 +282,20 @@ public class FieldUtils {
      * Gets a {@link Field} value by name. Only the class of the specified object will be considered.
      *
      * @param target
-     *            the object to reflect, must not be {@code null}
+     *            the object to reflect, must not be {@code null}.
      * @param fieldName
-     *            the field name to obtain
+     *            the field name to obtain.
      * @param forceAccess
      *            whether to break scope restrictions using the
      *            {@link AccessibleObject#setAccessible(boolean)} method. {@code false} will only
      *            match public fields.
-     * @return the Field object
+     * @return the Field object.
      * @throws NullPointerException
-     *             if {@code target} is {@code null}
+     *             if {@code target} is {@code null}.
      * @throws IllegalArgumentException
-     *             if {@code fieldName} is {@code null}, blank or empty, or could not be found
+     *             if {@code fieldName} is {@code null}, blank or empty, or could not be found.
      * @throws IllegalAccessException
-     *             if the field is not made accessible
+     *             if the field is not made accessible.
      * @throws SecurityException if an underlying accessible object's method denies the request.
      * @see SecurityManager#checkPermission
      */
@@ -314,14 +313,14 @@ public class FieldUtils {
      * class will be considered.
      *
      * @param cls
-     *            the {@link Class} to reflect, must not be {@code null}
+     *            the {@link Class} to reflect, must not be {@code null}.
      * @param fieldName
-     *            the field name to obtain
-     * @return the value of the field
+     *            the field name to obtain.
+     * @return the value of the field.
      * @throws NullPointerException
-     *             if the class is {@code null}, or the field could not be found
+     *             if the class is {@code null}, or the field could not be found.
      * @throws IllegalArgumentException
-     *             if the field name is {@code null}, blank, empty, or is not {@code static}
+     *             if the field name is {@code null}, blank, empty, or is not {@code static}.
      * @throws IllegalAccessException
      *             if the field is not accessible
      * @throws SecurityException if an underlying accessible object's method denies the request.
@@ -335,18 +334,18 @@ public class FieldUtils {
      * Gets the value of a {@code static} {@link Field} by name. Only the specified class will be considered.
      *
      * @param cls
-     *            the {@link Class} to reflect, must not be {@code null}
+     *            the {@link Class} to reflect, must not be {@code null}.
      * @param fieldName
-     *            the field name to obtain
+     *            the field name to obtain.
      * @param forceAccess
      *            whether to break scope restrictions using the
      *            {@link AccessibleObject#setAccessible(boolean)} method. {@code false} will only
      *            match {@code public} fields.
      * @return the Field object
      * @throws NullPointerException
-     *             if the class is {@code null}, or the field could not be found
+     *             if the class is {@code null}, or the field could not be found.
      * @throws IllegalArgumentException
-     *             if the field name is blank or empty, is not {@code static}
+     *             if the field name is blank or empty, is not {@code static}.
      * @throws IllegalAccessException
      *             if the field is not made accessible
      * @throws SecurityException if an underlying accessible object's method denies the request.
@@ -363,14 +362,14 @@ public class FieldUtils {
      * Reads an accessible {@link Field}.
      *
      * @param field
-     *            the field to use
+     *            the field to use.
      * @param target
-     *            the object to call on, may be {@code null} for {@code static} fields
+     *            the object to call on, may be {@code null} for {@code static} fields.
      * @return the field value
      * @throws NullPointerException
-     *             if the field is {@code null}
+     *             if the field is {@code null}.
      * @throws IllegalAccessException
-     *             if the field is not accessible
+     *             if the field is not accessible.
      * @throws SecurityException if an underlying accessible object's method denies the request.
      * @see SecurityManager#checkPermission
      */
@@ -382,17 +381,17 @@ public class FieldUtils {
      * Reads a {@link Field}.
      *
      * @param field
-     *            the field to use
+     *            the field to use.
      * @param target
-     *            the object to call on, may be {@code null} for {@code static} fields
+     *            the object to call on, may be {@code null} for {@code static} fields.
      * @param forceAccess
      *            whether to break scope restrictions using the
      *            {@link AccessibleObject#setAccessible(boolean)} method.
      * @return the field value
      * @throws NullPointerException
-     *             if the field is {@code null}
+     *             if the field is {@code null}.
      * @throws IllegalAccessException
-     *             if the field is not made accessible
+     *             if the field is not made accessible.
      * @throws SecurityException if an underlying accessible object's method denies the request.
      * @see SecurityManager#checkPermission
      * @throws SecurityException if an underlying accessible object's method denies the request.
@@ -400,28 +399,23 @@ public class FieldUtils {
      */
     public static Object readField(final Field field, final Object target, final boolean forceAccess) throws IllegalAccessException {
         Objects.requireNonNull(field, "field");
-        if (forceAccess && !field.isAccessible()) {
-            field.setAccessible(true);
-        } else {
-            MemberUtils.setAccessibleWorkaround(field);
-        }
-        return field.get(target);
+        return setAccessible(field, forceAccess).get(target);
     }
 
     /**
      * Reads the named {@code public} {@link Field}. Superclasses will be considered.
      *
      * @param target
-     *            the object to reflect, must not be {@code null}
+     *            the object to reflect, must not be {@code null}.
      * @param fieldName
-     *            the field name to obtain
-     * @return the value of the field
+     *            the field name to obtain.
+     * @return the value of the field.
      * @throws NullPointerException
-     *             if the target is {@code null}
+     *             if the target is {@code null}.
      * @throws IllegalArgumentException
-     *             if the field name is {@code null}, blank, empty, or could not be found
+     *             if the field name is {@code null}, blank, empty, or could not be found.
      * @throws IllegalAccessException
-     *             if the named field is not {@code public}
+     *             if the named field is not {@code public}.
      * @throws SecurityException if an underlying accessible object's method denies the request.
      * @see SecurityManager#checkPermission
      */
@@ -433,20 +427,20 @@ public class FieldUtils {
      * Reads the named {@link Field}. Superclasses will be considered.
      *
      * @param target
-     *            the object to reflect, must not be {@code null}
+     *            the object to reflect, must not be {@code null}.
      * @param fieldName
-     *            the field name to obtain
+     *            the field name to obtain.
      * @param forceAccess
      *            whether to break scope restrictions using the
      *            {@link AccessibleObject#setAccessible(boolean)} method. {@code false} will only
      *            match {@code public} fields.
      * @return the field value
      * @throws NullPointerException
-     *             if {@code target} is {@code null}
+     *             if {@code target} is {@code null}.
      * @throws IllegalArgumentException
-     *             if the field name is {@code null}, blank, empty, or could not be found
+     *             if the field name is {@code null}, blank, empty, or could not be found.
      * @throws IllegalAccessException
-     *             if the named field is not made accessible
+     *             if the named field is not made accessible.
      * @throws SecurityException if an underlying accessible object's method denies the request.
      * @see SecurityManager#checkPermission
      */
@@ -463,16 +457,16 @@ public class FieldUtils {
      * Reads the named {@code public static} {@link Field}. Superclasses will be considered.
      *
      * @param cls
-     *            the {@link Class} to reflect, must not be {@code null}
+     *            the {@link Class} to reflect, must not be {@code null}.
      * @param fieldName
-     *            the field name to obtain
-     * @return the value of the field
+     *            the field name to obtain.
+     * @return the value of the field.
      * @throws NullPointerException
-     *             if the class is {@code null}, or the field could not be found
+     *             if the class is {@code null}, or the field could not be found.
      * @throws IllegalArgumentException
-     *             if the field name is {@code null}, blank or empty, or is not {@code static}
+     *             if the field name is {@code null}, blank or empty, or is not {@code static}.
      * @throws IllegalAccessException
-     *             if the field is not accessible
+     *             if the field is not accessible.
      * @throws SecurityException if an underlying accessible object's method denies the request.
      * @see SecurityManager#checkPermission
      */
@@ -484,20 +478,20 @@ public class FieldUtils {
      * Reads the named {@code static} {@link Field}. Superclasses will be considered.
      *
      * @param cls
-     *            the {@link Class} to reflect, must not be {@code null}
+     *            the {@link Class} to reflect, must not be {@code null}.
      * @param fieldName
-     *            the field name to obtain
+     *            the field name to obtain.
      * @param forceAccess
      *            whether to break scope restrictions using the
      *            {@link AccessibleObject#setAccessible(boolean)} method. {@code false} will only
      *            match {@code public} fields.
-     * @return the Field object
+     * @return the Field object.
      * @throws NullPointerException
-     *             if the class is {@code null}, or the field could not be found
+     *             if the class is {@code null}, or the field could not be found.
      * @throws IllegalArgumentException
-     *             if the field name is {@code null}, blank or empty, or is not {@code static}
+     *             if the field name is {@code null}, blank or empty, or is not {@code static}.
      * @throws IllegalAccessException
-     *             if the field is not made accessible
+     *             if the field is not made accessible.
      * @throws SecurityException if an underlying accessible object's method denies the request.
      * @see SecurityManager#checkPermission
      */
@@ -512,12 +506,12 @@ public class FieldUtils {
      * Reads an accessible {@code static} {@link Field}.
      *
      * @param field
-     *            to read
-     * @return the field value
+     *            to read.
+     * @return the field value.
      * @throws NullPointerException
-     *             if the field is {@code null}
+     *             if the field is {@code null}.
      * @throws IllegalArgumentException
-     *             if the field is not {@code static}
+     *             if the field is not {@code static}.
      * @throws IllegalAccessException
      *             if the field is not accessible
      * @throws SecurityException if an underlying accessible object's method denies the request.
@@ -531,17 +525,17 @@ public class FieldUtils {
      * Reads a static {@link Field}.
      *
      * @param field
-     *            to read
+     *            to read.
      * @param forceAccess
      *            whether to break scope restrictions using the
      *            {@link AccessibleObject#setAccessible(boolean)} method.
-     * @return the field value
+     * @return the field value.
      * @throws NullPointerException
-     *             if the field is {@code null}
+     *             if the field is {@code null}.
      * @throws IllegalArgumentException
-     *             if the field is not {@code static}
+     *             if the field is not {@code static}.
      * @throws IllegalAccessException
-     *             if the field is not made accessible
+     *             if the field is not made accessible.
      * @throws SecurityException if an underlying accessible object's method denies the request.
      * @see SecurityManager#checkPermission
      */
@@ -555,9 +549,9 @@ public class FieldUtils {
      * Removes the final modifier from a {@link Field}.
      *
      * @param field
-     *            to remove the final modifier
+     *            to remove the final modifier.
      * @throws NullPointerException
-     *             if the field is {@code null}
+     *             if the field is {@code null}.
      * @throws SecurityException if an underlying accessible object's method denies the request.
      * @see SecurityManager#checkPermission
      * @since 3.2
@@ -570,13 +564,13 @@ public class FieldUtils {
      * Removes the final modifier from a {@link Field}.
      *
      * @param field
-     *            to remove the final modifier
+     *            to remove the final modifier.
      * @param forceAccess
      *            whether to break scope restrictions using the
      *            {@link AccessibleObject#setAccessible(boolean)} method. {@code false} will only
      *            match {@code public} fields.
      * @throws NullPointerException
-     *             if the field is {@code null}
+     *             if the field is {@code null}.
      * @throws SecurityException if an underlying accessible object's method denies the request.
      * @see SecurityManager#checkPermission
      * @deprecated As of Java 12, we can no longer drop the {@code final} modifier, thus
@@ -587,7 +581,6 @@ public class FieldUtils {
     @Deprecated
     public static void removeFinalModifier(final Field field, final boolean forceAccess) {
         Objects.requireNonNull(field, "field");
-
         try {
             if (Modifier.isFinal(field.getModifiers())) {
                 // Do all JREs implement Field with a private ivar called "modifiers"?
@@ -606,29 +599,35 @@ public class FieldUtils {
             }
         } catch (final NoSuchFieldException | IllegalAccessException e) {
             if (SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_12)) {
-              throw new UnsupportedOperationException(
-                  "In java 12+ final cannot be removed.",
-                  e
-              );
+                throw new UnsupportedOperationException("In java 12+ final cannot be removed.", e);
             }
             // else no exception is thrown because we can modify final.
         }
+    }
+
+    static Field setAccessible(final Field field, final boolean forceAccess) {
+        if (forceAccess && !field.isAccessible()) {
+            field.setAccessible(true);
+        } else {
+            MemberUtils.setAccessibleWorkaround(field);
+        }
+        return field;
     }
 
     /**
      * Writes a {@code public} {@link Field}. Only the specified class will be considered.
      *
      * @param target
-     *            the object to reflect, must not be {@code null}
+     *            the object to reflect, must not be {@code null}.
      * @param fieldName
-     *            the field name to obtain
+     *            the field name to obtain.
      * @param value
-     *            to set
+     *            the new value.
      * @throws NullPointerException
-     *             if {@code target} is {@code null}
+     *             if {@code target} is {@code null}.
      * @throws IllegalArgumentException
      *             if {@code fieldName} is {@code null}, blank or empty, or could not be found,
-     *             or {@code value} is not assignable
+     *             or {@code value} is not assignable.
      * @throws IllegalAccessException
      *             if the field is not made accessible
      * @throws SecurityException if an underlying accessible object's method denies the request.
@@ -642,11 +641,11 @@ public class FieldUtils {
      * Writes a {@code public} {@link Field}. Only the specified class will be considered.
      *
      * @param target
-     *            the object to reflect, must not be {@code null}
+     *            the object to reflect, must not be {@code null}.
      * @param fieldName
-     *            the field name to obtain
+     *            the field name to obtain.
      * @param value
-     *            to set
+     *            the new value.
      * @param forceAccess
      *            whether to break scope restrictions using the
      *            {@link AccessibleObject#setAccessible(boolean)} method. {@code false} will only
@@ -673,15 +672,15 @@ public class FieldUtils {
      * Writes a named {@code public static} {@link Field}. Only the specified class will be considered.
      *
      * @param cls
-     *            {@link Class} on which the field is to be found
+     *            {@link Class} on which the field is to be found.
      * @param fieldName
-     *            to write
+     *            to write.
      * @param value
-     *            to set
+     *            the new value.
      * @throws NullPointerException
-     *             if {@code cls} is {@code null} or the field cannot be located
+     *             if {@code cls} is {@code null} or the field cannot be located.
      * @throws IllegalArgumentException
-     *             if the field name is {@code null}, blank, empty, not {@code static}, or {@code value} is not assignable
+     *             if the field name is {@code null}, blank, empty, not {@code static}, or {@code value} is not assignable.
      * @throws IllegalAccessException
      *             if the field is not {@code public} or is {@code final}
      * @throws SecurityException if an underlying accessible object's method denies the request.
@@ -695,18 +694,18 @@ public class FieldUtils {
      * Writes a named {@code static} {@link Field}. Only the specified class will be considered.
      *
      * @param cls
-     *            {@link Class} on which the field is to be found
+     *            {@link Class} on which the field is to be found.
      * @param fieldName
      *            to write
      * @param value
-     *            to set
+     *            the new value.
      * @param forceAccess
      *            whether to break scope restrictions using the {@code AccessibleObject#setAccessible(boolean)} method.
      *            {@code false} will only match {@code public} fields.
      * @throws NullPointerException
-     *             if {@code cls} is {@code null} or the field cannot be located
+     *             if {@code cls} is {@code null} or the field cannot be located.
      * @throws IllegalArgumentException
-     *             if the field name is {@code null}, blank, empty, not {@code static}, or {@code value} is not assignable
+     *             if the field name is {@code null}, blank, empty, not {@code static}, or {@code value} is not assignable.
      * @throws IllegalAccessException
      *             if the field is not made accessible or is {@code final}
      * @throws SecurityException if an underlying accessible object's method denies the request.
@@ -724,17 +723,17 @@ public class FieldUtils {
      * Writes an accessible {@link Field}.
      *
      * @param field
-     *            to write
+     *            to write.
      * @param target
-     *            the object to call on, may be {@code null} for {@code static} fields
+     *            the object to call on, may be {@code null} for {@code static} fields.
      * @param value
-     *            to set
+     *            the new value.
      * @throws NullPointerException
-     *             if the field is {@code null}
+     *             if the field is {@code null}.
      * @throws IllegalArgumentException
-     *             if {@code value} is not assignable
+     *             if {@code value} is not assignable.
      * @throws IllegalAccessException
-     *             if the field is not accessible or is {@code final}
+     *             if the field is not accessible or is {@code final}.
      * @throws SecurityException if an underlying accessible object's method denies the request.
      * @see SecurityManager#checkPermission
      */
@@ -746,19 +745,19 @@ public class FieldUtils {
      * Writes a {@link Field}.
      *
      * @param field
-     *            to write
+     *            to write.
      * @param target
      *            the object to call on, may be {@code null} for {@code static} fields
      * @param value
-     *            to set
+     *            the new value.
      * @param forceAccess
      *            whether to break scope restrictions using the
      *            {@link AccessibleObject#setAccessible(boolean)} method. {@code false} will only
      *            match {@code public} fields.
      * @throws NullPointerException
-     *             if the field is {@code null}
+     *             if the field is {@code null}.
      * @throws IllegalArgumentException
-     *             if {@code value} is not assignable
+     *             if {@code value} is not assignable.
      * @throws IllegalAccessException
      *             if the field is not made accessible or is {@code final}
      * @throws SecurityException if an underlying accessible object's method denies the request.
@@ -767,30 +766,25 @@ public class FieldUtils {
     public static void writeField(final Field field, final Object target, final Object value, final boolean forceAccess)
             throws IllegalAccessException {
         Objects.requireNonNull(field, "field");
-        if (forceAccess && !field.isAccessible()) {
-            field.setAccessible(true);
-        } else {
-            MemberUtils.setAccessibleWorkaround(field);
-        }
-        field.set(target, value);
+        setAccessible(field, forceAccess).set(target, value);
     }
 
     /**
      * Writes a {@code public} {@link Field}. Superclasses will be considered.
      *
      * @param target
-     *            the object to reflect, must not be {@code null}
+     *            the object to reflect, must not be {@code null}.
      * @param fieldName
-     *            the field name to obtain
+     *            the field name to obtain.
      * @param value
-     *            to set
+     *            the new value.
      * @throws NullPointerException
-     *             if {@code target} is {@code null}
+     *             if {@code target} is {@code null}.
      * @throws IllegalArgumentException
      *             if {@code fieldName} is {@code null}, blank, empty, or could not be found,
-     *             or {@code value} is not assignable
+     *             or {@code value} is not assignable.
      * @throws IllegalAccessException
-     *             if the field is not accessible
+     *             if the field is not accessible.
      * @throws SecurityException if an underlying accessible object's method denies the request.
      * @see SecurityManager#checkPermission
      */
@@ -802,22 +796,22 @@ public class FieldUtils {
      * Writes a {@link Field}. Superclasses will be considered.
      *
      * @param target
-     *            the object to reflect, must not be {@code null}
+     *            the object to reflect, must not be {@code null}.
      * @param fieldName
-     *            the field name to obtain
+     *            the field name to obtain.
      * @param value
-     *            to set
+     *            the new value.
      * @param forceAccess
      *            whether to break scope restrictions using the
      *            {@link AccessibleObject#setAccessible(boolean)} method. {@code false} will only
      *            match {@code public} fields.
      * @throws NullPointerException
-     *             if {@code target} is {@code null}
+     *             if {@code target} is {@code null}.
      * @throws IllegalArgumentException
      *             if {@code fieldName} is {@code null}, blank, empty, or could not be found,
-     *             or {@code value} is not assignable
+     *             or {@code value} is not assignable.
      * @throws IllegalAccessException
-     *             if the field is not made accessible
+     *             if the field is not made accessible.
      * @throws SecurityException if an underlying accessible object's method denies the request.
      * @see SecurityManager#checkPermission
      */
@@ -835,16 +829,16 @@ public class FieldUtils {
      * Writes a named {@code public static} {@link Field}. Superclasses will be considered.
      *
      * @param cls
-     *            {@link Class} on which the field is to be found
+     *            {@link Class} on which the field is to be found.
      * @param fieldName
-     *            to write
+     *            to write.
      * @param value
-     *            to set
+     *            the new value.
      * @throws NullPointerException
-     *             if {@code target} is {@code null}
+     *             if {@code target} is {@code null}.
      * @throws IllegalArgumentException
      *             if {@code fieldName} is {@code null}, blank or empty, the field cannot be located or is
-     *             not {@code static}, or {@code value} is not assignable
+     *             not {@code static}, or {@code value} is not assignable.
      * @throws IllegalAccessException
      *             if the field is not {@code public} or is {@code final}
      * @throws SecurityException if an underlying accessible object's method denies the request.
@@ -858,21 +852,21 @@ public class FieldUtils {
      * Writes a named {@code static} {@link Field}. Superclasses will be considered.
      *
      * @param cls
-     *            {@link Class} on which the field is to be found
+     *            {@link Class} on which the field is to be found.
      * @param fieldName
-     *            to write
+     *            to write.
      * @param value
-     *            to set
+     *            the new value.
      * @param forceAccess
      *            whether to break scope restrictions using the
      *            {@link AccessibleObject#setAccessible(boolean)} method. {@code false} will only
      *            match {@code public} fields.
      * @throws NullPointerException
-     *             if {@code cls} is {@code null} or the field cannot be located
+     *             if {@code cls} is {@code null} or the field cannot be located.
      * @throws IllegalArgumentException
-     *             if {@code fieldName} is {@code null}, blank or empty, the field not {@code static}, or {@code value} is not assignable
+     *             if {@code fieldName} is {@code null}, blank or empty, the field not {@code static}, or {@code value} is not assignable.
      * @throws IllegalAccessException
-     *             if the field is not made accessible or is {@code final}
+     *             if the field is not made accessible or is {@code final}.
      * @throws SecurityException if an underlying accessible object's method denies the request.
      * @see SecurityManager#checkPermission
      */
@@ -888,15 +882,15 @@ public class FieldUtils {
      * Writes a {@code public static} {@link Field}.
      *
      * @param field
-     *            to write
+     *            to write.
      * @param value
-     *            to set
+     *            the new value.
      * @throws NullPointerException
-     *              if the field is {@code null}
+     *              if the field is {@code null}.
      * @throws IllegalArgumentException
-     *              if the field is not {@code static}, or {@code value} is not assignable
+     *              if the field is not {@code static}, or {@code value} is not assignable.
      * @throws IllegalAccessException
-     *             if the field is not {@code public} or is {@code final}
+     *             if the field is not {@code public} or is {@code final}.
      * @throws SecurityException if an underlying accessible object's method denies the request.
      * @see SecurityManager#checkPermission
      */
@@ -908,17 +902,17 @@ public class FieldUtils {
      * Writes a static {@link Field}.
      *
      * @param field
-     *            to write
+     *            to write.
      * @param value
-     *            to set
+     *            the new value.
      * @param forceAccess
      *            whether to break scope restrictions using the
      *            {@link AccessibleObject#setAccessible(boolean)} method. {@code false} will only
      *            match {@code public} fields.
      * @throws NullPointerException
-     *              if the field is {@code null}
+     *              if the field is {@code null}.
      * @throws IllegalArgumentException
-     *              if the field is not {@code static}, or {@code value} is not assignable
+     *              if the field is not {@code static}, or {@code value} is not assignable.
      * @throws IllegalAccessException
      *             if the field is not made accessible or is {@code final}
      * @throws SecurityException if an underlying accessible object's method denies the request.

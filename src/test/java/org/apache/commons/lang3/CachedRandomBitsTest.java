@@ -6,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,8 +16,8 @@
  */
 package org.apache.commons.lang3;
 
+import static org.apache.commons.lang3.LangAssertions.assertIllegalArgumentException;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.Objects;
 import java.util.Random;
@@ -28,7 +28,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 /**
  * Tests {@link CachedRandomBits}.
  */
-public class CachedRandomBitsTest {
+class CachedRandomBitsTest {
 
     /** MockRandom mocks a Random class nextBytes to use a specific list of outputs */
     private static class MockRandom extends Random {
@@ -55,7 +55,7 @@ public class CachedRandomBitsTest {
 
     @ParameterizedTest
     @ValueSource(ints = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 32})
-    public void testNext(final int cacheSize) {
+    void testNext(final int cacheSize) {
         final MockRandom random = new MockRandom(new byte[]{
                 0x11, 0x12, 0x13, 0x25,
                 (byte) 0xab, (byte) 0xcd, (byte) 0xef, (byte) 0xff,
@@ -69,8 +69,8 @@ public class CachedRandomBitsTest {
 
         final CachedRandomBits arb = new CachedRandomBits(cacheSize, random);
 
-        assertThrows(IllegalArgumentException.class, () -> arb.nextBits(0));
-        assertThrows(IllegalArgumentException.class, () -> arb.nextBits(33));
+        assertIllegalArgumentException(() -> arb.nextBits(0));
+        assertIllegalArgumentException(() -> arb.nextBits(33));
 
         assertEquals(0x11, arb.nextBits(8));
         assertEquals(0x12, arb.nextBits(8));

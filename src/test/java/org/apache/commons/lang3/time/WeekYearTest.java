@@ -6,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -30,7 +30,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-public class WeekYearTest extends AbstractLangTest {
+class WeekYearTest extends AbstractLangTest {
 
     public static Stream<Arguments> data() {
         // @formatter:off
@@ -57,7 +57,7 @@ public class WeekYearTest extends AbstractLangTest {
 
     @ParameterizedTest
     @MethodSource("data")
-    public void testParser(final Calendar vulgar, final String isoForm) {
+    void testParser(final Calendar vulgar, final String isoForm) {
         final DateParser parser = new FastDateParser("YYYY-'W'ww-u", TimeZone.getDefault(), Locale.getDefault());
 
         final Calendar cal = Calendar.getInstance();
@@ -71,7 +71,7 @@ public class WeekYearTest extends AbstractLangTest {
 
     @ParameterizedTest
     @MethodSource("data")
-    public void testPrinter(final Calendar vulgar, final String isoForm) {
+    void testPrinter(final Calendar vulgar, final String isoForm) {
         final FastDatePrinter printer = new FastDatePrinter("YYYY-'W'ww-u", TimeZone.getDefault(), Locale.getDefault());
 
         vulgar.setMinimalDaysInFirstWeek(4);

@@ -6,7 +6,7 @@
  * (the "License"); you may not use this file except in compliance with
  * the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -86,13 +86,11 @@ public abstract class TypeLiteral<T> implements Typed<T> {
     private final String toString;
 
     /**
-     * The default constructor.
+     * Constructs a new instance.
      */
     protected TypeLiteral() {
-        this.value =
-            Validate.notNull(TypeUtils.getTypeArguments(getClass(), TypeLiteral.class).get(T),
+        this.value = Validate.notNull(TypeUtils.getTypeArguments(getClass(), TypeLiteral.class).get(T),
                 "%s does not assign type parameter %s", getClass(), TypeUtils.toLongString(T));
-
         this.toString = String.format("%s<%s>", TypeLiteral.class.getSimpleName(), TypeUtils.toString(value));
     }
 
