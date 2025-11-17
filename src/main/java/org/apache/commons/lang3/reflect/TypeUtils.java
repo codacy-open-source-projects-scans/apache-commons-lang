@@ -358,7 +358,7 @@ public class TypeUtils {
             buf.append(cls.getName());
         }
         if (cls.getTypeParameters().length > 0) {
-            CTJ_JOINER.join(buf, (TypeVariable[]) cls.getTypeParameters());
+            GT_JOINER.join(buf, (TypeVariable[]) cls.getTypeParameters());
         }
         return buf.toString();
     }
@@ -1570,7 +1570,6 @@ public class TypeUtils {
         for (final Map.Entry<TypeVariable<?>, Type> entry : typeVariableMap.entrySet()) {
             final TypeVariable<?> typeVar = entry.getKey();
             final Type type = entry.getValue();
-
             for (final Type bound : getImplicitBounds(typeVar)) {
                 if (!isAssignable(type, substituteTypeVariables(bound, typeVariableMap), typeVariableMap)) {
                     return false;

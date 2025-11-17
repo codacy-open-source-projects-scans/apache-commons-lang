@@ -45,7 +45,7 @@ Apache Commons Lang
 
 [![Java CI](https://github.com/apache/commons-lang/actions/workflows/maven.yml/badge.svg)](https://github.com/apache/commons-lang/actions/workflows/maven.yml)
 [![Maven Central](https://img.shields.io/maven-central/v/org.apache.commons/commons-lang3?label=Maven%20Central)](https://search.maven.org/artifact/org.apache.commons/commons-lang3)
-[![Javadocs](https://javadoc.io/badge/org.apache.commons/commons-lang3/3.19.0.svg)](https://javadoc.io/doc/org.apache.commons/commons-lang3/3.19.0)
+[![Javadocs](https://javadoc.io/badge/org.apache.commons/commons-lang3/3.20.0.svg)](https://javadoc.io/doc/org.apache.commons/commons-lang3/3.20.0)
 [![CodeQL](https://github.com/apache/commons-lang/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/apache/commons-lang/actions/workflows/codeql-analysis.yml)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/apache/commons-lang/badge)](https://api.securityscorecards.dev/projects/github.com/apache/commons-lang)
 
@@ -54,7 +54,7 @@ Apache Commons Lang, a package of Java utility classes for the
   standard as to justify existence in java.lang.
 
   The code is tested using the latest revision of the JDK for supported
-  LTS releases: 8, 11, 17 and 21 currently.
+  LTS releases: 8, 11, 17, 21 and 25 currently.
   See https://github.com/apache/commons-lang/blob/master/.github/workflows/maven.yml
   
   Please ensure your build environment is up-to-date and kindly report any build issues.
@@ -76,7 +76,7 @@ Alternatively, you can pull it from the central Maven repositories:
 <dependency>
   <groupId>org.apache.commons</groupId>
   <artifactId>commons-lang3</artifactId>
-  <version>3.19.0</version>
+  <version>3.20.0</version>
 </dependency>
 ```
 
