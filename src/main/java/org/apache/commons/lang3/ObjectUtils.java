@@ -75,6 +75,7 @@ public class ObjectUtils {
      * </p>
      */
     public static class Null implements Serializable {
+
         /**
          * Required for serialization support. Declare serialization compatibility with Commons Lang 1.0
          *
@@ -539,7 +540,6 @@ public class ObjectUtils {
         return getIfNull(object, defaultValue);
     }
 
-    // Null-safe equals/hashCode
     /**
      * Compares two objects for equality, where either one or both
      * objects may be {@code null}.

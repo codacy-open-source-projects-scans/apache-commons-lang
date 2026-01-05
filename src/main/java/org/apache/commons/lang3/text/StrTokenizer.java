@@ -124,6 +124,7 @@ public class StrTokenizer implements ListIterator<String>, Cloneable {
     private static StrTokenizer getCSVClone() {
         return (StrTokenizer) CSV_TOKENIZER_PROTOTYPE.clone();
     }
+
     /**
      * Gets a new tokenizer instance which parses Comma Separated Value strings
      * initializing it with the given input.  The default for CSV processing
@@ -132,11 +133,13 @@ public class StrTokenizer implements ListIterator<String>, Cloneable {
      * <p>
      * You must call a "reset" method to set the string which you want to parse.
      * </p>
+     *
      * @return a new tokenizer instance which parses Comma Separated Value strings.
      */
     public static StrTokenizer getCSVInstance() {
         return getCSVClone();
     }
+
     /**
      * Gets a new tokenizer instance which parses Comma Separated Value strings
      * initializing it with the given input.  The default for CSV processing
@@ -166,6 +169,7 @@ public class StrTokenizer implements ListIterator<String>, Cloneable {
         tok.reset(input);
         return tok;
     }
+
     /**
      * Gets a clone of {@code TSV_TOKENIZER_PROTOTYPE}.
      *
@@ -182,6 +186,7 @@ public class StrTokenizer implements ListIterator<String>, Cloneable {
      * <p>
      * You must call a "reset" method to set the string which you want to parse.
      * </p>
+     *
      * @return a new tokenizer instance which parses Tab Separated Value strings.
      */
     public static StrTokenizer getTSVInstance() {
@@ -215,6 +220,7 @@ public class StrTokenizer implements ListIterator<String>, Cloneable {
         tok.reset(input);
         return tok;
     }
+
     /** The text to work on. */
     private char[] chars;
 
@@ -494,7 +500,6 @@ public class StrTokenizer implements ListIterator<String>, Cloneable {
         return this.delimMatcher;
     }
 
-    // Ignored
     /**
      * Gets the ignored character matcher.
      * <p>
@@ -1042,7 +1047,6 @@ public class StrTokenizer implements ListIterator<String>, Cloneable {
         return this;
     }
 
-    // API
     /**
      * Gets the number of tokens found in the String.
      *

@@ -118,6 +118,7 @@ import org.apache.commons.lang3.stream.Streams;
  * The symbol {@code *} is used to indicate any input including {@code null}.</p>
  *
  * <p>#ThreadSafe#</p>
+ *
  * @see String
  * @since 1.0
  */
@@ -154,6 +155,7 @@ public class StringUtils {
 
     /**
      * The empty String {@code ""}.
+     *
      * @since 2.0
      */
     public static final String EMPTY = "";
@@ -183,6 +185,7 @@ public class StringUtils {
 
     /**
      * Represents a failed index search.
+     *
      * @since 2.1
      */
     public static final int INDEX_NOT_FOUND = -1;
@@ -8719,8 +8722,8 @@ public class StringUtils {
      * @param charsetName the encoding to use, if null then use the platform default.
      * @return a new String.
      * @throws NullPointerException if the input is null.
-     * @deprecated Use {@link StringUtils#toEncodedString(byte[], Charset)} instead of String constants in your code.
      * @since 3.1
+     * @deprecated Use {@link StringUtils#toEncodedString(byte[], Charset)} instead of String constants in your code.
      */
     @Deprecated
     public static String toString(final byte[] bytes, final String charsetName) {

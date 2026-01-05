@@ -27,6 +27,7 @@ import java.util.Objects;
  * <p>Instances are immutable.</p>
  *
  * <p>#ThreadSafe#</p>
+ *
  * @since 1.0
  * @since 3.20.1 {@code serialVersionUID} changed from {@code 8270183163158333422L} to {@code 2L}.
  */
@@ -39,6 +40,7 @@ final class CharRange implements Iterable<Character>, Serializable {
      * <p>#NotThreadSafe#</p>
      */
     private static final class CharacterIterator implements Iterator<Character> {
+
         /** The current character */
         private char current;
 
@@ -237,7 +239,6 @@ final class CharRange implements Iterable<Character>, Serializable {
         this.negated = negated;
     }
 
-    // Contains
     /**
      * Is the character specified contained in this range.
      *
@@ -270,7 +271,6 @@ final class CharRange implements Iterable<Character>, Serializable {
         return start <= range.start && end >= range.end;
     }
 
-    // Basics
     /**
      * Compares two CharRange objects, returning true if they represent
      * exactly the same range of characters defined in the same way.
@@ -299,7 +299,6 @@ final class CharRange implements Iterable<Character>, Serializable {
         return this.end;
     }
 
-    // Accessors
     /**
      * Gets the start character for this character range.
      *
@@ -335,6 +334,7 @@ final class CharRange implements Iterable<Character>, Serializable {
      * Returns an iterator which can be used to walk through the characters described by this range.
      *
      * <p>#NotThreadSafe# the iterator is not thread-safe</p>
+     *
      * @return an iterator to the chars represented by this range
      * @since 2.5
      */
