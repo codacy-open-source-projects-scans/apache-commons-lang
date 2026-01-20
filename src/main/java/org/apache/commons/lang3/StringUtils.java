@@ -278,7 +278,7 @@ public class StringUtils {
 
     /**
      * Abbreviates a String using another given String as replacement marker. This will convert "Now is the time for all good men" into "Now is the time for..."
-     * if "..." was defined as the replacement marker.
+     * when "..." is the replacement marker.
      *
      * <p>
      * Specifically:
@@ -315,9 +315,8 @@ public class StringUtils {
     }
 
     /**
-     * Abbreviates a String using a given replacement marker. This will convert "Now is the time for all good men" into "...is the time for..." if "..." was
-     * defined as the replacement marker.
-     *
+     * Abbreviates a String using a given replacement marker. This will convert "Now is the time for all good men" into "...is the time for..." when "..." is
+     * the replacement marker.
      * <p>
      * Works like {@code abbreviate(String, String, int)}, but allows you to specify a "left edge" offset. Note that this left edge is not necessarily going to
      * be the leftmost character in the result, or the first character following the replacement marker, but it will appear somewhere in the result.
@@ -352,12 +351,12 @@ public class StringUtils {
      * @throws IllegalArgumentException if the width is too small.
      * @since 3.6
      */
-    public static String abbreviate(final String str, final String abbrevMarker, int offset, final int maxWidth) {
-        if (isNotEmpty(str) && EMPTY.equals(abbrevMarker) && maxWidth > 0) {
-            return substring(str, 0, maxWidth);
-        }
-        if (isAnyEmpty(str, abbrevMarker)) {
+    public static String abbreviate(final String str, String abbrevMarker, int offset, final int maxWidth) {
+        if (isEmpty(str)) {
             return str;
+        }
+        if (abbrevMarker == null) {
+            abbrevMarker = EMPTY;
         }
         final int abbrevMarkerLength = abbrevMarker.length();
         final int minAbbrevWidth = abbrevMarkerLength + 1;
@@ -8830,7 +8829,7 @@ public class StringUtils {
      * </pre>
      *
      * @param str      the String to truncate, may be null.
-     * @param maxWidth maximum length of result String, must be positive.
+     * @param maxWidth maximum length of result String, must be non-negative.
      * @return truncated String, {@code null} if null String input.
      * @throws IllegalArgumentException If {@code maxWidth} is less than {@code 0}.
      * @since 3.5
@@ -8892,7 +8891,7 @@ public class StringUtils {
      *
      * @param str      the String to truncate, may be null.
      * @param offset   left edge of source String.
-     * @param maxWidth maximum length of result String, must be positive.
+     * @param maxWidth maximum length of result String, must be non-negative.
      * @return truncated String, {@code null} if null String input.
      * @throws IllegalArgumentException If {@code offset} or {@code maxWidth} is less than {@code 0}.
      * @since 3.5

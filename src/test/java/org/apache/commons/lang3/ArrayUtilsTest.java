@@ -5249,8 +5249,8 @@ class ArrayUtilsTest extends AbstractLangTest {
     void testShuffleByteRandom() {
         ArrayUtils.shuffle((byte[]) null, null);
         ArrayUtils.shuffle((byte[]) null, seededRandom());
-        ArrayUtils.shuffle(ArrayUtils.EMPTY_BOOLEAN_ARRAY, null);
-        ArrayUtils.shuffle(ArrayUtils.EMPTY_BOOLEAN_ARRAY, seededRandom());
+        ArrayUtils.shuffle(ArrayUtils.EMPTY_BYTE_ARRAY, null);
+        ArrayUtils.shuffle(ArrayUtils.EMPTY_BYTE_ARRAY, seededRandom());
         // Don't use a "small" array, reduce spurious failures.
         final byte[] array1 = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2,
                 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0,
@@ -6957,5 +6957,11 @@ class ArrayUtilsTest extends AbstractLangTest {
         assertEquals("{}", ArrayUtils.toString(new String[0], "<empty>"));
         assertEquals("{<null>}", ArrayUtils.toString(new String[]{null}, "<empty>"));
         assertEquals("{pink,blue}", ArrayUtils.toString(new String[]{"pink", "blue"}, "<empty>"));
+    }
+
+    @Test
+    void testMaxArrayLength() {
+        assertEquals(Integer.MAX_VALUE - 8, ArrayUtils.SAFE_MAX_ARRAY_LENGTH);
+        assertEquals(Integer.MAX_VALUE - 8, ArrayUtils.SOFT_MAX_ARRAY_LENGTH);
     }
 }
