@@ -1850,8 +1850,31 @@ public class ArrayUtils {
     }
 
     /**
+     * Gets the number of dimensions of an array.
+     * <p>
+     * The <a href="https://docs.oracle.com/javase/specs/jvms/se25/html/jvms-4.html#jvms-4.3">JVM specification</a> limits the number of dimensions to 255.
+     * </p>
+     *
+     * @param array the array, may be {@code null}.
+     * @return The number of dimensions, 0 if the input is null or not an array. The JVM specification limits the number of dimensions to 255.
+     * @since 3.21.0
+     * @see <a href="https://docs.oracle.com/javase/specs/jvms/se25/html/jvms-4.html#jvms-4.3">JVM specification Field Descriptors</a>
+     */
+    public static int getDimensions(final Object array) {
+        int dimensions = 0;
+        if (array != null) {
+            Class<?> arrayClass = array.getClass();
+            while (arrayClass.isArray()) {
+                dimensions++;
+                arrayClass = arrayClass.getComponentType();
+            }
+        }
+        return dimensions;
+    }
+
+    /**
      * Gets the length of the specified array.
-     * This method can deal with {@link Object} arrays and with primitive arrays.
+     * This method handles {@link Object} arrays and primitive arrays.
      * <p>
      * If the input array is {@code null}, {@code 0} is returned.
      * </p>
@@ -3293,7 +3316,7 @@ public class ArrayUtils {
      * @param array1  the left-hand side array to compare, may be {@code null}.
      * @param array2  the right-hand side array to compare, may be {@code null}.
      * @return {@code true} if the arrays are equal.
-     * @deprecated this method has been replaced by {@code java.util.Objects.deepEquals(Object, Object)} and will be
+     * @deprecated Replaced by {@code java.util.Objects.deepEquals(Object, Object)} and will be
      * removed from future releases.
      */
     @Deprecated
