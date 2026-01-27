@@ -8088,7 +8088,7 @@ public class ArrayUtils {
             return null;
         }
         startIndexInclusive = max0(startIndexInclusive);
-        endIndexExclusive = Math.min(endIndexExclusive, array.length);
+        endIndexExclusive = max0(Math.min(endIndexExclusive, array.length));
         final int newSize = endIndexExclusive - startIndexInclusive;
         if (newSize <= 0) {
             return EMPTY_BOOLEAN_ARRAY;
@@ -8102,7 +8102,7 @@ public class ArrayUtils {
      * The start index is inclusive, the end index exclusive. Null array input produces null output.
      * </p>
      *
-     * @param array               the input array..
+     * @param array               the input array.
      * @param startIndexInclusive the starting index. Undervalue (&lt;0) is promoted to 0, overvalue (&gt;array.length) results in an empty array.
      * @param endIndexExclusive   elements up to endIndex-1 are present in the returned subarray. Undervalue (&lt; startIndex) produces empty array, overvalue
      *                            (&gt;array.length) is demoted to array length.
@@ -8115,7 +8115,7 @@ public class ArrayUtils {
             return null;
         }
         startIndexInclusive = max0(startIndexInclusive);
-        endIndexExclusive = Math.min(endIndexExclusive, array.length);
+        endIndexExclusive = max0(Math.min(endIndexExclusive, array.length));
         final int newSize = endIndexExclusive - startIndexInclusive;
         if (newSize <= 0) {
             return EMPTY_BYTE_ARRAY;
@@ -8142,7 +8142,7 @@ public class ArrayUtils {
             return null;
         }
         startIndexInclusive = max0(startIndexInclusive);
-        endIndexExclusive = Math.min(endIndexExclusive, array.length);
+        endIndexExclusive = max0(Math.min(endIndexExclusive, array.length));
         final int newSize = endIndexExclusive - startIndexInclusive;
         if (newSize <= 0) {
             return EMPTY_CHAR_ARRAY;
@@ -8169,7 +8169,7 @@ public class ArrayUtils {
             return null;
         }
         startIndexInclusive = max0(startIndexInclusive);
-        endIndexExclusive = Math.min(endIndexExclusive, array.length);
+        endIndexExclusive = max0(Math.min(endIndexExclusive, array.length));
         final int newSize = endIndexExclusive - startIndexInclusive;
         if (newSize <= 0) {
             return EMPTY_DOUBLE_ARRAY;
@@ -8196,7 +8196,7 @@ public class ArrayUtils {
             return null;
         }
         startIndexInclusive = max0(startIndexInclusive);
-        endIndexExclusive = Math.min(endIndexExclusive, array.length);
+        endIndexExclusive = max0(Math.min(endIndexExclusive, array.length));
         final int newSize = endIndexExclusive - startIndexInclusive;
         if (newSize <= 0) {
             return EMPTY_FLOAT_ARRAY;
@@ -8223,7 +8223,7 @@ public class ArrayUtils {
             return null;
         }
         startIndexInclusive = max0(startIndexInclusive);
-        endIndexExclusive = Math.min(endIndexExclusive, array.length);
+        endIndexExclusive = max0(Math.min(endIndexExclusive, array.length));
         final int newSize = endIndexExclusive - startIndexInclusive;
         if (newSize <= 0) {
             return EMPTY_INT_ARRAY;
@@ -8250,7 +8250,7 @@ public class ArrayUtils {
             return null;
         }
         startIndexInclusive = max0(startIndexInclusive);
-        endIndexExclusive = Math.min(endIndexExclusive, array.length);
+        endIndexExclusive = max0(Math.min(endIndexExclusive, array.length));
         final int newSize = endIndexExclusive - startIndexInclusive;
         if (newSize <= 0) {
             return EMPTY_LONG_ARRAY;
@@ -8277,7 +8277,7 @@ public class ArrayUtils {
             return null;
         }
         startIndexInclusive = max0(startIndexInclusive);
-        endIndexExclusive = Math.min(endIndexExclusive, array.length);
+        endIndexExclusive = max0(Math.min(endIndexExclusive, array.length));
         final int newSize = endIndexExclusive - startIndexInclusive;
         if (newSize <= 0) {
             return EMPTY_SHORT_ARRAY;
@@ -8314,7 +8314,7 @@ public class ArrayUtils {
             return null;
         }
         startIndexInclusive = max0(startIndexInclusive);
-        endIndexExclusive = Math.min(endIndexExclusive, array.length);
+        endIndexExclusive = max0(Math.min(endIndexExclusive, array.length));
         final int newSize = endIndexExclusive - startIndexInclusive;
         final Class<T> type = getComponentType(array);
         if (newSize <= 0) {
