@@ -22,8 +22,8 @@ import java.util.function.ToLongBiFunction;
 /**
  * A functional interface like {@link ToLongBiFunction} that declares a {@link Throwable}.
  *
- * @param <T> the type of the first argument to the function
- * @param <U> the type of the second argument to the function
+ * @param <T> The type of the first argument to the function
+ * @param <U> The type of the second argument to the function
  * @param <E> The kind of thrown exception or error.
  * @since 3.11
  */
@@ -37,8 +37,8 @@ public interface FailableToLongBiFunction<T, U, E extends Throwable> {
     /**
      * Gets the NOP singleton.
      *
-     * @param <T> the type of the first argument to the function
-     * @param <U> the type of the second argument to the function
+     * @param <T> The type of the first argument to the function
+     * @param <U> The type of the second argument to the function
      * @param <E> The kind of thrown exception or error.
      * @return The NOP singleton.
      */
@@ -50,9 +50,9 @@ public interface FailableToLongBiFunction<T, U, E extends Throwable> {
     /**
      * Applies this function to the given arguments.
      *
-     * @param t the first function argument
-     * @param u the second function argument
-     * @return the function result
+     * @param t The first function argument
+     * @param u The second function argument
+     * @return The function result
      * @throws E Thrown when the function fails.
      */
     long applyAsLong(T t, U u) throws E;

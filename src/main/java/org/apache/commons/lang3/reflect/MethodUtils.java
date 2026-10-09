@@ -51,9 +51,11 @@ import org.apache.commons.lang3.stream.Streams;
  *
  * <h2>Known Limitations</h2>
  * <h3>Accessing Public Methods In A Default Access Superclass</h3>
- * <p>There is an issue when invoking {@code public} methods contained in a default access superclass on JREs prior to 1.4.
+ * <p>
+ * There is an issue when invoking {@code public} methods contained in a default access superclass on JREs prior to 1.4.
  * Reflection locates these methods fine and correctly assigns them as {@code public}.
- * However, an {@link IllegalAccessException} is thrown if the method is invoked.</p>
+ * However, an {@link IllegalAccessException} is thrown if the method is invoked.
+ * </p>
  *
  * <p>
  * {@link MethodUtils} contains a workaround for this situation.
@@ -73,9 +75,9 @@ public class MethodUtils {
      * Computes the aggregate number of inheritance hops between assignable argument class types.  Returns -1
      * if the arguments aren't assignable.  Fills a specific purpose for getMatchingMethod and is not generalized.
      *
-     * @param fromClassArray the Class array to calculate the distance from.
-     * @param toClassArray the Class array to calculate the distance to.
-     * @return the aggregate number of inheritance hops between assignable argument class types.
+     * @param fromClassArray The Class array to calculate the distance from.
+     * @param toClassArray The Class array to calculate the distance to.
+     * @return The aggregate number of inheritance hops between assignable argument class types.
      */
     private static int distance(final Class<?>[] fromClassArray, final Class<?>[] toClassArray) {
         int answer = 0;
@@ -90,7 +92,12 @@ public class MethodUtils {
                 continue;
             }
             if (ClassUtils.isAssignable(aClass, toClass, true) && !ClassUtils.isAssignable(aClass, toClass, false)) {
+                // Autoboxing/unboxing conversion. When a primitive is boxed, rank the exact
+                // wrapper ahead of any of its supertypes so the most specific overload wins.
                 answer++;
+                if (aClass.isPrimitive() && !ClassUtils.primitiveToWrapper(aClass).equals(toClass)) {
+                    answer += 2;
+                }
             } else {
                 answer += 2;
             }
@@ -162,7 +169,7 @@ public class MethodUtils {
      * @param cls Parent class for the interfaces to be checked.
      * @param methodName Method name of the method we wish to call.
      * @param parameterTypes The parameter type signatures.
-     * @return the accessible method or {@code null} if not found.
+     * @return The accessible method or {@code null} if not found.
      */
     private static Method getAccessibleMethodFromInterfaceNest(Class<?> cls, final String methodName, final Class<?>... parameterTypes) {
         // Search up the superclass chain
@@ -174,9 +181,12 @@ public class MethodUtils {
                 if (!ClassUtils.isPublic(anInterface)) {
                     continue;
                 }
-                // Does the method exist on this interface?
+                // Does the method exist on this interface? A static or private one is not inherited.
                 try {
-                    return anInterface.getDeclaredMethod(methodName, parameterTypes);
+                    final Method declared = anInterface.getDeclaredMethod(methodName, parameterTypes);
+                    if (MemberUtils.isPublic(declared) && !MemberUtils.isStatic(declared)) {
+                        return declared;
+                    }
                 } catch (final NoSuchMethodException ignored) {
                     /*
                      * Swallow, if no method is found after the loop then this method returns null.
@@ -200,7 +210,7 @@ public class MethodUtils {
      * @param cls Class to be checked.
      * @param methodName Method name of the method we wish to call.
      * @param parameterTypes The parameter type signatures.
-     * @return the accessible method or {@code null} if not found.
+     * @return The accessible method or {@code null} if not found.
      */
     private static Method getAccessibleMethodFromSuperclass(final Class<?> cls, final String methodName, final Class<?>... parameterTypes) {
         Class<?> parentClass = cls.getSuperclass();
@@ -217,8 +227,8 @@ public class MethodUtils {
      * Gets a combination of {@link ClassUtils#getAllSuperclasses(Class)} and {@link ClassUtils#getAllInterfaces(Class)}, one from superclasses, one from
      * interfaces, and so on in a breadth first way.
      *
-     * @param cls the class to look up, may be {@code null}.
-     * @return the combined {@link List} of superclasses and interfaces in order going up from this one {@code null} if null input.
+     * @param cls The class to look up, may be {@code null}.
+     * @return The combined {@link List} of superclasses and interfaces in order going up from this one {@code null} if null input.
      */
     private static List<Class<?>> getAllSuperclassesAndInterfaces(final Class<?> cls) {
         if (cls == null) {
@@ -251,14 +261,14 @@ public class MethodUtils {
      * </p>
      *
      * @param <A>           the annotation type.
-     * @param method        the {@link Method} to query, may be null.
-     * @param annotationCls the {@link Annotation} to check if is present on the method.
+     * @param method        The {@link Method} to query, may be null.
+     * @param annotationCls The {@link Annotation} to check if is present on the method.
      * @param searchSupers  determines if a lookup in the entire inheritance hierarchy of the given class is performed if the annotation was not directly
      *                      present.
      * @param ignoreAccess  determines if underlying method has to be accessible.
-     * @return the first matching annotation, or {@code null} if not found.
-     * @throws NullPointerException if either the method or annotation class is {@code null}.
-     * @throws SecurityException    if an underlying accessible object's method denies the request.
+     * @return The first matching annotation, or {@code null} if not found.
+     * @throws NullPointerException Thrown if either the method or annotation class is {@code null}.
+     * @throws SecurityException    Thrown if an underlying accessible object's method denies the request.
      * @see SecurityManager#checkPermission
      * @since 3.6
      */
@@ -272,11 +282,56 @@ public class MethodUtils {
         A annotation = method.getAnnotation(annotationCls);
         if (annotation == null && searchSupers) {
             final Class<?> mcls = method.getDeclaringClass();
+            final String methodName = method.getName();
+            final Class<?>[] paramTypes = method.getParameterTypes();
             final List<Class<?>> classes = getAllSuperclassesAndInterfaces(mcls);
             for (final Class<?> acls : classes) {
-                final Method equivalentMethod = ignoreAccess ? getMatchingMethod(acls, method.getName(), method.getParameterTypes())
-                        : getMatchingAccessibleMethod(acls, method.getName(), method.getParameterTypes());
-                if (equivalentMethod != null) {
+                // First, attempt an exact parameter-type match (getDeclaredMethod) to
+                // find a true override. This avoids matching unrelated overloads that
+                // are merely assignable-compatible (e.g. process(Integer) vs
+                // process(Number)).
+                Method equivalentMethod = null;
+                try {
+                    equivalentMethod = acls.getDeclaredMethod(methodName, paramTypes);
+                } catch (final NoSuchMethodException ignored) {
+                    // No exact match; check for generic-bridge scenario: the declaring
+                    // class may use a type variable whose erased form is Object (or
+                    // another bound). In that case the parent method's erased
+                    // parameter types differ from the child's concrete types, so we
+                    // scan declared methods for a same-name method whose *erased*
+                    // parameter count matches and whose erased types are assignable
+                    // from our concrete types.
+                    for (final Method candidate : acls.getDeclaredMethods()) {
+                        if (!candidate.getName().equals(methodName)) {
+                            continue;
+                        }
+                        final Class<?>[] candidateParams = candidate.getParameterTypes();
+                        if (candidateParams.length != paramTypes.length) {
+                            continue;
+                        }
+                        // Require that every concrete param type is assignable to the
+                        // candidate's (erased) param type AND that the candidate is
+                        // generic (has at least one TypeVariable in its generic
+                        // parameter types). This prevents matching plain overloads.
+                        boolean genericMatch = false;
+                        boolean paramsMatch = true;
+                        final java.lang.reflect.Type[] genericParams = candidate.getGenericParameterTypes();
+                        for (int i = 0; i < candidateParams.length; i++) {
+                            if (genericParams[i] instanceof java.lang.reflect.TypeVariable) {
+                                genericMatch = true;
+                            }
+                            if (!ClassUtils.isAssignable(paramTypes[i], candidateParams[i], true)) {
+                                paramsMatch = false;
+                                break;
+                            }
+                        }
+                        if (paramsMatch && genericMatch) {
+                            equivalentMethod = candidate;
+                            break;
+                        }
+                    }
+                }
+                if (equivalentMethod != null && (ignoreAccess || MemberUtils.isAccessible(equivalentMethod))) {
                     annotation = equivalentMethod.getAnnotation(annotationCls);
                     if (annotation != null) {
                         break;
@@ -313,13 +368,16 @@ public class MethodUtils {
      * @param methodName     find method with this name.
      * @param requestTypes find method with most compatible parameters.
      * @return The accessible method or null.
-     * @throws SecurityException if an underlying accessible object's method denies the request.
+     * @throws SecurityException Thrown if an underlying accessible object's method denies the request.
      * @see SecurityManager#checkPermission
      */
     public static Method getMatchingAccessibleMethod(final Class<?> cls, final String methodName, final Class<?>... requestTypes) {
         final Method candidate = getMethodObject(cls, methodName, requestTypes);
         if (candidate != null) {
-            return MemberUtils.setAccessibleWorkaround(candidate);
+            // The exact match may be declared on a non-public class, so prefer the public
+            // declaration the way the search below does; a static method hides, so it is kept.
+            final Method accessibleCandidate = MemberUtils.isStatic(candidate) ? null : getAccessibleMethod(cls, candidate);
+            return MemberUtils.setAccessibleWorkaround(accessibleCandidate != null ? accessibleCandidate : candidate);
         }
         // search through all methods
         final Method[] methods = cls.getMethods();
@@ -357,8 +415,8 @@ public class MethodUtils {
      * @param cls            The class that will be subjected to the method search.
      * @param methodName     The method that we wish to call.
      * @param parameterTypes Argument class types.
-     * @throws IllegalStateException if there is no unique result.
-     * @throws NullPointerException  if the class is {@code null}.
+     * @throws IllegalStateException Thrown if there is no unique result.
+     * @throws NullPointerException  Thrown if the class is {@code null}.
      * @return The method.
      * @since 3.5
      */
@@ -405,9 +463,9 @@ public class MethodUtils {
      * Gets a Method, or {@code null} if a checked {@link Class#getMethod(String, Class...) } exception is thrown.
      *
      * @param cls            Receiver for {@link Class#getMethod(String, Class...)}.
-     * @param name           the name of the method.
-     * @param parameterTypes the list of parameters.
-     * @return a Method or {@code null}.
+     * @param name           The name of the method.
+     * @param parameterTypes The list of parameters.
+     * @return A Method or {@code null}.
      * @see SecurityManager#checkPermission
      * @see Class#getMethod(String, Class...)
      * @since 3.15.0
@@ -423,10 +481,10 @@ public class MethodUtils {
     /**
      * Gets all class level public methods of the given class that are annotated with the given annotation.
      *
-     * @param cls           the {@link Class} to query.
-     * @param annotationCls the {@link Annotation} that must be present on a method to be matched.
-     * @return a list of Methods (possibly empty).
-     * @throws NullPointerException if the class or annotation are {@code null}.
+     * @param cls           The {@link Class} to query.
+     * @param annotationCls The {@link Annotation} that must be present on a method to be matched.
+     * @return A list of Methods (possibly empty).
+     * @throws NullPointerException Thrown if the class or annotation are {@code null}.
      * @since 3.4
      */
     public static List<Method> getMethodsListWithAnnotation(final Class<?> cls, final Class<? extends Annotation> annotationCls) {
@@ -436,12 +494,12 @@ public class MethodUtils {
     /**
      * Gets all methods of the given class that are annotated with the given annotation.
      *
-     * @param cls           the {@link Class} to query.
-     * @param annotationCls the {@link Annotation} that must be present on a method to be matched.
+     * @param cls           The {@link Class} to query.
+     * @param annotationCls The {@link Annotation} that must be present on a method to be matched.
      * @param searchSupers  determines if a lookup in the entire inheritance hierarchy of the given class should be performed.
      * @param ignoreAccess  determines if non-public methods should be considered.
-     * @return a list of Methods (possibly empty).
-     * @throws NullPointerException if either the class or annotation class is {@code null}.
+     * @return A list of Methods (possibly empty).
+     * @throws NullPointerException Thrown if either the class or annotation class is {@code null}.
      * @since 3.6
      */
     public static List<Method> getMethodsListWithAnnotation(final Class<?> cls, final Class<? extends Annotation> annotationCls, final boolean searchSupers,
@@ -461,10 +519,10 @@ public class MethodUtils {
     /**
      * Gets all class level public methods of the given class that are annotated with the given annotation.
      *
-     * @param cls           the {@link Class} to query.
-     * @param annotationCls the {@link java.lang.annotation.Annotation} that must be present on a method to be matched.
-     * @return an array of Methods (possibly empty).
-     * @throws NullPointerException if the class or annotation are {@code null}
+     * @param cls           The {@link Class} to query.
+     * @param annotationCls The {@link java.lang.annotation.Annotation} that must be present on a method to be matched.
+     * @return An array of Methods (possibly empty).
+     * @throws NullPointerException Thrown if the class or annotation are {@code null}.
      * @since 3.4
      */
     public static Method[] getMethodsWithAnnotation(final Class<?> cls, final Class<? extends Annotation> annotationCls) {
@@ -474,12 +532,12 @@ public class MethodUtils {
     /**
      * Gets all methods of the given class that are annotated with the given annotation.
      *
-     * @param cls           the {@link Class} to query.
-     * @param annotationCls the {@link java.lang.annotation.Annotation} that must be present on a method to be matched.
+     * @param cls           The {@link Class} to query.
+     * @param annotationCls The {@link java.lang.annotation.Annotation} that must be present on a method to be matched.
      * @param searchSupers  determines if a lookup in the entire inheritance hierarchy of the given class should be performed.
      * @param ignoreAccess  determines if non-public methods should be considered.
-     * @return an array of Methods (possibly empty).
-     * @throws NullPointerException if the class or annotation are {@code null}.
+     * @return An array of Methods (possibly empty).
+     * @throws NullPointerException Thrown if the class or annotation are {@code null}.
      * @since 3.6
      */
     public static Method[] getMethodsWithAnnotation(final Class<?> cls, final Class<? extends Annotation> annotationCls, final boolean searchSupers,
@@ -492,9 +550,9 @@ public class MethodUtils {
      *
      * @param method lowest to consider.
      * @param interfacesBehavior whether to search interfaces, {@code null} {@code implies} false.
-     * @return a {@code Set<Method>} in ascending order from subclass to superclass.
-     * @throws NullPointerException if the specified method is {@code null}.
-     * @throws SecurityException if an underlying accessible object's method denies the request.
+     * @return A {@code Set<Method>} in ascending order from subclass to superclass.
+     * @throws NullPointerException Thrown if the specified method is {@code null}.
+     * @throws SecurityException Thrown if an underlying accessible object's method denies the request.
      * @see SecurityManager#checkPermission
      * @since 3.2
      */
@@ -831,10 +889,10 @@ public class MethodUtils {
      * @param object invoke method on this object.
      * @param methodName get method with this name.
      * @return The value returned by the invoked method.
-     * @throws NoSuchMethodException if there is no such accessible method.
-     * @throws InvocationTargetException wraps an exception thrown by the method invoked.
-     * @throws IllegalAccessException if the requested method is not accessible via reflection.
-     * @throws SecurityException if an underlying accessible object's method denies the request.
+     * @throws NoSuchMethodException Thrown if there is no such accessible method.
+     * @throws InvocationTargetException Thrown to wrap an exception thrown by the method invoked.
+     * @throws IllegalAccessException Thrown if the requested method is not accessible via reflection.
+     * @throws SecurityException Thrown if an underlying accessible object's method denies the request.
      * @see SecurityManager#checkPermission
      * @since 3.4
      */
@@ -863,11 +921,11 @@ public class MethodUtils {
      * @param methodName get method with this name.
      * @param args use these arguments - treat null as empty array.
      * @return The value returned by the invoked method.
-     * @throws NoSuchMethodException if there is no such accessible method.
-     * @throws InvocationTargetException wraps an exception thrown by the method invoked.
-     * @throws IllegalAccessException if the requested method is not accessible via reflection.
-     * @throws NullPointerException if the object or method name are {@code null}.
-     * @throws SecurityException if an underlying accessible object's method denies the request.
+     * @throws NoSuchMethodException Thrown if there is no such accessible method.
+     * @throws InvocationTargetException Thrown to wrap an exception thrown by the method invoked.
+     * @throws IllegalAccessException Thrown if the requested method is not accessible via reflection.
+     * @throws NullPointerException Thrown if the object or method name are {@code null}.
+     * @throws SecurityException Thrown if an underlying accessible object's method denies the request.
      * @see SecurityManager#checkPermission
      */
     public static Object invokeMethod(final Object object, final String methodName, final Object... args)
@@ -1019,9 +1077,9 @@ public class MethodUtils {
      * We follow the <a href="https://docs.oracle.com/javase/specs/jls/se21/html/jls-5.html#jls-5.1.2">JLS 5.1.2. Widening Primitive Conversion</a> rules.
      * </p>
      *
-     * @param args                 the array of arguments passed to the varags method.
-     * @param methodParameterTypes the declared array of method parameter types.
-     * @return an array of the variadic arguments passed to the method.
+     * @param args                 The array of arguments passed to the varags method.
+     * @param methodParameterTypes The declared array of method parameter types.
+     * @return An array of the variadic arguments passed to the method.
      * @throws NoSuchMethodException       Thrown if the constructor could not be found.
      * @throws IllegalAccessException      Thrown if this {@code Constructor} object is enforcing Java language access control and the underlying constructor is
      *                                     inaccessible.

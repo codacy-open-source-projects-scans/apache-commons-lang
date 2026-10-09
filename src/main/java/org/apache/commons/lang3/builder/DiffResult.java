@@ -66,7 +66,7 @@ public class DiffResult<T> implements Iterable<Diff<?>> {
      *            {@link ToStringStyle#DEFAULT_STYLE} is used
      * @param toStringFormat
      *            Two-argument format string for {@link String#format(String, Object...)}, for example {@code "%s differs from %s"}.
-     * @throws NullPointerException if {@code lhs}, {@code rhs} or {@code diffs} are {@code null}.
+     * @throws NullPointerException Thrown if {@code lhs}, {@code rhs} or {@code diffs} are {@code null}.
      */
     DiffResult(final T lhs, final T rhs, final List<Diff<?>> diffList, final ToStringStyle style, final String toStringFormat) {
         this.diffList = Objects.requireNonNull(diffList, "diffList");
@@ -80,7 +80,7 @@ public class DiffResult<T> implements Iterable<Diff<?>> {
      * Gets an unmodifiable list of {@link Diff}s. The list may be empty if
      * there were no differences between the objects.
      *
-     * @return an unmodifiable list of {@link Diff}s
+     * @return An unmodifiable list of {@link Diff}s
      */
     public List<Diff<?>> getDiffs() {
         return Collections.unmodifiableList(diffList);
@@ -89,7 +89,7 @@ public class DiffResult<T> implements Iterable<Diff<?>> {
     /**
      * Gets the object the right object has been compared to.
      *
-     * @return the left object of the diff
+     * @return The left object of the diff
      * @since 3.10
      */
     public T getLeft() {
@@ -99,7 +99,7 @@ public class DiffResult<T> implements Iterable<Diff<?>> {
     /**
      * Gets the number of differences between the two objects.
      *
-     * @return the number of differences
+     * @return The number of differences
      */
     public int getNumberOfDiffs() {
         return diffList.size();
@@ -108,7 +108,7 @@ public class DiffResult<T> implements Iterable<Diff<?>> {
     /**
      * Gets the object the left object has been compared to.
      *
-     * @return the right object of the diff
+     * @return The right object of the diff
      * @since 3.10
      */
     public T getRight() {
@@ -118,7 +118,7 @@ public class DiffResult<T> implements Iterable<Diff<?>> {
     /**
      * Gets the style used by the {@link #toString()} method.
      *
-     * @return the style
+     * @return The style
      */
     public ToStringStyle getToStringStyle() {
         return style;
@@ -127,7 +127,7 @@ public class DiffResult<T> implements Iterable<Diff<?>> {
     /**
      * Returns an iterator over the {@link Diff} objects contained in this list.
      *
-     * @return the iterator
+     * @return The iterator
      */
     @Override
     public Iterator<Diff<?>> iterator() {
@@ -161,7 +161,7 @@ public class DiffResult<T> implements Iterable<Diff<?>> {
      * use {@link #toString(ToStringStyle)}.
      * </p>
      *
-     * @return a {@link String} description of the differences.
+     * @return A {@link String} description of the differences.
      */
     @Override
     public String toString() {
@@ -175,7 +175,7 @@ public class DiffResult<T> implements Iterable<Diff<?>> {
      * @param style
      *            the {@link ToStringStyle} to use when outputting the objects
      *
-     * @return a {@link String} description of the differences.
+     * @return A {@link String} description of the differences.
      */
     public String toString(final ToStringStyle style) {
         if (diffList.isEmpty()) {

@@ -19,12 +19,15 @@ package org.apache.commons.lang3.builder;
 import java.util.Objects;
 
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.builder.AbstractReflection.AbstractBuilder;
 
 /**
  * Assists in implementing {@link Object#toString()} methods.
  *
- * <p>This class enables a good and consistent {@code toString()} to be built for any
- * class or object. This class aims to simplify the process by:</p>
+ * <p>
+ * This class enables a good and consistent {@code toString()} to be built for any
+ * class or object. This class aims to simplify the process by:
+ * </p>
  * <ul>
  *  <li>allowing field names</li>
  *  <li>handling all types consistently</li>
@@ -34,7 +37,9 @@ import org.apache.commons.lang3.ObjectUtils;
  *  <li>handling class hierarchies</li>
  * </ul>
  *
- * <p>To use this class write code as follows:</p>
+ * <p>
+ * To use this class write code as follows:
+ * </p>
  *
  * <pre>
  * public class Person {
@@ -54,21 +59,32 @@ import org.apache.commons.lang3.ObjectUtils;
  * }
  * </pre>
  *
- * <p>This will produce a toString of the format:
- * {@code Person@7f54[name=Stephen,age=29,smoker=false]}</p>
+ * <p>
+ * This will produce a toString of the format:
+ * {@code Person@7f54[name=Stephen,age=29,smoker=false]}
+ * </p>
  *
- * <p>To add the superclass {@code toString}, use {@link #appendSuper}.
+ * <p>
+ * To add the superclass {@code toString}, use {@link #appendSuper}.
  * To append the {@code toString} from an object that is delegated
- * to (or any other object), use {@link #appendToString}.</p>
+ * to (or any other object), use {@link #appendToString}.
+ * </p>
  *
- * <p>Alternatively, there is a method that uses reflection to determine
+ * <p>
+ * Alternatively, there is a method that uses reflection to determine
  * the fields to test. Because these fields are usually private, the method,
  * {@code reflectionToString}, uses {@code AccessibleObject.setAccessible} to
  * change the visibility of the fields. This will fail under a security manager,
  * unless the appropriate permissions are set up correctly. It is also
- * slower than testing explicitly.</p>
+ * slower than testing explicitly.
+ * </p>
+ * <p>
+ * See also {@link AbstractBuilder#setForceAccessible(boolean)}
+ * </p>
  *
- * <p>A typical invocation for this method would look like:</p>
+ * <p>
+ * A typical invocation for this method would look like:
+ * </p>
  *
  * <pre>
  * public String toString() {
@@ -76,18 +92,80 @@ import org.apache.commons.lang3.ObjectUtils;
  * }
  * </pre>
  *
- * <p>You can also use the builder to debug 3rd party objects:</p>
+ * <p>
+ * You can also use the builder to debug 3rd party objects:
+ * </p>
  *
  * <pre>
  * System.out.println("An object: " + ToStringBuilder.reflectionToString(anObject));
  * </pre>
  *
- * <p>The exact format of the {@code toString} is determined by
- * the {@link ToStringStyle} passed into the constructor.</p>
+ * <p>
+ * The exact format of the {@code toString} is determined by
+ * the {@link ToStringStyle} passed into the constructor.
+ * </p>
  *
+ * @see AbstractBuilder#setForceAccessible(boolean)
  * @since 1.0
  */
-public class ToStringBuilder implements Builder<String> {
+public class ToStringBuilder extends AbstractReflection implements Builder<String> {
+
+    /**
+     * Builds instances of CompareToBuilder.
+     *
+     * @since 3.21.0
+     */
+    public static class Builder extends AbstractBuilder<Builder> {
+
+        private Object object;
+        private ToStringStyle style;
+        private StringBuffer buffer;
+
+        /**
+         * Constructs a new Builder instance.
+         */
+        private Builder() {
+            // empty
+        }
+
+        @Override
+        public ToStringBuilder get() {
+            return new ToStringBuilder(this);
+        }
+
+        /**
+         * Sets the {@link StringBuffer} to populate, may be null.
+         *
+         * @param buffer The {@link StringBuffer} to populate, may be null
+         * @return {@code this} builder instance.
+         */
+        public Builder setBuffer(final StringBuffer buffer) {
+            this.buffer = buffer;
+            return asThis();
+        }
+
+        /**
+         * Sets the Object to build a {@code toString} for, not recommended to be null.
+         *
+         * @param object The Object to build a {@code toString} for, not recommended to be null.
+         * @return {@code this} builder instance.
+         */
+        public Builder setObject(final Object object) {
+            this.object = object;
+            return asThis();
+        }
+
+        /**
+         * Sets the style of the {@code toString} to create, null uses the default style.
+         *
+         * @param style The style of the {@code toString} to create, null uses the default style
+         * @return {@code this} builder instance.
+         */
+        public Builder setStyle(final ToStringStyle style) {
+            this.style = style;
+            return asThis();
+        }
+    }
 
     /**
      * The default style of output to use, not null.
@@ -95,22 +173,38 @@ public class ToStringBuilder implements Builder<String> {
     private static volatile ToStringStyle defaultStyle = ToStringStyle.DEFAULT_STYLE;
 
     /**
+     * Constructs a new Builder.
+     *
+     * @return A new Builder.
+     * @since 3.21.0
+     */
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    /**
      * Gets the default {@link ToStringStyle} to use.
      *
-     * <p>This method gets a singleton default value, typically for the whole JVM.
+     * <p>
+     * This method gets a singleton default value, typically for the whole JVM.
      * Changing this default should generally only be done during application startup.
      * It is recommended to pass a {@link ToStringStyle} to the constructor instead
-     * of using this global default.</p>
+     * of using this global default.
+     * </p>
      *
-     * <p>This method can be used from multiple threads.
+     * <p>
+     * This method can be used from multiple threads.
      * Internally, a {@code volatile} variable is used to provide the guarantee
      * that the latest value set using {@link #setDefaultStyle} is the value returned.
-     * It is strongly recommended that the default style is only changed during application startup.</p>
+     * It is strongly recommended that the default style is only changed during application startup.
+     * </p>
      *
-     * <p>One reason for changing the default could be to have a verbose style during
-     * development and a compact style in production.</p>
+     * <p>
+     * One reason for changing the default could be to have a verbose style during
+     * development and a compact style in production.
+     * </p>
      *
-     * @return the default {@link ToStringStyle}, never null
+     * @return The default {@link ToStringStyle}, never null
      */
     public static ToStringStyle getDefaultStyle() {
         return defaultStyle;
@@ -120,8 +214,8 @@ public class ToStringBuilder implements Builder<String> {
      * Uses {@link ReflectionToStringBuilder} to generate a
      * {@code toString} for the specified object.
      *
-     * @param object  the Object to be output
-     * @return the String result
+     * @param object  The Object to be output
+     * @return The String result
      * @see ReflectionToStringBuilder#toString(Object)
      */
     public static String reflectionToString(final Object object) {
@@ -132,9 +226,9 @@ public class ToStringBuilder implements Builder<String> {
      * Uses {@link ReflectionToStringBuilder} to generate a
      * {@code toString} for the specified object.
      *
-     * @param object  the Object to be output
-     * @param style  the style of the {@code toString} to create, may be {@code null}
-     * @return the String result
+     * @param object  The Object to be output
+     * @param style  The style of the {@code toString} to create, may be {@code null}
+     * @return The String result
      * @see ReflectionToStringBuilder#toString(Object,ToStringStyle)
      */
     public static String reflectionToString(final Object object, final ToStringStyle style) {
@@ -145,10 +239,10 @@ public class ToStringBuilder implements Builder<String> {
      * Uses {@link ReflectionToStringBuilder} to generate a
      * {@code toString} for the specified object.
      *
-     * @param object  the Object to be output
-     * @param style  the style of the {@code toString} to create, may be {@code null}
+     * @param object  The Object to be output
+     * @param style  The style of the {@code toString} to create, may be {@code null}
      * @param outputTransients  whether to include transient fields
-     * @return the String result
+     * @return The String result
      * @see ReflectionToStringBuilder#toString(Object,ToStringStyle,boolean)
      */
     public static String reflectionToString(final Object object, final ToStringStyle style, final boolean outputTransients) {
@@ -159,12 +253,12 @@ public class ToStringBuilder implements Builder<String> {
      * Uses {@link ReflectionToStringBuilder} to generate a
      * {@code toString} for the specified object.
      *
-     * @param <T> the type of the object
-     * @param object  the Object to be output
-     * @param style  the style of the {@code toString} to create, may be {@code null}
+     * @param <T> The type of the object
+     * @param object  The Object to be output
+     * @param style  The style of the {@code toString} to create, may be {@code null}
      * @param outputTransients  whether to include transient fields
-     * @param reflectUpToClass  the superclass to reflect up to (inclusive), may be {@code null}
-     * @return the String result
+     * @param reflectUpToClass  The superclass to reflect up to (inclusive), may be {@code null}
+     * @return The String result
      * @see ReflectionToStringBuilder#toString(Object,ToStringStyle,boolean,boolean,Class)
      * @since 2.0
      */
@@ -179,17 +273,21 @@ public class ToStringBuilder implements Builder<String> {
     /**
      * Sets the default {@link ToStringStyle} to use.
      *
-     * <p>This method sets a singleton default value, typically for the whole JVM.
+     * <p>
+     * This method sets a singleton default value, typically for the whole JVM.
      * Changing this default should generally only be done during application startup.
      * It is recommended to pass a {@link ToStringStyle} to the constructor instead
-     * of changing this global default.</p>
+     * of changing this global default.
+     * </p>
      *
-     * <p>This method is not intended for use from multiple threads.
+     * <p>
+     * This method is not intended for use from multiple threads.
      * Internally, a {@code volatile} variable is used to provide the guarantee
-     * that the latest value set is the value returned from {@link #getDefaultStyle}.</p>
+     * that the latest value set is the value returned from {@link #getDefaultStyle}.
+     * </p>
      *
-     * @param style  the default {@link ToStringStyle}
-     * @throws NullPointerException if the style is {@code null}
+     * @param style  The default {@link ToStringStyle}
+     * @throws NullPointerException Thrown if the style is {@code null}.
      */
     public static void setDefaultStyle(final ToStringStyle style) {
         defaultStyle = Objects.requireNonNull(style, "style");
@@ -210,12 +308,22 @@ public class ToStringBuilder implements Builder<String> {
      */
     private final ToStringStyle style;
 
+    private ToStringBuilder(final Builder builder) {
+        super(builder);
+        this.style = builder.style != null ? builder.style : getDefaultStyle();
+        this.buffer = builder.buffer != null ? builder.buffer : new StringBuffer(512);
+        this.object = builder.object;
+        style.appendStart(buffer, object);
+    }
+
     /**
      * Constructs a builder for the specified object using the default output style.
      *
-     * <p>This default style is obtained from {@link #getDefaultStyle()}.</p>
+     * <p>
+     * This default style is obtained from {@link #getDefaultStyle()}.
+     * </p>
      *
-     * @param object  the Object to build a {@code toString} for, not recommended to be null
+     * @param object  The Object to build a {@code toString} for, not recommended to be null
      */
     public ToStringBuilder(final Object object) {
         this(object, null, null);
@@ -224,10 +332,12 @@ public class ToStringBuilder implements Builder<String> {
     /**
      * Constructs a builder for the specified object using the defined output style.
      *
-     * <p>If the style is {@code null}, the default style is used.</p>
+     * <p>
+     * If the style is {@code null}, the default style is used.
+     * </p>
      *
-     * @param object  the Object to build a {@code toString} for, not recommended to be null
-     * @param style  the style of the {@code toString} to create, null uses the default style
+     * @param object  The Object to build a {@code toString} for, not recommended to be null
+     * @param style  The style of the {@code toString} to create, null uses the default style
      */
     public ToStringBuilder(final Object object, final ToStringStyle style) {
         this(object, style, null);
@@ -236,33 +346,27 @@ public class ToStringBuilder implements Builder<String> {
     /**
      * Constructs a builder for the specified object.
      *
-     * <p>If the style is {@code null}, the default style is used.</p>
+     * <p>
+     * If the style is {@code null}, the default style is used.
+     * </p>
      *
-     * <p>If the buffer is {@code null}, a new one is created.</p>
+     * <p>
+     * If the buffer is {@code null}, a new one is created.
+     * </p>
      *
-     * @param object  the Object to build a {@code toString} for, not recommended to be null
-     * @param style  the style of the {@code toString} to create, null uses the default style
-     * @param buffer  the {@link StringBuffer} to populate, may be null
+     * @param object  The Object to build a {@code toString} for, not recommended to be null
+     * @param style  The style of the {@code toString} to create, null uses the default style
+     * @param buffer  The {@link StringBuffer} to populate, may be null
      */
-    public ToStringBuilder(final Object object, ToStringStyle style, StringBuffer buffer) {
-        if (style == null) {
-            style = getDefaultStyle();
-        }
-        if (buffer == null) {
-            buffer = new StringBuffer(512);
-        }
-        this.buffer = buffer;
-        this.style = style;
-        this.object = object;
-
-        style.appendStart(buffer, object);
+    public ToStringBuilder(final Object object, final ToStringStyle style, final StringBuffer buffer) {
+        this(builder().setObject(object).setStyle(style).setBuffer(buffer));
     }
 
     /**
-     * Append to the {@code toString} a {@code boolean}
+     * Appends to the {@code toString} a {@code boolean}
      * value.
      *
-     * @param value  the value to add to the {@code toString}
+     * @param value  The value to add to the {@code toString}
      * @return {@code this} instance.
      */
     public ToStringBuilder append(final boolean value) {
@@ -271,10 +375,10 @@ public class ToStringBuilder implements Builder<String> {
     }
 
     /**
-     * Append to the {@code toString} a {@code boolean}
+     * Appends to the {@code toString} a {@code boolean}
      * array.
      *
-     * @param array  the array to add to the {@code toString}
+     * @param array  The array to add to the {@code toString}
      * @return {@code this} instance.
      */
     public ToStringBuilder append(final boolean[] array) {
@@ -283,10 +387,10 @@ public class ToStringBuilder implements Builder<String> {
     }
 
     /**
-     * Append to the {@code toString} a {@code byte}
+     * Appends to the {@code toString} a {@code byte}
      * value.
      *
-     * @param value  the value to add to the {@code toString}
+     * @param value  The value to add to the {@code toString}
      * @return {@code this} instance.
      */
     public ToStringBuilder append(final byte value) {
@@ -295,10 +399,10 @@ public class ToStringBuilder implements Builder<String> {
     }
 
     /**
-     * Append to the {@code toString} a {@code byte}
+     * Appends to the {@code toString} a {@code byte}
      * array.
      *
-     * @param array  the array to add to the {@code toString}
+     * @param array  The array to add to the {@code toString}
      * @return {@code this} instance.
      */
     public ToStringBuilder append(final byte[] array) {
@@ -307,10 +411,10 @@ public class ToStringBuilder implements Builder<String> {
     }
 
     /**
-     * Append to the {@code toString} a {@code char}
+     * Appends to the {@code toString} a {@code char}
      * value.
      *
-     * @param value  the value to add to the {@code toString}
+     * @param value  The value to add to the {@code toString}
      * @return {@code this} instance.
      */
     public ToStringBuilder append(final char value) {
@@ -319,10 +423,10 @@ public class ToStringBuilder implements Builder<String> {
     }
 
     /**
-     * Append to the {@code toString} a {@code char}
+     * Appends to the {@code toString} a {@code char}
      * array.
      *
-     * @param array  the array to add to the {@code toString}
+     * @param array  The array to add to the {@code toString}
      * @return {@code this} instance.
      */
     public ToStringBuilder append(final char[] array) {
@@ -331,10 +435,10 @@ public class ToStringBuilder implements Builder<String> {
     }
 
     /**
-     * Append to the {@code toString} a {@code double}
+     * Appends to the {@code toString} a {@code double}
      * value.
      *
-     * @param value  the value to add to the {@code toString}
+     * @param value  The value to add to the {@code toString}
      * @return {@code this} instance.
      */
     public ToStringBuilder append(final double value) {
@@ -343,10 +447,10 @@ public class ToStringBuilder implements Builder<String> {
     }
 
     /**
-     * Append to the {@code toString} a {@code double}
+     * Appends to the {@code toString} a {@code double}
      * array.
      *
-     * @param array  the array to add to the {@code toString}
+     * @param array  The array to add to the {@code toString}
      * @return {@code this} instance.
      */
     public ToStringBuilder append(final double[] array) {
@@ -355,10 +459,10 @@ public class ToStringBuilder implements Builder<String> {
     }
 
     /**
-     * Append to the {@code toString} a {@code float}
+     * Appends to the {@code toString} a {@code float}
      * value.
      *
-     * @param value  the value to add to the {@code toString}
+     * @param value  The value to add to the {@code toString}
      * @return {@code this} instance.
      */
     public ToStringBuilder append(final float value) {
@@ -367,10 +471,10 @@ public class ToStringBuilder implements Builder<String> {
     }
 
     /**
-     * Append to the {@code toString} a {@code float}
+     * Appends to the {@code toString} a {@code float}
      * array.
      *
-     * @param array  the array to add to the {@code toString}
+     * @param array  The array to add to the {@code toString}
      * @return {@code this} instance.
      */
     public ToStringBuilder append(final float[] array) {
@@ -379,10 +483,10 @@ public class ToStringBuilder implements Builder<String> {
     }
 
     /**
-     * Append to the {@code toString} an {@code int}
+     * Appends to the {@code toString} an {@code int}
      * value.
      *
-     * @param value  the value to add to the {@code toString}
+     * @param value  The value to add to the {@code toString}
      * @return {@code this} instance.
      */
     public ToStringBuilder append(final int value) {
@@ -391,10 +495,10 @@ public class ToStringBuilder implements Builder<String> {
     }
 
     /**
-     * Append to the {@code toString} an {@code int}
+     * Appends to the {@code toString} an {@code int}
      * array.
      *
-     * @param array  the array to add to the {@code toString}
+     * @param array  The array to add to the {@code toString}
      * @return {@code this} instance.
      */
     public ToStringBuilder append(final int[] array) {
@@ -403,10 +507,10 @@ public class ToStringBuilder implements Builder<String> {
     }
 
     /**
-     * Append to the {@code toString} a {@code long}
+     * Appends to the {@code toString} a {@code long}
      * value.
      *
-     * @param value  the value to add to the {@code toString}
+     * @param value  The value to add to the {@code toString}
      * @return {@code this} instance.
      */
     public ToStringBuilder append(final long value) {
@@ -415,10 +519,10 @@ public class ToStringBuilder implements Builder<String> {
     }
 
     /**
-     * Append to the {@code toString} a {@code long}
+     * Appends to the {@code toString} a {@code long}
      * array.
      *
-     * @param array  the array to add to the {@code toString}
+     * @param array  The array to add to the {@code toString}
      * @return {@code this} instance.
      */
     public ToStringBuilder append(final long[] array) {
@@ -427,10 +531,10 @@ public class ToStringBuilder implements Builder<String> {
     }
 
     /**
-     * Append to the {@code toString} an {@link Object}
+     * Appends to the {@code toString} an {@link Object}
      * value.
      *
-     * @param obj  the value to add to the {@code toString}
+     * @param obj  The value to add to the {@code toString}
      * @return {@code this} instance.
      */
     public ToStringBuilder append(final Object obj) {
@@ -439,10 +543,10 @@ public class ToStringBuilder implements Builder<String> {
     }
 
     /**
-     * Append to the {@code toString} an {@link Object}
+     * Appends to the {@code toString} an {@link Object}
      * array.
      *
-     * @param array  the array to add to the {@code toString}
+     * @param array  The array to add to the {@code toString}
      * @return {@code this} instance.
      */
     public ToStringBuilder append(final Object[] array) {
@@ -451,10 +555,10 @@ public class ToStringBuilder implements Builder<String> {
     }
 
     /**
-     * Append to the {@code toString} a {@code short}
+     * Appends to the {@code toString} a {@code short}
      * value.
      *
-     * @param value  the value to add to the {@code toString}
+     * @param value  The value to add to the {@code toString}
      * @return {@code this} instance.
      */
     public ToStringBuilder append(final short value) {
@@ -463,10 +567,10 @@ public class ToStringBuilder implements Builder<String> {
     }
 
     /**
-     * Append to the {@code toString} a {@code short}
+     * Appends to the {@code toString} a {@code short}
      * array.
      *
-     * @param array  the array to add to the {@code toString}
+     * @param array  The array to add to the {@code toString}
      * @return {@code this} instance.
      */
     public ToStringBuilder append(final short[] array) {
@@ -475,11 +579,11 @@ public class ToStringBuilder implements Builder<String> {
     }
 
     /**
-     * Append to the {@code toString} a {@code boolean}
+     * Appends to the {@code toString} a {@code boolean}
      * value.
      *
-     * @param fieldName  the field name
-     * @param value  the value to add to the {@code toString}
+     * @param fieldName  The field name
+     * @param value  The value to add to the {@code toString}
      * @return {@code this} instance.
      */
     public ToStringBuilder append(final String fieldName, final boolean value) {
@@ -488,11 +592,11 @@ public class ToStringBuilder implements Builder<String> {
     }
 
     /**
-     * Append to the {@code toString} a {@code boolean}
+     * Appends to the {@code toString} a {@code boolean}
      * array.
      *
-     * @param fieldName  the field name
-     * @param array  the array to add to the {@code hashCode}
+     * @param fieldName  The field name
+     * @param array  The array to add to the {@code hashCode}
      * @return {@code this} instance.
      */
     public ToStringBuilder append(final String fieldName, final boolean[] array) {
@@ -501,16 +605,18 @@ public class ToStringBuilder implements Builder<String> {
     }
 
     /**
-     * Append to the {@code toString} a {@code boolean}
+     * Appends to the {@code toString} a {@code boolean}
      * array.
      *
-     * <p>A boolean parameter controls the level of detail to show.
+     * <p>
+     * A boolean parameter controls the level of detail to show.
      * Setting {@code true} will output the array in full. Setting
      * {@code false} will output a summary, typically the size of
-     * the array.</p>
+     * the array.
+     * </p>
      *
-     * @param fieldName  the field name
-     * @param array  the array to add to the {@code toString}
+     * @param fieldName  The field name
+     * @param array  The array to add to the {@code toString}
      * @param fullDetail  {@code true} for detail, {@code false}
      *  for summary info
      * @return {@code this} instance.
@@ -521,11 +627,11 @@ public class ToStringBuilder implements Builder<String> {
     }
 
     /**
-     * Append to the {@code toString} an {@code byte}
+     * Appends to the {@code toString} an {@code byte}
      * value.
      *
-     * @param fieldName  the field name
-     * @param value  the value to add to the {@code toString}
+     * @param fieldName  The field name
+     * @param value  The value to add to the {@code toString}
      * @return {@code this} instance.
      */
     public ToStringBuilder append(final String fieldName, final byte value) {
@@ -534,10 +640,10 @@ public class ToStringBuilder implements Builder<String> {
     }
 
     /**
-     * Append to the {@code toString} a {@code byte} array.
+     * Appends to the {@code toString} a {@code byte} array.
      *
-     * @param fieldName  the field name
-     * @param array  the array to add to the {@code toString}
+     * @param fieldName  The field name
+     * @param array  The array to add to the {@code toString}
      * @return {@code this} instance.
      */
     public ToStringBuilder append(final String fieldName, final byte[] array) {
@@ -546,16 +652,18 @@ public class ToStringBuilder implements Builder<String> {
     }
 
     /**
-     * Append to the {@code toString} a {@code byte}
+     * Appends to the {@code toString} a {@code byte}
      * array.
      *
-     * <p>A boolean parameter controls the level of detail to show.
+     * <p>
+     * A boolean parameter controls the level of detail to show.
      * Setting {@code true} will output the array in full. Setting
      * {@code false} will output a summary, typically the size of
      * the array.
+     * </p>
      *
-     * @param fieldName  the field name
-     * @param array  the array to add to the {@code toString}
+     * @param fieldName  The field name
+     * @param array  The array to add to the {@code toString}
      * @param fullDetail  {@code true} for detail, {@code false}
      *  for summary info
      * @return {@code this} instance.
@@ -566,11 +674,11 @@ public class ToStringBuilder implements Builder<String> {
     }
 
     /**
-     * Append to the {@code toString} a {@code char}
+     * Appends to the {@code toString} a {@code char}
      * value.
      *
-     * @param fieldName  the field name
-     * @param value  the value to add to the {@code toString}
+     * @param fieldName  The field name
+     * @param value  The value to add to the {@code toString}
      * @return {@code this} instance.
      */
     public ToStringBuilder append(final String fieldName, final char value) {
@@ -579,11 +687,11 @@ public class ToStringBuilder implements Builder<String> {
     }
 
     /**
-     * Append to the {@code toString} a {@code char}
+     * Appends to the {@code toString} a {@code char}
      * array.
      *
-     * @param fieldName  the field name
-     * @param array  the array to add to the {@code toString}
+     * @param fieldName  The field name
+     * @param array  The array to add to the {@code toString}
      * @return {@code this} instance.
      */
     public ToStringBuilder append(final String fieldName, final char[] array) {
@@ -592,16 +700,18 @@ public class ToStringBuilder implements Builder<String> {
     }
 
     /**
-     * Append to the {@code toString} a {@code char}
+     * Appends to the {@code toString} a {@code char}
      * array.
      *
-     * <p>A boolean parameter controls the level of detail to show.
+     * <p>
+     * A boolean parameter controls the level of detail to show.
      * Setting {@code true} will output the array in full. Setting
      * {@code false} will output a summary, typically the size of
-     * the array.</p>
+     * the array.
+     * </p>
      *
-     * @param fieldName  the field name
-     * @param array  the array to add to the {@code toString}
+     * @param fieldName  The field name
+     * @param array  The array to add to the {@code toString}
      * @param fullDetail  {@code true} for detail, {@code false}
      *  for summary info
      * @return {@code this} instance.
@@ -612,11 +722,11 @@ public class ToStringBuilder implements Builder<String> {
     }
 
     /**
-     * Append to the {@code toString} a {@code double}
+     * Appends to the {@code toString} a {@code double}
      * value.
      *
-     * @param fieldName  the field name
-     * @param value  the value to add to the {@code toString}
+     * @param fieldName  The field name
+     * @param value  The value to add to the {@code toString}
      * @return {@code this} instance.
      */
     public ToStringBuilder append(final String fieldName, final double value) {
@@ -625,11 +735,11 @@ public class ToStringBuilder implements Builder<String> {
     }
 
     /**
-     * Append to the {@code toString} a {@code double}
+     * Appends to the {@code toString} a {@code double}
      * array.
      *
-     * @param fieldName  the field name
-     * @param array  the array to add to the {@code toString}
+     * @param fieldName  The field name
+     * @param array  The array to add to the {@code toString}
      * @return {@code this} instance.
      */
     public ToStringBuilder append(final String fieldName, final double[] array) {
@@ -638,16 +748,18 @@ public class ToStringBuilder implements Builder<String> {
     }
 
     /**
-     * Append to the {@code toString} a {@code double}
+     * Appends to the {@code toString} a {@code double}
      * array.
      *
-     * <p>A boolean parameter controls the level of detail to show.
+     * <p>
+     * A boolean parameter controls the level of detail to show.
      * Setting {@code true} will output the array in full. Setting
      * {@code false} will output a summary, typically the size of
-     * the array.</p>
+     * the array.
+     * </p>
      *
-     * @param fieldName  the field name
-     * @param array  the array to add to the {@code toString}
+     * @param fieldName  The field name
+     * @param array  The array to add to the {@code toString}
      * @param fullDetail  {@code true} for detail, {@code false}
      *  for summary info
      * @return {@code this} instance.
@@ -658,11 +770,11 @@ public class ToStringBuilder implements Builder<String> {
     }
 
     /**
-     * Append to the {@code toString} an {@code float}
+     * Appends to the {@code toString} an {@code float}
      * value.
      *
-     * @param fieldName  the field name
-     * @param value  the value to add to the {@code toString}
+     * @param fieldName  The field name
+     * @param value  The value to add to the {@code toString}
      * @return {@code this} instance.
      */
     public ToStringBuilder append(final String fieldName, final float value) {
@@ -671,11 +783,11 @@ public class ToStringBuilder implements Builder<String> {
     }
 
     /**
-     * Append to the {@code toString} a {@code float}
+     * Appends to the {@code toString} a {@code float}
      * array.
      *
-     * @param fieldName  the field name
-     * @param array  the array to add to the {@code toString}
+     * @param fieldName  The field name
+     * @param array  The array to add to the {@code toString}
      * @return {@code this} instance.
      */
     public ToStringBuilder append(final String fieldName, final float[] array) {
@@ -684,16 +796,18 @@ public class ToStringBuilder implements Builder<String> {
     }
 
     /**
-     * Append to the {@code toString} a {@code float}
+     * Appends to the {@code toString} a {@code float}
      * array.
      *
-     * <p>A boolean parameter controls the level of detail to show.
+     * <p>
+     * A boolean parameter controls the level of detail to show.
      * Setting {@code true} will output the array in full. Setting
      * {@code false} will output a summary, typically the size of
-     * the array.</p>
+     * the array.
+     * </p>
      *
-     * @param fieldName  the field name
-     * @param array  the array to add to the {@code toString}
+     * @param fieldName  The field name
+     * @param array  The array to add to the {@code toString}
      * @param fullDetail  {@code true} for detail, {@code false}
      *  for summary info
      * @return {@code this} instance.
@@ -704,11 +818,11 @@ public class ToStringBuilder implements Builder<String> {
     }
 
     /**
-     * Append to the {@code toString} an {@code int}
+     * Appends to the {@code toString} an {@code int}
      * value.
      *
-     * @param fieldName  the field name
-     * @param value  the value to add to the {@code toString}
+     * @param fieldName  The field name
+     * @param value  The value to add to the {@code toString}
      * @return {@code this} instance.
      */
     public ToStringBuilder append(final String fieldName, final int value) {
@@ -717,11 +831,11 @@ public class ToStringBuilder implements Builder<String> {
     }
 
     /**
-     * Append to the {@code toString} an {@code int}
+     * Appends to the {@code toString} an {@code int}
      * array.
      *
-     * @param fieldName  the field name
-     * @param array  the array to add to the {@code toString}
+     * @param fieldName  The field name
+     * @param array  The array to add to the {@code toString}
      * @return {@code this} instance.
      */
     public ToStringBuilder append(final String fieldName, final int[] array) {
@@ -730,16 +844,18 @@ public class ToStringBuilder implements Builder<String> {
     }
 
     /**
-     * Append to the {@code toString} an {@code int}
+     * Appends to the {@code toString} an {@code int}
      * array.
      *
-     * <p>A boolean parameter controls the level of detail to show.
+     * <p>
+     * A boolean parameter controls the level of detail to show.
      * Setting {@code true} will output the array in full. Setting
      * {@code false} will output a summary, typically the size of
-     * the array.</p>
+     * the array.
+     * </p>
      *
-     * @param fieldName  the field name
-     * @param array  the array to add to the {@code toString}
+     * @param fieldName  The field name
+     * @param array  The array to add to the {@code toString}
      * @param fullDetail  {@code true} for detail, {@code false}
      *  for summary info
      * @return {@code this} instance.
@@ -750,11 +866,11 @@ public class ToStringBuilder implements Builder<String> {
     }
 
     /**
-     * Append to the {@code toString} a {@code long}
+     * Appends to the {@code toString} a {@code long}
      * value.
      *
-     * @param fieldName  the field name
-     * @param value  the value to add to the {@code toString}
+     * @param fieldName  The field name
+     * @param value  The value to add to the {@code toString}
      * @return {@code this} instance.
      */
     public ToStringBuilder append(final String fieldName, final long value) {
@@ -763,11 +879,11 @@ public class ToStringBuilder implements Builder<String> {
     }
 
     /**
-     * Append to the {@code toString} a {@code long}
+     * Appends to the {@code toString} a {@code long}
      * array.
      *
-     * @param fieldName  the field name
-     * @param array  the array to add to the {@code toString}
+     * @param fieldName  The field name
+     * @param array  The array to add to the {@code toString}
      * @return {@code this} instance.
      */
     public ToStringBuilder append(final String fieldName, final long[] array) {
@@ -776,16 +892,18 @@ public class ToStringBuilder implements Builder<String> {
     }
 
     /**
-     * Append to the {@code toString} a {@code long}
+     * Appends to the {@code toString} a {@code long}
      * array.
      *
-     * <p>A boolean parameter controls the level of detail to show.
+     * <p>
+     * A boolean parameter controls the level of detail to show.
      * Setting {@code true} will output the array in full. Setting
      * {@code false} will output a summary, typically the size of
-     * the array.</p>
+     * the array.
+     * </p>
      *
-     * @param fieldName  the field name
-     * @param array  the array to add to the {@code toString}
+     * @param fieldName  The field name
+     * @param array  The array to add to the {@code toString}
      * @param fullDetail  {@code true} for detail, {@code false}
      *  for summary info
      * @return {@code this} instance.
@@ -796,11 +914,11 @@ public class ToStringBuilder implements Builder<String> {
     }
 
     /**
-     * Append to the {@code toString} an {@link Object}
+     * Appends to the {@code toString} an {@link Object}
      * value.
      *
-     * @param fieldName  the field name
-     * @param obj  the value to add to the {@code toString}
+     * @param fieldName  The field name
+     * @param obj  The value to add to the {@code toString}
      * @return {@code this} instance.
      */
     public ToStringBuilder append(final String fieldName, final Object obj) {
@@ -809,11 +927,11 @@ public class ToStringBuilder implements Builder<String> {
     }
 
     /**
-     * Append to the {@code toString} an {@link Object}
+     * Appends to the {@code toString} an {@link Object}
      * value.
      *
-     * @param fieldName  the field name
-     * @param obj  the value to add to the {@code toString}
+     * @param fieldName  The field name
+     * @param obj  The value to add to the {@code toString}
      * @param fullDetail  {@code true} for detail,
      *  {@code false} for summary info
      * @return {@code this} instance.
@@ -824,11 +942,11 @@ public class ToStringBuilder implements Builder<String> {
     }
 
     /**
-     * Append to the {@code toString} an {@link Object}
+     * Appends to the {@code toString} an {@link Object}
      * array.
      *
-     * @param fieldName  the field name
-     * @param array  the array to add to the {@code toString}
+     * @param fieldName  The field name
+     * @param array  The array to add to the {@code toString}
      * @return {@code this} instance.
      */
     public ToStringBuilder append(final String fieldName, final Object[] array) {
@@ -837,16 +955,18 @@ public class ToStringBuilder implements Builder<String> {
     }
 
     /**
-     * Append to the {@code toString} an {@link Object}
+     * Appends to the {@code toString} an {@link Object}
      * array.
      *
-     * <p>A boolean parameter controls the level of detail to show.
+     * <p>
+     * A boolean parameter controls the level of detail to show.
      * Setting {@code true} will output the array in full. Setting
      * {@code false} will output a summary, typically the size of
-     * the array.</p>
+     * the array.
+     * </p>
      *
-     * @param fieldName  the field name
-     * @param array  the array to add to the {@code toString}
+     * @param fieldName  The field name
+     * @param array  The array to add to the {@code toString}
      * @param fullDetail  {@code true} for detail, {@code false}
      *  for summary info
      * @return {@code this} instance.
@@ -857,11 +977,11 @@ public class ToStringBuilder implements Builder<String> {
     }
 
     /**
-     * Append to the {@code toString} an {@code short}
+     * Appends to the {@code toString} an {@code short}
      * value.
      *
-     * @param fieldName  the field name
-     * @param value  the value to add to the {@code toString}
+     * @param fieldName  The field name
+     * @param value  The value to add to the {@code toString}
      * @return {@code this} instance.
      */
     public ToStringBuilder append(final String fieldName, final short value) {
@@ -870,11 +990,11 @@ public class ToStringBuilder implements Builder<String> {
     }
 
     /**
-     * Append to the {@code toString} a {@code short}
+     * Appends to the {@code toString} a {@code short}
      * array.
      *
-     * @param fieldName  the field name
-     * @param array  the array to add to the {@code toString}
+     * @param fieldName  The field name
+     * @param array  The array to add to the {@code toString}
      * @return {@code this} instance.
      */
     public ToStringBuilder append(final String fieldName, final short[] array) {
@@ -883,16 +1003,18 @@ public class ToStringBuilder implements Builder<String> {
     }
 
     /**
-     * Append to the {@code toString} a {@code short}
+     * Appends to the {@code toString} a {@code short}
      * array.
      *
-     * <p>A boolean parameter controls the level of detail to show.
+     * <p>
+     * A boolean parameter controls the level of detail to show.
      * Setting {@code true} will output the array in full. Setting
      * {@code false} will output a summary, typically the size of
      * the array.
+     * </p>
      *
-     * @param fieldName  the field name
-     * @param array  the array to add to the {@code toString}
+     * @param fieldName  The field name
+     * @param array  The array to add to the {@code toString}
      * @param fullDetail  {@code true} for detail, {@code false}
      *  for summary info
      * @return {@code this} instance.
@@ -907,9 +1029,9 @@ public class ToStringBuilder implements Builder<String> {
      * } method. Appends the class name followed by
      * {@link System#identityHashCode(Object)}.
      *
-     * @param srcObject  the {@link Object} whose class name and id to output
+     * @param srcObject  The {@link Object} whose class name and id to output
      * @return {@code this} instance.
-     * @throws NullPointerException if {@code srcObject} is {@code null}
+     * @throws NullPointerException Thrown if {@code srcObject} is {@code null}.
      * @since 2.0
      */
     public ToStringBuilder appendAsObjectToString(final Object srcObject) {
@@ -920,12 +1042,16 @@ public class ToStringBuilder implements Builder<String> {
     /**
      * Append the {@code toString} from the superclass.
      *
-     * <p>This method assumes that the superclass uses the same {@link ToStringStyle}
-     * as this one.</p>
+     * <p>
+     * This method assumes that the superclass uses the same {@link ToStringStyle}
+     * as this one.
+     * </p>
      *
-     * <p>If {@code superToString} is {@code null}, no change is made.</p>
+     * <p>
+     * If {@code superToString} is {@code null}, no change is made.
+     * </p>
      *
-     * @param superToString  the result of {@code super.toString()}
+     * @param superToString  The result of {@code super.toString()}
      * @return {@code this} instance.
      * @since 2.0
      */
@@ -939,9 +1065,11 @@ public class ToStringBuilder implements Builder<String> {
     /**
      * Append the {@code toString} from another object.
      *
-     * <p>This method is useful where a class delegates most of the implementation of
+     * <p>
+     * This method is useful where a class delegates most of the implementation of
      * its properties to another class. You can then call {@code toString()} on
-     * the other class and pass the result into this method.</p>
+     * the other class and pass the result into this method.
+     * </p>
      *
      * <pre>
      *   private AnotherObject delegate;
@@ -954,12 +1082,16 @@ public class ToStringBuilder implements Builder<String> {
      *       toString();
      *   }</pre>
      *
-     * <p>This method assumes that the other object uses the same {@link ToStringStyle}
-     * as this one.</p>
+     * <p>
+     * This method assumes that the other object uses the same {@link ToStringStyle}
+     * as this one.
+     * </p>
      *
-     * <p>If the {@code toString} is {@code null}, no change is made.</p>
+     * <p>
+     * If the {@code toString} is {@code null}, no change is made.
+     * </p>
      *
-     * @param toString  the result of {@code toString()} on another object
+     * @param toString  The result of {@code toString()} on another object
      * @return {@code this} instance.
      * @since 2.0
      */
@@ -974,7 +1106,7 @@ public class ToStringBuilder implements Builder<String> {
      * Returns the String that was build as an object representation. The
      * default implementation utilizes the {@link #toString()} implementation.
      *
-     * @return the String {@code toString}
+     * @return The String {@code toString}
      * @see #toString()
      * @since 3.0
      */
@@ -996,7 +1128,7 @@ public class ToStringBuilder implements Builder<String> {
     /**
      * Gets the {@link StringBuffer} being populated.
      *
-     * @return the {@link StringBuffer} being populated
+     * @return The {@link StringBuffer} being populated
      */
     public StringBuffer getStringBuffer() {
         return buffer;
@@ -1005,7 +1137,7 @@ public class ToStringBuilder implements Builder<String> {
     /**
      * Gets the {@link ToStringStyle} being used.
      *
-     * @return the {@link ToStringStyle} being used
+     * @return The {@link ToStringStyle} being used
      * @since 2.0
      */
     public ToStringStyle getStyle() {
@@ -1015,12 +1147,16 @@ public class ToStringBuilder implements Builder<String> {
     /**
      * Returns the built {@code toString}.
      *
-     * <p>This method appends the end of data indicator, and can only be called once.
-     * Use {@link #getStringBuffer} to get the current string state.</p>
+     * <p>
+     * This method appends the end of data indicator, and can only be called once.
+     * Use {@link #getStringBuffer} to get the current string state.
+     * </p>
      *
-     * <p>If the object is {@code null}, return the style's {@code nullText}</p>
+     * <p>
+     * If the object is {@code null}, return the style's {@code nullText}
+     * </p>
      *
-     * @return the String {@code toString}
+     * @return The String {@code toString}
      */
     @Override
     public String toString() {

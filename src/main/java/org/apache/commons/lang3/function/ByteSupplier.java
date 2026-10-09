@@ -28,9 +28,9 @@ import java.util.function.IntSupplier;
 public interface ByteSupplier {
 
     /**
-     * Supplies a byte.
+     * Gets a byte.
      *
-     * @return a result.
+     * @return A result.
      */
     byte getAsByte();
 }

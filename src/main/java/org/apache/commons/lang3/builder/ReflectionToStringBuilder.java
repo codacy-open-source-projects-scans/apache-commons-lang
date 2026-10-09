@@ -17,7 +17,6 @@
 
 package org.apache.commons.lang3.builder;
 
-import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
@@ -145,10 +144,8 @@ public class ReflectionToStringBuilder extends ToStringBuilder {
      *
      * @param object
      *            the Object to be output
-     * @return the String result
-     * @throws IllegalArgumentException
-     *             if the Object is {@code null}
-     *
+     * @return The String result
+     * @throws IllegalArgumentException Thrown if the Object is {@code null}.
      * @see ToStringExclude
      * @see ToStringSummary
      */
@@ -178,10 +175,8 @@ public class ReflectionToStringBuilder extends ToStringBuilder {
      *            the Object to be output
      * @param style
      *            the style of the {@code toString} to create, may be {@code null}
-     * @return the String result
-     * @throws IllegalArgumentException
-     *             if the Object or {@link ToStringStyle} is {@code null}
-     *
+     * @return The String result
+     * @throws IllegalArgumentException Thrown if the Object or {@link ToStringStyle} is {@code null}.
      * @see ToStringExclude
      * @see ToStringSummary
      */
@@ -217,10 +212,8 @@ public class ReflectionToStringBuilder extends ToStringBuilder {
      *            the style of the {@code toString} to create, may be {@code null}
      * @param outputTransients
      *            whether to include transient fields
-     * @return the String result
-     * @throws IllegalArgumentException
-     *             if the Object is {@code null}
-     *
+     * @return The String result
+     * @throws IllegalArgumentException Thrown if the Object is {@code null}.
      * @see ToStringExclude
      * @see ToStringSummary
      */
@@ -263,10 +256,8 @@ public class ReflectionToStringBuilder extends ToStringBuilder {
      *            whether to include transient fields
      * @param outputStatics
      *            whether to include static fields
-     * @return the String result
-     * @throws IllegalArgumentException
-     *             if the Object is {@code null}
-     *
+     * @return The String result
+     * @throws IllegalArgumentException Thrown if the Object is {@code null}.
      * @see ToStringExclude
      * @see ToStringSummary
      * @since 2.1
@@ -317,10 +308,8 @@ public class ReflectionToStringBuilder extends ToStringBuilder {
      *            whether to exclude fields whose values are null
      * @param reflectUpToClass
      *            the superclass to reflect up to (inclusive), may be {@code null}
-     * @return the String result
-     * @throws IllegalArgumentException
-     *             if the Object is {@code null}
-     *
+     * @return The String result
+     * @throws IllegalArgumentException Thrown if the Object is {@code null}.
      * @see ToStringExclude
      * @see ToStringSummary
      * @since 3.6
@@ -372,10 +361,8 @@ public class ReflectionToStringBuilder extends ToStringBuilder {
      *            whether to include static fields
      * @param reflectUpToClass
      *            the superclass to reflect up to (inclusive), may be {@code null}
-     * @return the String result
-     * @throws IllegalArgumentException
-     *             if the Object is {@code null}
-     *
+     * @return The String result
+     * @throws IllegalArgumentException Thrown if the Object is {@code null}.
      * @see ToStringExclude
      * @see ToStringSummary
      * @since 2.1
@@ -613,18 +600,14 @@ public class ReflectionToStringBuilder extends ToStringBuilder {
             // Reject static fields.
             return false;
         }
-
-        if (this.excludeFieldNames != null
-            && Arrays.binarySearch(this.excludeFieldNames, field.getName()) >= 0) {
+        if (this.excludeFieldNames != null && Arrays.binarySearch(this.excludeFieldNames, field.getName()) >= 0) {
             // Reject fields from the getExcludeFieldNames list.
             return false;
         }
-
         if (ArrayUtils.isNotEmpty(includeFieldNames)) {
             // Accept fields from the getIncludeFieldNames list. {@code null} or empty means all fields are included. All fields are included by default.
             return Arrays.binarySearch(this.includeFieldNames, field.getName()) >= 0;
         }
-
         return !field.isAnnotationPresent(ToStringExclude.class);
     }
 
@@ -646,14 +629,14 @@ public class ReflectionToStringBuilder extends ToStringBuilder {
         }
         // The elements in the returned array are not sorted and are not in any particular order.
         final Field[] fields = ArraySorter.sort(clazz.getDeclaredFields(), Comparator.comparing(Field::getName));
-        AccessibleObject.setAccessible(fields, true);
         for (final Field field : fields) {
             final String fieldName = field.getName();
             if (accept(field)) {
+                setAccessible(field);
                 try {
                     // Warning: Field.get(Object) creates wrappers objects
                     // for primitive types.
-                    final Object fieldValue = getValue(field);
+                    final Object fieldValue = field.isAccessible() ? getValue(field) : null;
                     if (!excludeNullValues || fieldValue != null) {
                         this.append(fieldName, fieldValue, !field.isAnnotationPresent(ToStringSummary.class));
                     }
@@ -669,7 +652,7 @@ public class ReflectionToStringBuilder extends ToStringBuilder {
     /**
      * Gets the excludeFieldNames.
      *
-     * @return the excludeFieldNames.
+     * @return The excludeFieldNames.
      */
     public String[] getExcludeFieldNames() {
         return this.excludeFieldNames.clone();
@@ -678,7 +661,7 @@ public class ReflectionToStringBuilder extends ToStringBuilder {
     /**
      * Gets the includeFieldNames
      *
-     * @return the includeFieldNames.
+     * @return The includeFieldNames.
      * @since 3.13.0
      */
     public String[] getIncludeFieldNames() {
@@ -695,16 +678,13 @@ public class ReflectionToStringBuilder extends ToStringBuilder {
     }
 
     /**
-     * Calls {@code java.lang.reflect.Field.get(Object)}.
+     * Gets the field value using {@code java.lang.reflect.Field.get(Object)}.
      *
      * @param field
      *            The Field to query.
      * @return The Object from the given Field.
-     * @throws IllegalArgumentException
-     *             see {@link java.lang.reflect.Field#get(Object)}
-     * @throws IllegalAccessException
-     *             see {@link java.lang.reflect.Field#get(Object)}
-     *
+     * @throws IllegalArgumentException Thrown as described in {@link java.lang.reflect.Field#get(Object)}.
+     * @throws IllegalAccessException Thrown as described in {@link java.lang.reflect.Field#get(Object)}.
      * @see java.lang.reflect.Field#get(Object)
      */
     protected Object getValue(final Field field) throws IllegalAccessException {
@@ -712,7 +692,7 @@ public class ReflectionToStringBuilder extends ToStringBuilder {
     }
 
     /**
-     * Gets whether or not to append static fields.
+     * Tests whether or not to append static fields.
      *
      * @return Whether or not to append static fields.
      * @since 2.1
@@ -722,7 +702,7 @@ public class ReflectionToStringBuilder extends ToStringBuilder {
     }
 
     /**
-     * Gets whether or not to append transient fields.
+     * Tests whether or not to append transient fields.
      *
      * @return Whether or not to append transient fields.
      */
@@ -731,7 +711,7 @@ public class ReflectionToStringBuilder extends ToStringBuilder {
     }
 
     /**
-     * Gets whether or not to append fields whose values are null.
+     * Tests whether or not to append fields whose values are null.
      *
      * @return Whether or not to append fields whose values are null.
      * @since 3.6
@@ -838,7 +818,7 @@ public class ReflectionToStringBuilder extends ToStringBuilder {
     /**
      * Gets the String built by this builder.
      *
-     * @return the built string
+     * @return The built string
      */
     @Override
     public String toString() {

@@ -21,11 +21,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.Serializable;
+import java.lang.reflect.Constructor;
 import java.text.ParseException;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
@@ -34,6 +36,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
@@ -45,11 +48,13 @@ import org.apache.commons.lang3.LocaleUtils;
 import org.apache.commons.lang3.SerializationUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.function.TriFunction;
+import org.apache.commons.lang3.reflect.FieldUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junitpioneer.jupiter.DefaultLocale;
 import org.junitpioneer.jupiter.DefaultTimeZone;
@@ -111,6 +116,24 @@ class FastDateParserTest extends AbstractLangTest {
     private static final TimeZone INDIA = TimeZones.getTimeZone("Asia/Calcutta");
 
     private static final Locale SWEDEN = new Locale("sv", "SE");
+
+    private static void assertParseFailure(final DateParser parser, final String source, final int errorIndex) {
+        final ParseException exception = assertThrows(ParseException.class, () -> parser.parse(source), source);
+        assertEquals(errorIndex, exception.getErrorOffset(), source);
+        for (final int startIndex : new int[] { 0, 2 }) {
+            final String input = startIndex == 0 ? source : "##" + source;
+            final ParsePosition datePosition = new ParsePosition(startIndex);
+            assertNull(parser.parse(input, datePosition), input);
+            assertEquals(startIndex + errorIndex, datePosition.getIndex(), input);
+            assertEquals(startIndex + errorIndex, datePosition.getErrorIndex(), input);
+            final ParsePosition calendarPosition = new ParsePosition(startIndex);
+            final Calendar calendar = Calendar.getInstance(TimeZones.GMT, Locale.US);
+            calendar.clear();
+            assertFalse(parser.parse(input, calendarPosition, calendar), input);
+            assertEquals(startIndex + errorIndex, calendarPosition.getIndex(), input);
+            assertEquals(startIndex + errorIndex, calendarPosition.getErrorIndex(), input);
+        }
+    }
 
     static void checkParse(final Locale locale, final Calendar cal, final SimpleDateFormat simpleDateFormat,
             final DateParser dateParser) {
@@ -214,13 +237,13 @@ class FastDateParserTest extends AbstractLangTest {
     }
 
     /**
-     * Override this method in derived tests to change the construction of instances
+     * Gets the parser instance to use for testing. Override this method in derived tests to change how instances are constructed.
      *
      * @param dpProvider TODO
-     * @param format the format string to use
-     * @param timeZone the time zone to use
-     * @param locale the locale to use
-     * @return the DateParser instance to use for testing
+     * @param format The format string to use
+     * @param timeZone The time zone to use
+     * @param locale The locale to use
+     * @return The DateParser instance to use for testing
      */
     protected DateParser getInstance(final TriFunction<String, TimeZone, Locale, DateParser> dpProvider,
         final String format, final TimeZone timeZone, final Locale locale) {
@@ -253,22 +276,17 @@ class FastDateParserTest extends AbstractLangTest {
     }
 
     @Test
+    @ReadsDefaultLocale
     void test1806() throws ParseException {
         final String formatStub = "yyyy-MM-dd'T'HH:mm:ss.SSS";
         final String dateStub = "2001-02-04T12:08:56.235";
-
         for (final Expected1806 trial : Expected1806.values()) {
             final Calendar cal = initializeCalendar(trial.zone);
-
             final String message = trial.zone.getDisplayName() + ";";
-
             DateParser parser = getInstance(formatStub + "X", trial.zone);
-            assertEquals(cal.getTime().getTime(), parser.parse(dateStub + trial.one).getTime() - trial.offset,
-                message + trial.one);
-
+            assertEquals(cal.getTime().getTime(), parser.parse(dateStub + trial.one).getTime() - trial.offset, message + trial.one);
             parser = getInstance(formatStub + "XX", trial.zone);
             assertEquals(cal.getTime(), parser.parse(dateStub + trial.two), message + trial.two);
-
             parser = getInstance(formatStub + "XXX", trial.zone);
             assertEquals(cal.getTime(), parser.parse(dateStub + trial.three), message + trial.three);
         }
@@ -418,6 +436,20 @@ class FastDateParserTest extends AbstractLangTest {
 
     @ParameterizedTest
     @MethodSource(DATE_PARSER_PARAMETERS)
+    void testLang1359(final TriFunction<String, TimeZone, Locale, DateParser> dpProvider) {
+        // A trailing numeric field is unbounded, so a digit run that overflows int must fail the parse
+        // through the ParsePosition/ParseException contract, not escape as a NumberFormatException.
+        final DateParser fdp = getInstance(dpProvider, "yyyy", TimeZones.GMT, Locale.US);
+        final String overflow = "99999999999";
+        assertThrows(ParseException.class, () -> fdp.parse(overflow));
+        final ParsePosition pos = new ParsePosition(0);
+        assertNull(fdp.parseObject(overflow, pos));
+        assertTrue(pos.getErrorIndex() >= 0);
+        assertEquals(0, pos.getIndex());
+    }
+
+    @ParameterizedTest
+    @MethodSource(DATE_PARSER_PARAMETERS)
     void testLang1380(final TriFunction<String, TimeZone, Locale, DateParser> dpProvider) throws ParseException {
         final Calendar expected = Calendar.getInstance(TimeZones.GMT, Locale.FRANCE);
         expected.clear();
@@ -442,13 +474,12 @@ class FastDateParserTest extends AbstractLangTest {
     }
 
     @Test
+    @ReadsDefaultLocale
     void testLang538() throws ParseException {
         final DateParser parser = getInstance("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", TimeZones.GMT);
-
         final Calendar cal = Calendar.getInstance(TimeZones.getTimeZone("GMT-8"));
         cal.clear();
         cal.set(2009, Calendar.OCTOBER, 16, 8, 42, 16);
-
         assertEquals(cal.getTime(), parser.parse("2009-10-16T16:42:16.000Z"));
     }
 
@@ -474,7 +505,7 @@ class FastDateParserTest extends AbstractLangTest {
     /**
      * Tests that pre-1000AD years get padded with yyyy
      *
-     * @throws ParseException so we don't have to catch it
+     * @throws ParseException Thrown if an operation in the test fails.
      */
     @Test
     void testLowYearPadding() throws ParseException {
@@ -504,6 +535,52 @@ class FastDateParserTest extends AbstractLangTest {
 
     @ParameterizedTest
     @MethodSource(DATE_PARSER_PARAMETERS)
+    void testParseErrorMessageJapaneseImperial(final TriFunction<String, TimeZone, Locale, DateParser> dpProvider) {
+        // The Japanese imperial branch of parse(String) must keep the "Unparseable date" diagnostic
+        // (source text and parse position), not drop it and emit a message starting with a stray ';'.
+        final DateParser fdp = getInstance(dpProvider, "yyyy", TimeZones.GMT, FastDateParser.JAPANESE_IMPERIAL);
+        final String source = "not-a-date";
+        final ParseException e = assertThrows(ParseException.class, () -> fdp.parse(source));
+        final String message = e.getMessage();
+        assertTrue(message.startsWith("Unparseable date: '" + source + "'"), message);
+        assertTrue(message.contains("does not support dates before 1868-01-01."), message);
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+        "Z, GMT+0:99", "Z, GMT-0:99", "Z, GMT+24:00", "Z, GMT-24:00",
+        "z, GMT+0:99", "z, GMT-0:99", "z, GMT+24:00", "z, GMT-24:00"
+    })
+    void testParseInvalidGmtTimeZoneOffsets(final String zonePattern, final String offset) {
+        final String pattern = "yyyy-MM-dd'T'HH:mm:ss" + zonePattern;
+        final String prefix = "2024-01-01T00:00:00";
+        assertParseFailure(new FastDateParser(pattern, TimeZones.GMT, Locale.US), prefix + offset, prefix.length());
+        assertParseFailure(FastDateFormat.getInstance(pattern, TimeZones.GMT, Locale.US), prefix + offset, prefix.length());
+    }
+
+    @ParameterizedTest
+    @MethodSource(DATE_PARSER_PARAMETERS)
+    void testParseInvalidTimeZoneOffsets(final TriFunction<String, TimeZone, Locale, DateParser> dpProvider) {
+        // Out-of-range offsets must not escape as IllegalArgumentException from GmtTimeZone.
+        final String prefix = "2024-01-01T00:00:00";
+        final String[][] cases = {
+            { "X", "+24", "-24", "+99", "-99" },
+            { "XX", "+2400", "-2400", "+0060", "-0060", "+9999" },
+            { "XXX", "+24:00", "-24:00", "+00:60", "-00:60", "+99:99" },
+            { "ZZ", "+24:00", "-24:00", "+00:60", "-00:60", "+99:99" },
+            { "Z", "+2400", "-2400", "+0060", "-0060" },
+            { "z", "+2400", "-2400", "+0060", "-0060" }
+        };
+        for (final String[] testCase : cases) {
+            final DateParser parser = getInstance(dpProvider, "yyyy-MM-dd'T'HH:mm:ss" + testCase[0], TimeZones.GMT, Locale.US);
+            for (int i = 1; i < testCase.length; i++) {
+                assertParseFailure(parser, prefix + testCase[i], prefix.length());
+            }
+        }
+    }
+
+    @ParameterizedTest
+    @MethodSource(DATE_PARSER_PARAMETERS)
     void testParseLongShort(final TriFunction<String, TimeZone, Locale, DateParser> dpProvider)
         throws ParseException {
         final Calendar cal = Calendar.getInstance(NEW_YORK, Locale.US);
@@ -528,6 +605,23 @@ class FastDateParserTest extends AbstractLangTest {
         assertEquals(cal.getTime(), fdf.parse("03 AD 2 10 PM Saturday 15 33 20 989 -0500"));
     }
 
+    @Test
+    void testParseMissingTimeZoneName() throws ReflectiveOperationException {
+        final FastDateParser parser = new FastDateParser("yyyy-MM-dd z", TimeZones.GMT, Locale.US);
+        final List<?> patterns = parser.getPatterns();
+        final Object zonePattern = patterns.get(patterns.size() - 1);
+        final Object cachedStrategy = FieldUtils.readField(zonePattern, "strategy", true);
+        // The report supplies no concrete regex/TreeMap mismatch. Simulate a matched name missing
+        // from the lookup using a private strategy instance, leaving the shared cache untouched.
+        final Constructor<?> constructor = cachedStrategy.getClass().getDeclaredConstructor(Locale.class);
+        constructor.setAccessible(true);
+        final Object strategy = constructor.newInstance(Locale.US);
+        final Map<?, ?> names = (Map<?, ?>) FieldUtils.readField(strategy, "tzNames", true);
+        assertNotNull(names.remove("PST"));
+        FieldUtils.writeField(zonePattern, "strategy", strategy, true);
+        assertParseFailure(parser, "2024-01-01 PST", 11);
+    }
+
     @ParameterizedTest
     @MethodSource(DATE_PARSER_PARAMETERS)
     void testParseNumerics(final TriFunction<String, TimeZone, Locale, DateParser> dpProvider)
@@ -550,6 +644,27 @@ class FastDateParserTest extends AbstractLangTest {
         cal.clear();
         cal.set(2015, Calendar.JULY, 4);
         assertEquals(cal.getTime(), date);
+    }
+
+    @Test
+    public void testParsePositionBeyondInputLength() {
+        final String source = "Jan";
+        final int startingIndex = 10;
+        final String[] patterns = {"yyyy", "MM", "dd", "HH", "'x'", "-", "/", ":", " 'at' ", "MMM", "EEEE", "a", "z"};
+        for (final String pattern : patterns) {
+            final DateParser parser = getInstance(pattern);
+            final ParsePosition pos1 = new ParsePosition(startingIndex);
+            final Date date = parser.parse(source, pos1);
+            assertNull(date);
+            assertEquals(startingIndex, pos1.getIndex());
+            assertEquals(startingIndex, pos1.getErrorIndex());
+            final ParsePosition pos2 = new ParsePosition(startingIndex);
+            final Calendar cal = Calendar.getInstance();
+            final boolean success = parser.parse(source, pos2, cal);
+            assertFalse(success);
+            assertEquals(startingIndex, pos2.getIndex());
+            assertEquals(startingIndex, pos2.getErrorIndex());
+        }
     }
 
     @CartesianTest
@@ -585,6 +700,49 @@ class FastDateParserTest extends AbstractLangTest {
 
         final FastDateParser fastDateParser = new FastDateParser(format, timeZone, locale, centuryStart);
         validateSdfFormatFdpParseEquality(format, locale, timeZone, fastDateParser, in, year, centuryStart);
+    }
+
+    @ParameterizedTest
+    @MethodSource(DATE_PARSER_PARAMETERS)
+    void testParseUnicodeTextLookupFailure(final TriFunction<String, TimeZone, Locale, DateParser> dpProvider) {
+        // Unicode regex folding accepts long s and dotted I, but the lower-case map keys differ.
+        assertParseFailure(getInstance(dpProvider, "dd MMMM yyyy", TimeZones.GMT, Locale.US), "01 Augu\u017ft 2024", 3);
+        assertParseFailure(getInstance(dpProvider, "yyyy-MM-dd EEEE", TimeZones.GMT, Locale.US), "2024-08-01 Thur\u017fday", 11);
+        assertParseFailure(getInstance(dpProvider, "yyyy-MM-dd EEEE", TimeZones.GMT, Locale.US), "2024-08-02 FR\u0130DAY", 11);
+    }
+
+    @ParameterizedTest
+    @MethodSource(DATE_PARSER_PARAMETERS)
+    void testParseUnicodeTextLookupSuccess(final TriFunction<String, TimeZone, Locale, DateParser> dpProvider) throws ParseException {
+        final DateParser turkish = getInstance(dpProvider, "dd MMMM yyyy", TimeZones.GMT, new Locale("tr", "TR"));
+        // Root-locale fallback resolves ASCII I where Turkish lower-casing produces dotless i.
+        assertEquals(turkish.parse("01 Nisan 2024"), turkish.parse("01 NISAN 2024"));
+        final DateParser german = getInstance(dpProvider, "dd MMMM yyyy", TimeZones.GMT, Locale.GERMANY);
+        assertEquals(german.parse("01 Oktober 2024"), german.parse("01 O\u212atober 2024"));
+    }
+
+    @ParameterizedTest
+    @MethodSource(DATE_PARSER_PARAMETERS)
+    void testParseValidTimeZoneOffsetBoundaries(final TriFunction<String, TimeZone, Locale, DateParser> dpProvider) {
+        final String prefix = "2024-01-01T00:00:00";
+        final String[][] cases = {
+            { "X", "Z", "+00", "-00", "+23", "-23" },
+            { "XX", "Z", "+0000", "-0000", "+2359", "-2359" },
+            { "XXX", "Z", "+00:00", "-00:00", "+23:59", "-23:59" },
+            { "ZZ", "Z", "+00:00", "-00:00", "+23:59", "-23:59" },
+            { "Z", "+0000", "-0000", "+2359", "-2359", "GMT+0:00", "GMT-23:59" },
+            { "z", "+0000", "-0000", "+2359", "-2359", "GMT+0:00", "GMT-23:59" }
+        };
+        for (final String[] testCase : cases) {
+            final DateParser parser = getInstance(dpProvider, "yyyy-MM-dd'T'HH:mm:ss" + testCase[0], TimeZones.GMT, Locale.US);
+            for (int i = 1; i < testCase.length; i++) {
+                final String source = prefix + testCase[i];
+                final ParsePosition position = new ParsePosition(0);
+                assertNotNull(parser.parse(source, position), source);
+                assertEquals(source.length(), position.getIndex(), source);
+                assertEquals(-1, position.getErrorIndex(), source);
+            }
+        }
     }
 
     @ParameterizedTest
@@ -668,9 +826,11 @@ class FastDateParserTest extends AbstractLangTest {
     /**
      * Test case for {@link FastDateParser#FastDateParser(String, TimeZone, Locale)}.
      *
-     * @throws ParseException so we don't have to catch it
+     * @throws ParseException Thrown if an operation in the test fails.
      */
     @Test
+    @ReadsDefaultLocale
+    @ReadsDefaultTimeZone
     void testShortDateStyleWithLocales() throws ParseException {
         DateParser fdf = getDateInstance(FastDateFormat.SHORT, Locale.US);
         final Calendar cal = Calendar.getInstance();
@@ -703,16 +863,29 @@ class FastDateParserTest extends AbstractLangTest {
         testSdfAndFdp(dpProvider, "yyyy-MM-dd 'QED'", "2003-02-10 qed", true);
     }
 
+    /**
+     * Mutating the TimeZone passed to the constructor or returned by the getter must not change the parser.
+     */
     @Test
+    void testTimeZoneIsCopied() throws ParseException {
+        final TimeZone timeZone = TimeZones.getTimeZone("UTC");
+        final FastDateParser parser = new FastDateParser("yyyy-MM-dd HH:mm", timeZone, Locale.US);
+        timeZone.setRawOffset(5 * 3_600_000);
+        assertEquals(new Date(0), parser.parse("1970-01-01 00:00"));
+        parser.getTimeZone().setRawOffset(5 * 3_600_000);
+        assertEquals(TimeZones.getTimeZone("UTC"), parser.getTimeZone());
+        assertEquals(new Date(0), parser.parse("1970-01-01 00:00"));
+    }
+
+    @Test
+    @ReadsDefaultLocale
     void testTimeZoneMatches() {
-        final DateParser parser = getInstance(yMdHmsSZ, REYKJAVIK);
-        assertEquals(REYKJAVIK, parser.getTimeZone());
+        assertEquals(REYKJAVIK, getInstance(yMdHmsSZ, REYKJAVIK).getTimeZone());
     }
 
     @Test
     void testToStringContainsName() {
-        final DateParser parser = getInstance(YMD_SLASH);
-        assertTrue(parser.toString().startsWith("FastDate"));
+        assertTrue(getInstance(YMD_SLASH).toString().startsWith("FastDate"));
     }
 
     // we cannot use historic dates to test time zone parsing, some time zones have second offsets
@@ -731,6 +904,29 @@ class FastDateParserTest extends AbstractLangTest {
             final Date expected = cal.getTime();
             final Date actual = fdp.parse("2000/02/10 " + timeZone.getDisplayName(locale));
             assertEquals(expected, actual, "timeZone:" + timeZone.getID() + " locale:" + locale.getDisplayName());
+        }
+    }
+
+    @Test
+    void testWeekYearParsing() throws ParseException {
+        // 'Y' must parse as a week year (resolved through Calendar.setWeekDate), matching both SimpleDateFormat
+        // and FastDatePrinter's WeekYear rule, instead of silently mapping to the plain calendar year.
+        final String[][] cases = {
+            { "YYYY-MM-dd", "2025-12-29" }, // the ubiquitous YYYY-for-yyyy slip, at a year boundary
+            { "YYYY-'W'ww-u", "2025-W01-1" },
+            { "YYYY-'W'ww-u", "2020-W53-5" },
+            { "YYYY-'W'ww", "2024-W15" },
+            { "YY-MM-dd", "25-12-29" },
+            { "YYYY", "2025" },
+            { "yyyy-MM-dd", "2024-12-29" } // plain calendar year is unaffected
+        };
+        for (final Locale locale : new Locale[] { Locale.US, Locale.GERMANY }) {
+            for (final String[] testCase : cases) {
+                final SimpleDateFormat sdf = new SimpleDateFormat(testCase[0], locale);
+                final DateParser fdp = getInstance(testCase[0], locale);
+                assertEquals(sdf.parse(testCase[1]), fdp.parse(testCase[1]),
+                        "Pattern " + testCase[0] + " input " + testCase[1] + " locale " + locale);
+            }
         }
     }
 

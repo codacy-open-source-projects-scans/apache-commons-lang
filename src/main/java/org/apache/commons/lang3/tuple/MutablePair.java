@@ -22,10 +22,12 @@ import java.util.Objects;
 /**
  * A mutable pair consisting of two {@link Object} elements.
  *
- * <p>Not #ThreadSafe#</p>
+ * <p>
+ * Not #ThreadSafe#
+ * </p>
  *
- * @param <L> the left element type.
- * @param <R> the right element type.
+ * @param <L> The left element type.
+ * @param <R> The right element type.
  * @since 3.0
  */
 public class MutablePair<L, R> extends Pair<L, R> {
@@ -46,9 +48,9 @@ public class MutablePair<L, R> extends Pair<L, R> {
     /**
      * Returns the empty array singleton that can be assigned without compiler warning.
      *
-     * @param <L> the left element type.
-     * @param <R> the right element type.
-     * @return the empty array singleton that can be assigned without compiler warning.
+     * @param <L> The left element type.
+     * @param <R> The right element type.
+     * @return The empty array singleton that can be assigned without compiler warning.
      * @since 3.10
      */
     @SuppressWarnings("unchecked")
@@ -59,11 +61,11 @@ public class MutablePair<L, R> extends Pair<L, R> {
     /**
      * Creates a mutable pair of two objects inferring the generic types.
      *
-     * @param <L> the left element type.
-     * @param <R> the right element type.
-     * @param left  the left element, may be null.
-     * @param right  the right element, may be null.
-     * @return a mutable pair formed from the two parameters, not null.
+     * @param <L> The left element type.
+     * @param <R> The right element type.
+     * @param left  The left element, may be null.
+     * @param right  The right element, may be null.
+     * @return A mutable pair formed from the two parameters, not null.
      */
     public static <L, R> MutablePair<L, R> of(final L left, final R right) {
         return new MutablePair<>(left, right);
@@ -72,10 +74,10 @@ public class MutablePair<L, R> extends Pair<L, R> {
     /**
      * Creates a mutable pair from a map entry.
      *
-     * @param <L> the left element type.
-     * @param <R> the right element type.
-     * @param pair the existing map entry.
-     * @return a mutable pair formed from the map entry.
+     * @param <L> The left element type.
+     * @param <R> The right element type.
+     * @param pair The existing map entry.
+     * @return A mutable pair formed from the map entry.
      */
     public static <L, R> MutablePair<L, R> of(final Map.Entry<L, R> pair) {
         final L left;
@@ -93,12 +95,12 @@ public class MutablePair<L, R> extends Pair<L, R> {
     /**
      * Creates a mutable pair of two non-null objects inferring the generic types.
      *
-     * @param <L> the left element type.
-     * @param <R> the right element type.
-     * @param left  the left element, may not be null.
-     * @param right  the right element, may not be null.
-     * @return a mutable pair formed from the two parameters, not null.
-     * @throws NullPointerException if any input is null.
+     * @param <L> The left element type.
+     * @param <R> The right element type.
+     * @param left  The left element, may not be null.
+     * @param right  The right element, may not be null.
+     * @return A mutable pair formed from the two parameters, not null.
+     * @throws NullPointerException Thrown if any input is null.
      * @since 3.13.0
      */
     public static <L, R> MutablePair<L, R> ofNonNull(final L left, final R right) {
@@ -108,11 +110,11 @@ public class MutablePair<L, R> extends Pair<L, R> {
     /**
      * Creates a mutable pair from a map entry.
      *
-     * @param <L> the left element type
-     * @param <R> the right element type
-     * @param pair the existing map entry.
-     * @return a mutable pair formed from the map entry
-     * @throws NullPointerException if the pair is null.
+     * @param <L> The left element type
+     * @param <R> The right element type
+     * @param pair The existing map entry.
+     * @return A mutable pair formed from the map entry
+     * @throws NullPointerException Thrown if the pair is null.
      * @since 3.20
      */
     public static <L, R> MutablePair<L, R> ofNonNull(final Map.Entry<L, R> pair) {
@@ -134,8 +136,8 @@ public class MutablePair<L, R> extends Pair<L, R> {
     /**
      * Create a new pair instance.
      *
-     * @param left  the left value, may be null.
-     * @param right  the right value, may be null.
+     * @param left  The left value, may be null.
+     * @param right  The right value, may be null.
      */
     public MutablePair(final L left, final R right) {
         this.left = left;
@@ -161,7 +163,7 @@ public class MutablePair<L, R> extends Pair<L, R> {
     /**
      * Sets the left element of the pair.
      *
-     * @param left  the new value of the left element, may be null.
+     * @param left  The new value of the left element, may be null.
      */
     public void setLeft(final L left) {
         this.left = left;
@@ -170,7 +172,7 @@ public class MutablePair<L, R> extends Pair<L, R> {
     /**
      * Sets the right element of the pair.
      *
-     * @param right  the new value of the right element, may be null.
+     * @param right  The new value of the right element, may be null.
      */
     public void setRight(final R right) {
         this.right = right;
@@ -180,8 +182,8 @@ public class MutablePair<L, R> extends Pair<L, R> {
      * Sets the {@code Map.Entry} value.
      * This sets the right element of the pair.
      *
-     * @param value  the right value to set, not null.
-     * @return the old value for the right element.
+     * @param value  The right value to set, not null.
+     * @return The old value for the right element.
      */
     @Override
     public R setValue(final R value) {

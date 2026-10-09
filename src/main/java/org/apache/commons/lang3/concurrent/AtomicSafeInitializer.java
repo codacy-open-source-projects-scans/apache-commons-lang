@@ -17,6 +17,7 @@
 package org.apache.commons.lang3.concurrent;
 
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.LockSupport;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.commons.lang3.function.FailableConsumer;
@@ -52,7 +53,7 @@ import org.apache.commons.lang3.function.FailableSupplier;
  * case.
  * </p>
  *
- * @param <T> the type of the object managed by this initializer class
+ * @param <T> The type of the object managed by this initializer class
  * @since 3.0
  */
 public class AtomicSafeInitializer<T> extends AbstractConcurrentInitializer<T, ConcurrentException> {
@@ -86,8 +87,8 @@ public class AtomicSafeInitializer<T> extends AbstractConcurrentInitializer<T, C
     /**
      * Creates a new builder.
      *
-     * @param <T> the type of object to build.
-     * @return a new builder.
+     * @param <T> The type of object to build.
+     * @return A new builder.
      * @since 3.14.0
      */
     public static <T> Builder<AtomicSafeInitializer<T>, T> builder() {
@@ -110,8 +111,8 @@ public class AtomicSafeInitializer<T> extends AbstractConcurrentInitializer<T, C
     /**
      * Constructs a new instance.
      *
-     * @param initializer the initializer supplier called by {@link #initialize()}.
-     * @param closer the closer consumer called by {@link #close()}.
+     * @param initializer The initializer supplier called by {@link #initialize()}.
+     * @param closer The closer consumer called by {@link #close()}.
      */
     private AtomicSafeInitializer(final FailableSupplier<T, ConcurrentException> initializer, final FailableConsumer<T, ConcurrentException> closer) {
         super(initializer, closer);
@@ -121,7 +122,7 @@ public class AtomicSafeInitializer<T> extends AbstractConcurrentInitializer<T, C
      * Gets (and initialize, if not initialized yet) the required object.
      *
      * @return lazily initialized object.
-     * @throws ConcurrentException if the initialization of the object causes an exception.
+     * @throws ConcurrentException Thrown if the initialization of the object causes an exception.
      */
     @Override
     public final T get() throws ConcurrentException {
@@ -137,6 +138,9 @@ public class AtomicSafeInitializer<T> extends AbstractConcurrentInitializer<T, C
                     final Throwable checked = ExceptionUtils.throwUnchecked(t);
                     throw checked instanceof ConcurrentException ? (ConcurrentException) checked : new ConcurrentException(checked);
                 }
+            } else {
+                // Another thread won the CAS; park 1 ms rather than busy-waiting.
+                LockSupport.parkNanos(1_000_000L);
             }
         }
         return result;

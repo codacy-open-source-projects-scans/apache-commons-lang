@@ -86,7 +86,7 @@ public class StopWatch {
          * @param label Label for this split.
          * @param duration Duration for this split.
          */
-        public Split(String label, Duration duration) {
+        public Split(final String label, final Duration duration) {
             super(label, duration);
         }
 
@@ -323,17 +323,17 @@ public class StopWatch {
     /**
      * Formats the split time with {@link DurationFormatUtils#formatDurationHMS}.
      *
-     * @return the split time formatted by {@link DurationFormatUtils#formatDurationHMS}.
+     * @return The split time formatted by {@link DurationFormatUtils#formatDurationHMS}.
      * @since 3.10
      */
     public String formatSplitTime() {
-        return DurationFormatUtils.formatDurationHMS(getSplitDuration().toMillis());
+        return DurationFormatUtils.formatDurationHMS(DurationUtils.toMillisLong(getSplitDuration()));
     }
 
     /**
      * Formats the time formatted with {@link DurationFormatUtils#formatDurationHMS}.
      *
-     * @return the time formatted by {@link DurationFormatUtils#formatDurationHMS}.
+     * @return The time formatted by {@link DurationFormatUtils#formatDurationHMS}.
      * @since 3.10
      */
     public String formatTime() {
@@ -341,11 +341,11 @@ public class StopWatch {
     }
 
     /**
-     * Delegates to {@link Supplier#get()} while recording the duration of the call.
+     * Gets the result of {@link Supplier#get()} while recording the duration of the call.
      *
      * @param <T>      the type of results supplied by this supplier.
      * @param supplier The supplier to {@link Supplier#get()}.
-     * @return a result from the given Supplier.
+     * @return A result from the given Supplier.
      * @since 3.18.0
      */
     public <T> T get(final Supplier<T> supplier) {
@@ -364,7 +364,7 @@ public class StopWatch {
      * This is either the Duration between the start and the moment this method is called, or the Duration between start and stop.
      * </p>
      *
-     * @return the Duration.
+     * @return The Duration.
      * @since 3.16.0
      */
     public Duration getDuration() {
@@ -374,7 +374,7 @@ public class StopWatch {
     /**
      * Gets the message for string presentation.
      *
-     * @return the message for string presentation.
+     * @return The message for string presentation.
      * @since 3.10
      */
     public String getMessage() {
@@ -388,7 +388,7 @@ public class StopWatch {
      * This is either the time between the start and the moment this method is called, or the amount of time between start and stop.
      * </p>
      *
-     * @return the <em>elapsed</em> time in nanoseconds.
+     * @return The <em>elapsed</em> time in nanoseconds.
      * @see System#nanoTime()
      * @since 3.0
      */
@@ -414,8 +414,8 @@ public class StopWatch {
      * This is the Duration between start and latest split.
      * </p>
      *
-     * @return the split Duration.
-     * @throws IllegalStateException if this StopWatch has not yet been split.
+     * @return The split Duration.
+     * @throws IllegalStateException Thrown if this StopWatch has not yet been split.
      * @since 3.16.0
      */
     public Duration getSplitDuration() {
@@ -429,8 +429,8 @@ public class StopWatch {
      * This is the time between start and latest split.
      * </p>
      *
-     * @return the split time in nanoseconds.
-     * @throws IllegalStateException if this StopWatch has not yet been split.
+     * @return The split time in nanoseconds.
+     * @throws IllegalStateException Thrown if this StopWatch has not yet been split.
      * @since 3.0
      */
     public long getSplitNanoTime() {
@@ -443,7 +443,7 @@ public class StopWatch {
     /**
      * Gets the split list.
      *
-     * @return the list of splits.
+     * @return The list of splits.
      * @since 3.20.0
      */
     public List<Split> getSplits() {
@@ -457,8 +457,8 @@ public class StopWatch {
      * This is the time between start and latest split.
      * </p>
      *
-     * @return the split time in milliseconds.
-     * @throws IllegalStateException if this StopWatch has not yet been split.
+     * @return The split time in milliseconds.
+     * @throws IllegalStateException Thrown if this StopWatch has not yet been split.
      * @since 2.1
      * @deprecated Use {@link #getSplitDuration()}.
      */
@@ -470,8 +470,8 @@ public class StopWatch {
     /**
      * Gets the Instant this StopWatch was started, between the current time and midnight, January 1, 1970 UTC.
      *
-     * @return the Instant this StopWatch was started, between the current time and midnight, January 1, 1970 UTC.
-     * @throws IllegalStateException if this StopWatch has not been started.
+     * @return The Instant this StopWatch was started, between the current time and midnight, January 1, 1970 UTC.
+     * @throws IllegalStateException Thrown if this StopWatch has not been started.
      * @since 3.16.0
      */
     public Instant getStartInstant() {
@@ -484,8 +484,8 @@ public class StopWatch {
     /**
      * Gets the time this StopWatch was started in milliseconds, between the current time and midnight, January 1, 1970 UTC.
      *
-     * @return the time this StopWatch was started in milliseconds, between the current time and midnight, January 1, 1970 UTC.
-     * @throws IllegalStateException if this StopWatch has not been started.
+     * @return The time this StopWatch was started in milliseconds, between the current time and midnight, January 1, 1970 UTC.
+     * @throws IllegalStateException Thrown if this StopWatch has not been started.
      * @since 2.4
      * @deprecated Use {@link #getStartInstant()}.
      */
@@ -497,8 +497,8 @@ public class StopWatch {
     /**
      * Gets the Instant this StopWatch was stopped, between the current time and midnight, January 1, 1970 UTC.
      *
-     * @return the Instant this StopWatch was stopped in milliseconds, between the current time and midnight, January 1, 1970 UTC.
-     * @throws IllegalStateException if this StopWatch has not been started.
+     * @return The Instant this StopWatch was stopped in milliseconds, between the current time and midnight, January 1, 1970 UTC.
+     * @throws IllegalStateException Thrown if this StopWatch has not been started.
      * @since 3.16.0
      */
     public Instant getStopInstant() {
@@ -511,8 +511,8 @@ public class StopWatch {
     /**
      * Gets the time this StopWatch was stopped in milliseconds, between the current time and midnight, January 1, 1970 UTC.
      *
-     * @return the time this StopWatch was stopped in milliseconds, between the current time and midnight, January 1, 1970 UTC.
-     * @throws IllegalStateException if this StopWatch has not been started.
+     * @return The time this StopWatch was stopped in milliseconds, between the current time and midnight, January 1, 1970 UTC.
+     * @throws IllegalStateException Thrown if this StopWatch has not been started.
      * @since 3.12.0
      * @deprecated Use {@link #getStopInstant()}.
      */
@@ -524,13 +524,13 @@ public class StopWatch {
     }
 
     /**
-     * Delegates to {@link FailableSupplier#get()} while recording the duration of the call.
+     * Gets the result of {@link FailableSupplier#get()} while recording the duration of the call.
      *
      * @param <T>      the type of results supplied by this supplier.
      * @param <E>      The kind of thrown exception or error.
      * @param supplier The supplier to {@link Supplier#get()}.
-     * @return a result from the given Supplier.
-     * @throws Throwable if the supplier fails.
+     * @return A result from the given Supplier.
+     * @throws Throwable Thrown if the supplier fails.
      * @since 3.18.0
      */
     public <T, E extends Throwable> T getT(final FailableSupplier<T, E> supplier) throws Throwable {
@@ -549,7 +549,7 @@ public class StopWatch {
      * This is either the time between the start and the moment this method is called, or the amount of time between start and stop.
      * </p>
      *
-     * @return the time in milliseconds.
+     * @return The time in milliseconds.
      * @see #getDuration()
      */
     public long getTime() {
@@ -565,8 +565,8 @@ public class StopWatch {
      * is 59 minutes, then the result returned will be {@code 0}.
      * </p>
      *
-     * @param timeUnit the unit of time, not null.
-     * @return the time in the specified TimeUnit, rounded down.
+     * @param timeUnit The unit of time, not null.
+     * @return The time in the specified TimeUnit, rounded down.
      * @since 3.5
      */
     public long getTime(final TimeUnit timeUnit) {
@@ -633,7 +633,7 @@ public class StopWatch {
      * This method resumes the watch after it was suspended. The watch will not include time between the suspend and resume calls in the total time.
      * </p>
      *
-     * @throws IllegalStateException if this StopWatch has not been suspended.
+     * @throws IllegalStateException Thrown if this StopWatch has not been suspended.
      */
     public void resume() {
         if (runningState != State.SUSPENDED) {
@@ -683,7 +683,7 @@ public class StopWatch {
      * timing from the original start point.
      * </p>
      *
-     * @throws IllegalStateException if this StopWatch is not running.
+     * @throws IllegalStateException Thrown if this StopWatch is not running.
      */
     public void split() {
         if (runningState != State.RUNNING) {
@@ -703,7 +703,7 @@ public class StopWatch {
      * </p>
      *
      * @param label A message for string presentation.
-     * @throws IllegalStateException if the StopWatch is not running.
+     * @throws IllegalStateException Thrown if the StopWatch is not running.
      * @since 3.20.0
      */
     public void split(final String label) {
@@ -722,7 +722,7 @@ public class StopWatch {
      * This method starts a new timing session, clearing any previous values.
      * </p>
      *
-     * @throws IllegalStateException if this StopWatch is already running.
+     * @throws IllegalStateException Thrown if this StopWatch is already running.
      */
     public void start() {
         if (runningState == State.STOPPED) {
@@ -755,7 +755,7 @@ public class StopWatch {
      * This method ends a new timing session, allowing the time to be retrieved.
      * </p>
      *
-     * @throws IllegalStateException if this StopWatch is not running.
+     * @throws IllegalStateException Thrown if this StopWatch is not running.
      */
     public void stop() {
         if (runningState != State.RUNNING && runningState != State.SUSPENDED) {
@@ -779,7 +779,7 @@ public class StopWatch {
      * This method suspends the watch until it is resumed. The watch will not include time between the suspend and resume calls in the total time.
      * </p>
      *
-     * @throws IllegalStateException if this StopWatch is not currently running.
+     * @throws IllegalStateException Thrown if this StopWatch is not currently running.
      */
     public void suspend() {
         if (runningState != State.RUNNING) {
@@ -796,7 +796,7 @@ public class StopWatch {
      * The format used is ISO 8601-like, [<em>message</em> ]<em>hours</em>:<em>minutes</em>:<em>seconds</em>.<em>milliseconds</em>.
      * </p>
      *
-     * @return the split time as a String.
+     * @return The split time as a String.
      * @since 2.1
      * @since 3.10 Returns the prefix {@code "message "} if the message is set.
      */
@@ -813,7 +813,7 @@ public class StopWatch {
      * The format used is ISO 8601-like, [<em>message</em> ]<em>hours</em>:<em>minutes</em>:<em>seconds</em>.<em>milliseconds</em>.
      * </p>
      *
-     * @return the time as a String.
+     * @return The time as a String.
      * @since 3.10 Returns the prefix {@code "message "} if the message is set.
      */
     @Override
@@ -830,7 +830,7 @@ public class StopWatch {
      * This method clears the stop time. The start time is unaffected, enabling timing from the original start point to continue.
      * </p>
      *
-     * @throws IllegalStateException if this StopWatch has not been split.
+     * @throws IllegalStateException Thrown if this StopWatch has not been split.
      */
     public void unsplit() {
         if (splitState != SplitState.SPLIT) {

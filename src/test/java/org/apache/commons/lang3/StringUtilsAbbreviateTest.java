@@ -19,6 +19,7 @@ package org.apache.commons.lang3;
 
 import static org.apache.commons.lang3.LangAssertions.assertIllegalArgumentException;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -28,7 +29,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Tests {@link StringUtils#abbreviate(String, int)} and friends.
  */
-class StringUtilsAbbreviateTest {
+class StringUtilsAbbreviateTest extends AbstractLangTest {
 
     private void assertAbbreviateWithAbbrevMarkerAndOffset(final String expected, final String abbrevMarker, final int offset, final int maxWidth) {
         final String abcdefghijklmno = "abcdefghijklmno";
@@ -153,6 +154,7 @@ class StringUtilsAbbreviateTest {
         assertAbbreviateWithAbbrevMarkerAndOffset("abcdef____", "____", 5, 10);
         assertAbbreviateWithAbbrevMarkerAndOffset("==fghijk==", "==", 5, 10);
         assertAbbreviateWithAbbrevMarkerAndOffset("___ghij___", "___", 6, 10);
+        assertAbbreviateWithAbbrevMarkerAndOffset("…ghijklmno", "…", 6, 10);
         assertAbbreviateWithAbbrevMarkerAndOffset("/ghijklmno", "/", 7, 10);
         assertAbbreviateWithAbbrevMarkerAndOffset("/ghijklmno", "/", 8, 10);
         assertAbbreviateWithAbbrevMarkerAndOffset("/ghijklmno", "/", 9, 10);
@@ -204,6 +206,67 @@ class StringUtilsAbbreviateTest {
         // More from LANG-405
         assertEquals("a..f", StringUtils.abbreviateMiddle("abcdef", "..", 4));
         assertEquals("ab.ef", StringUtils.abbreviateMiddle("abcdef", ".", 5));
+    }
+
+    @Test
+    void testAbbreviateMiddleSurrogatePair() {
+        // U+1F600 GRINNING FACE is a single supplementary code point stored as a surrogate pair
+        final String grin = "😀";
+        // the head cut backs off the pair so the middle is never preceded by a lone high surrogate
+        assertEquals("a." + "b", StringUtils.abbreviateMiddle("a" + grin + grin + "b", ".", 4));
+        // the tail cut skips the orphaned low surrogate so the middle is never followed by one
+        assertEquals(grin + "..", StringUtils.abbreviateMiddle(grin + "abc" + grin, "..", 5));
+        // a cut that lands between two whole code points is unchanged
+        assertEquals("ab.d", StringUtils.abbreviateMiddle("ab" + grin + "cd", ".", 4));
+        assertEquals("ab.f", StringUtils.abbreviateMiddle("abcdef", ".", 4));
+        // results stay within length and never contain an unpaired surrogate
+        final String source = "a" + grin + "b" + grin + "cd" + grin + "ef";
+        for (int len = 3; len < source.length(); len++) {
+            final String result = StringUtils.abbreviateMiddle(source, ".", len);
+            assertTrue(result.length() <= len, () -> "result longer than length: " + result);
+            for (int i = 0; i < result.length(); i++) {
+                final char ch = result.charAt(i);
+                if (Character.isHighSurrogate(ch)) {
+                    assertTrue(i + 1 < result.length() && Character.isLowSurrogate(result.charAt(i + 1)), "lone high surrogate in: " + result);
+                    i++; // skip the paired low surrogate
+                } else {
+                    assertFalse(Character.isLowSurrogate(ch), "lone low surrogate in: " + result);
+                }
+            }
+        }
+    }
+
+    @Test
+    void testAbbreviateSurrogatePair() {
+        // U+1F600 GRINNING FACE is a single supplementary code point stored as a surrogate pair
+        final String grin = "😀";
+        // the head cut backs off the pair so the marker is never preceded by a lone high surrogate
+        assertEquals("...", StringUtils.abbreviate(grin + "abcdef", 4));
+        assertEquals(grin + "...", StringUtils.abbreviate(grin + "abcdef", 5));
+        // a trailing supplementary code point is kept whole rather than sliced into a lone low surrogate
+        assertEquals("..." + grin, StringUtils.abbreviate("abcdef" + grin, 6, 5));
+        // an input that is only the pair is kept whole or dropped, never split into a lone surrogate
+        assertEquals(grin, StringUtils.abbreviate(grin, 4));
+        assertEquals(grin, StringUtils.abbreviate(grin, 0, 5));
+        assertEquals(grin, StringUtils.abbreviate(grin, 1, 4));
+        assertEquals(grin, StringUtils.abbreviate(grin, "x", 0, 2));
+        assertEquals(grin, StringUtils.abbreviate(grin, "x", 1, 2));
+        assertEquals(grin, StringUtils.abbreviate(grin, "", 0, 2));
+        assertEquals("", StringUtils.abbreviate(grin, "", 0, 1));
+        // results stay within maxWidth and never contain an unpaired surrogate
+        for (int width = 4; width <= 8; width++) {
+            final String result = StringUtils.abbreviate("a" + grin + "b" + grin + "cd", width);
+            assertTrue(result.length() <= width, () -> "result longer than maxWidth: " + result);
+            for (int i = 0; i < result.length(); i++) {
+                final char ch = result.charAt(i);
+                if (Character.isHighSurrogate(ch)) {
+                    assertTrue(i + 1 < result.length() && Character.isLowSurrogate(result.charAt(i + 1)), "lone high surrogate in: " + result);
+                    i++; // skip the paired low surrogate
+                } else {
+                    assertFalse(Character.isLowSurrogate(ch), "lone low surrogate in: " + result);
+                }
+            }
+        }
     }
 
     /**

@@ -19,6 +19,9 @@ package org.apache.commons.lang3;
 import static org.apache.commons.lang3.LangAssertions.assertIllegalArgumentException;
 import static org.apache.commons.lang3.LangAssertions.assertNullPointerException;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mockStatic;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -54,7 +57,9 @@ import org.apache.commons.lang3.function.Suppliers;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.apache.commons.lang3.text.StrBuilder;
+import org.apache.commons.lang3.time.DurationUtils;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 
 /**
  * Tests {@link ObjectUtils}.
@@ -92,7 +97,7 @@ class ObjectUtilsTest extends AbstractLangTest {
         /**
          * Create a new NonComparableCharSequence instance.
          *
-         * @param value the CharSequence value
+         * @param value The CharSequence value
          */
         NonComparableCharSequence(final String value) {
             Validate.notNull(value);
@@ -307,6 +312,8 @@ class ObjectUtilsTest extends AbstractLangTest {
         assertSame(baz, ObjectUtils.median(cmp, foo, bar, baz));
         assertSame(baz, ObjectUtils.median(cmp, foo, bar, baz, blah));
         assertSame(blah, ObjectUtils.median(cmp, foo, bar, baz, blah, wah));
+        // duplicates are counted, not collapsed
+        assertSame(foo, ObjectUtils.median(cmp, foo, foo, bar));
     }
 
     @Test
@@ -672,6 +679,7 @@ class ObjectUtilsTest extends AbstractLangTest {
         assertFalse(ObjectUtils.isEmpty(NON_EMPTY_MAP));
         assertFalse(ObjectUtils.isEmpty(Optional.of(new Object())));
         assertFalse(ObjectUtils.isEmpty(Optional.ofNullable(new Object())));
+        assertFalse(ObjectUtils.isEmpty(1234));
     }
 
     @Test
@@ -736,6 +744,12 @@ class ObjectUtilsTest extends AbstractLangTest {
                 Integer.valueOf(9)));
         assertEquals(Integer.valueOf(6),
             ObjectUtils.median(Integer.valueOf(5), Integer.valueOf(6), Integer.valueOf(7), Integer.valueOf(8)));
+        // duplicates are counted, not collapsed
+        assertEquals(Integer.valueOf(3),
+            ObjectUtils.median(Integer.valueOf(1), Integer.valueOf(2), Integer.valueOf(3), Integer.valueOf(3),
+                Integer.valueOf(3), Integer.valueOf(4)));
+        assertEquals(Integer.valueOf(5),
+            ObjectUtils.median(Integer.valueOf(5), Integer.valueOf(5), Integer.valueOf(5), Integer.valueOf(1)));
     }
 
     @Test
@@ -880,7 +894,24 @@ class ObjectUtilsTest extends AbstractLangTest {
     }
 
     @Test
-    void testWaitDuration() {
+    void testWaitDuration() throws InterruptedException {
+        final Object lock = new Object();
+        try (MockedStatic<DurationUtils> mocked = mockStatic(DurationUtils.class)) {
+            // Let zeroIfNull run for real so the Duration reaches accept unchanged.
+            mocked.when(() -> DurationUtils.zeroIfNull(any())).thenCallRealMethod();
+            // accept is mocked to do nothing, so no actual waiting occurs.
+            final int millis = 1_500;
+            synchronized (lock) {
+                ObjectUtils.wait(lock, Duration.ofMillis(millis));
+            }
+            // Verify accept was called with the expected Duration.
+            mocked.verify(() -> DurationUtils.accept(any(), eq(Duration.ofMillis(millis))));
+        }
+    }
+
+    @Test
+    void testWaitDurationThrows() throws InterruptedException {
+        assertThrows(IllegalArgumentException.class, () -> ObjectUtils.wait(new Object(), Duration.ofSeconds(-10)));
         assertThrows(IllegalMonitorStateException.class, () -> ObjectUtils.wait(new Object(), Duration.ZERO));
     }
 

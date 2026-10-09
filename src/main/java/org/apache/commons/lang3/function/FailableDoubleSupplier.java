@@ -29,10 +29,10 @@ import java.util.function.DoubleSupplier;
 public interface FailableDoubleSupplier<E extends Throwable> {
 
     /**
-     * Supplies a double.
+     * Gets a double.
      *
-     * @return a result
-     * @throws E if the supplier fails
+     * @return A result
+     * @throws E Thrown if the supplier fails.
      */
     double getAsDouble() throws E;
 }

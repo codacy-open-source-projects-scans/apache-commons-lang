@@ -46,8 +46,8 @@ public interface FailableDoubleToIntFunction<E extends Throwable> {
     /**
      * Applies this function to the given argument.
      *
-     * @param value the function argument
-     * @return the function result
+     * @param value The function argument
+     * @return The function result
      * @throws E Thrown when the function fails.
      */
     int applyAsInt(double value) throws E;

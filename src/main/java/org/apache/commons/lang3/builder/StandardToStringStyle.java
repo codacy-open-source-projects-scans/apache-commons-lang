@@ -23,11 +23,13 @@ import java.util.Map;
 /**
  * Works with {@link ToStringBuilder} to create a {@code toString}.
  *
- * <p>This class is intended to be used as a singleton.
+ * <p>
+ * This class is intended to be used as a singleton.
  * There is no need to instantiate a new style each time.
  * Simply instantiate the class once, customize the values as required, and
  * store the result in a public static final variable for the rest of the
- * program to access.</p>
+ * program to access.
+ * </p>
  *
  * @since 1.0
  */
@@ -49,7 +51,7 @@ public class StandardToStringStyle extends ToStringStyle {
     /**
      * Gets the array end text.
      *
-     * @return the current array end text
+     * @return The current array end text
      */
     @Override
     public String getArrayEnd() {
@@ -59,7 +61,7 @@ public class StandardToStringStyle extends ToStringStyle {
     /**
      * Gets the array separator text.
      *
-     * @return the current array separator text
+     * @return The current array separator text
      */
     @Override
     public String getArraySeparator() {
@@ -69,7 +71,7 @@ public class StandardToStringStyle extends ToStringStyle {
     /**
      * Gets the array start text.
      *
-     * @return the current array start text
+     * @return The current array start text
      */
     @Override
     public String getArrayStart() {
@@ -79,7 +81,7 @@ public class StandardToStringStyle extends ToStringStyle {
     /**
      * Gets the content end text.
      *
-     * @return the current content end text
+     * @return The current content end text
      */
     @Override
     public String getContentEnd() {
@@ -89,7 +91,7 @@ public class StandardToStringStyle extends ToStringStyle {
     /**
      * Gets the content start text.
      *
-     * @return the current content start text
+     * @return The current content start text
      */
     @Override
     public String getContentStart() {
@@ -99,7 +101,7 @@ public class StandardToStringStyle extends ToStringStyle {
     /**
      * Gets the field name value separator text.
      *
-     * @return the current field name value separator text
+     * @return The current field name value separator text
      */
     @Override
     public String getFieldNameValueSeparator() {
@@ -109,7 +111,7 @@ public class StandardToStringStyle extends ToStringStyle {
     /**
      * Gets the field separator text.
      *
-     * @return the current field separator text
+     * @return The current field separator text
      */
     @Override
     public String getFieldSeparator() {
@@ -119,7 +121,7 @@ public class StandardToStringStyle extends ToStringStyle {
     /**
      * Gets the text to output when {@code null} found.
      *
-     * @return the current text to output when {@code null} found
+     * @return The current text to output when {@code null} found
      */
     @Override
     public String getNullText() {
@@ -130,9 +132,11 @@ public class StandardToStringStyle extends ToStringStyle {
      * Gets the end text to output when a {@link Collection},
      * {@link Map} or {@link Array} size is output.
      *
-     * <p>This is output after the size value.</p>
+     * <p>
+     * This is output after the size value.
+     * </p>
      *
-     * @return the current end of size text
+     * @return The current end of size text
      */
     @Override
     public String getSizeEndText() {
@@ -143,9 +147,11 @@ public class StandardToStringStyle extends ToStringStyle {
      * Gets the text to output when a {@link Collection},
      * {@link Map} or {@link Array} size is output.
      *
-     * <p>This is output before the size value.</p>
+     * <p>
+     * This is output before the size value.
+     * </p>
      *
-     * @return the current start of size text
+     * @return The current start of size text
      */
     @Override
     public String getSizeStartText() {
@@ -156,9 +162,11 @@ public class StandardToStringStyle extends ToStringStyle {
      * Gets the end text to output when an {@link Object} is
      * output in summary mode.
      *
-     * <p>This is output after the size value.</p>
+     * <p>
+     * This is output after the size value.
+     * </p>
      *
-     * @return the current end of summary text
+     * @return The current end of summary text
      */
     @Override
     public String getSummaryObjectEndText() {
@@ -169,9 +177,11 @@ public class StandardToStringStyle extends ToStringStyle {
      * Gets the start text to output when an {@link Object} is
      * output in summary mode.
      *
-     * <p>This is output before the size value.</p>
+     * <p>
+     * This is output before the size value.
+     * </p>
      *
-     * @return the current start of summary text
+     * @return The current start of summary text
      */
     @Override
     public String getSummaryObjectStartText() {
@@ -179,9 +189,9 @@ public class StandardToStringStyle extends ToStringStyle {
     }
 
     /**
-     * Gets whether to output array content detail.
+     * Tests whether to output array content detail.
      *
-     * @return the current array content detail setting
+     * @return The current array content detail setting
      */
     @Override
     public boolean isArrayContentDetail() {
@@ -189,10 +199,9 @@ public class StandardToStringStyle extends ToStringStyle {
     }
 
     /**
-     * Gets whether to use full detail when the caller doesn't
-     * specify.
+     * Tests whether full detail is used when the caller does not specify a detail level.
      *
-     * @return the current defaultFullDetail flag
+     * @return The current defaultFullDetail flag
      */
     @Override
     public boolean isDefaultFullDetail() {
@@ -200,8 +209,7 @@ public class StandardToStringStyle extends ToStringStyle {
     }
 
     /**
-     * Gets whether the field separator should be added at the end
-     * of each buffer.
+     * Tests whether the field separator should be added at the end of each buffer.
      *
      * @return fieldSeparatorAtEnd flag
      * @since 2.0
@@ -212,10 +220,9 @@ public class StandardToStringStyle extends ToStringStyle {
     }
 
     /**
-     * Gets whether the field separator should be added at the start
-     * of each buffer.
+     * Tests whether the field separator should be added at the start of each buffer.
      *
-     * @return the fieldSeparatorAtStart flag
+     * @return The fieldSeparatorAtStart flag
      * @since 2.0
      */
     @Override
@@ -224,9 +231,9 @@ public class StandardToStringStyle extends ToStringStyle {
     }
 
     /**
-     * Gets whether to use the class name.
+     * Tests whether to use the class name.
      *
-     * @return the current useClassName flag
+     * @return The current useClassName flag
      */
     @Override
     public boolean isUseClassName() {
@@ -234,9 +241,9 @@ public class StandardToStringStyle extends ToStringStyle {
     }
 
     /**
-     * Gets whether to use the field names passed in.
+     * Tests whether to use the field names passed in.
      *
-     * @return the current useFieldNames flag
+     * @return The current useFieldNames flag
      */
     @Override
     public boolean isUseFieldNames() {
@@ -244,9 +251,9 @@ public class StandardToStringStyle extends ToStringStyle {
     }
 
     /**
-     * Gets whether to use the identity hash code.
+     * Tests whether to use the identity hash code.
      *
-     * @return the current useIdentityHashCode flag
+     * @return The current useIdentityHashCode flag
      */
     @Override
     public boolean isUseIdentityHashCode() {
@@ -254,9 +261,9 @@ public class StandardToStringStyle extends ToStringStyle {
     }
 
     /**
-     * Gets whether to output short or long class names.
+     * Tests whether short class names should be output.
      *
-     * @return the current useShortClassName flag
+     * @return The current useShortClassName flag
      * @since 2.0
      */
     @Override
@@ -267,7 +274,7 @@ public class StandardToStringStyle extends ToStringStyle {
     /**
      * Sets whether to output array content detail.
      *
-     * @param arrayContentDetail  the new arrayContentDetail flag
+     * @param arrayContentDetail  The new arrayContentDetail flag
      */
     @Override
     public void setArrayContentDetail(final boolean arrayContentDetail) {
@@ -277,10 +284,12 @@ public class StandardToStringStyle extends ToStringStyle {
     /**
      * Sets the array end text.
      *
-     * <p>{@code null} is accepted, but will be converted
-     * to an empty String.</p>
+     * <p>
+     * {@code null} is accepted, but will be converted
+     * to an empty String.
+     * </p>
      *
-     * @param arrayEnd  the new array end text
+     * @param arrayEnd  The new array end text
      */
     @Override
     public void setArrayEnd(final String arrayEnd) {
@@ -290,10 +299,12 @@ public class StandardToStringStyle extends ToStringStyle {
     /**
      * Sets the array separator text.
      *
-     * <p>{@code null} is accepted, but will be converted
-     * to an empty String.</p>
+     * <p>
+     * {@code null} is accepted, but will be converted
+     * to an empty String.
+     * </p>
      *
-     * @param arraySeparator  the new array separator text
+     * @param arraySeparator  The new array separator text
      */
     @Override
     public void setArraySeparator(final String arraySeparator) {
@@ -303,10 +314,12 @@ public class StandardToStringStyle extends ToStringStyle {
     /**
      * Sets the array start text.
      *
-     * <p>{@code null} is accepted, but will be converted
-     * to an empty String.</p>
+     * <p>
+     * {@code null} is accepted, but will be converted
+     * to an empty String.
+     * </p>
      *
-     * @param arrayStart  the new array start text
+     * @param arrayStart  The new array start text
      */
     @Override
     public void setArrayStart(final String arrayStart) {
@@ -316,10 +329,12 @@ public class StandardToStringStyle extends ToStringStyle {
     /**
      * Sets the content end text.
      *
-     * <p>{@code null} is accepted, but will be converted
-     * to an empty String.</p>
+     * <p>
+     * {@code null} is accepted, but will be converted
+     * to an empty String.
+     * </p>
      *
-     * @param contentEnd  the new content end text
+     * @param contentEnd  The new content end text
      */
     @Override
     public void setContentEnd(final String contentEnd) {
@@ -329,10 +344,12 @@ public class StandardToStringStyle extends ToStringStyle {
     /**
      * Sets the content start text.
      *
-     * <p>{@code null} is accepted, but will be converted
-     * to an empty String.</p>
+     * <p>
+     * {@code null} is accepted, but will be converted
+     * to an empty String.
+     * </p>
      *
-     * @param contentStart  the new content start text
+     * @param contentStart  The new content start text
      */
     @Override
     public void setContentStart(final String contentStart) {
@@ -343,7 +360,7 @@ public class StandardToStringStyle extends ToStringStyle {
      * Sets whether to use full detail when the caller doesn't
      * specify.
      *
-     * @param defaultFullDetail  the new defaultFullDetail flag
+     * @param defaultFullDetail  The new defaultFullDetail flag
      */
     @Override
     public void setDefaultFullDetail(final boolean defaultFullDetail) {
@@ -353,10 +370,12 @@ public class StandardToStringStyle extends ToStringStyle {
     /**
      * Sets the field name value separator text.
      *
-     * <p>{@code null} is accepted, but will be converted
-     * to an empty String.</p>
+     * <p>
+     * {@code null} is accepted, but will be converted
+     * to an empty String.
+     * </p>
      *
-     * @param fieldNameValueSeparator  the new field name value separator text
+     * @param fieldNameValueSeparator  The new field name value separator text
      */
     @Override
     public void setFieldNameValueSeparator(final String fieldNameValueSeparator) {
@@ -366,10 +385,12 @@ public class StandardToStringStyle extends ToStringStyle {
     /**
      * Sets the field separator text.
      *
-     * <p>{@code null} is accepted, but will be converted
-     * to an empty String.</p>
+     * <p>
+     * {@code null} is accepted, but will be converted
+     * to an empty String.
+     * </p>
      *
-     * @param fieldSeparator  the new field separator text
+     * @param fieldSeparator  The new field separator text
      */
     @Override
     public void setFieldSeparator(final String fieldSeparator) {
@@ -380,7 +401,7 @@ public class StandardToStringStyle extends ToStringStyle {
      * Sets whether the field separator should be added at the end
      * of each buffer.
      *
-     * @param fieldSeparatorAtEnd  the fieldSeparatorAtEnd flag
+     * @param fieldSeparatorAtEnd  The fieldSeparatorAtEnd flag
      * @since 2.0
      */
     @Override
@@ -392,7 +413,7 @@ public class StandardToStringStyle extends ToStringStyle {
      * Sets whether the field separator should be added at the start
      * of each buffer.
      *
-     * @param fieldSeparatorAtStart  the fieldSeparatorAtStart flag
+     * @param fieldSeparatorAtStart  The fieldSeparatorAtStart flag
      * @since 2.0
      */
     @Override
@@ -403,10 +424,12 @@ public class StandardToStringStyle extends ToStringStyle {
     /**
      * Sets the text to output when {@code null} found.
      *
-     * <p>{@code null} is accepted, but will be converted
-     * to an empty String.</p>
+     * <p>
+     * {@code null} is accepted, but will be converted
+     * to an empty String.
+     * </p>
      *
-     * @param nullText  the new text to output when {@code null} found
+     * @param nullText  The new text to output when {@code null} found
      */
     @Override
     public void setNullText(final String nullText) {
@@ -417,12 +440,16 @@ public class StandardToStringStyle extends ToStringStyle {
      * Sets the end text to output when a {@link Collection},
      * {@link Map} or {@link Array} size is output.
      *
-     * <p>This is output after the size value.</p>
+     * <p>
+     * This is output after the size value.
+     * </p>
      *
-     * <p>{@code null} is accepted, but will be converted
-     * to an empty String.</p>
+     * <p>
+     * {@code null} is accepted, but will be converted
+     * to an empty String.
+     * </p>
      *
-     * @param sizeEndText  the new end of size text
+     * @param sizeEndText  The new end of size text
      */
     @Override
     public void setSizeEndText(final String sizeEndText) {
@@ -433,12 +460,16 @@ public class StandardToStringStyle extends ToStringStyle {
      * Sets the start text to output when a {@link Collection},
      * {@link Map} or {@link Array} size is output.
      *
-     * <p>This is output before the size value.</p>
+     * <p>
+     * This is output before the size value.
+     * </p>
      *
-     * <p>{@code null} is accepted, but will be converted to
-     * an empty String.</p>
+     * <p>
+     * {@code null} is accepted, but will be converted to
+     * an empty String.
+     * </p>
      *
-     * @param sizeStartText  the new start of size text
+     * @param sizeStartText  The new start of size text
      */
     @Override
     public void setSizeStartText(final String sizeStartText) {
@@ -449,12 +480,16 @@ public class StandardToStringStyle extends ToStringStyle {
      * Sets the end text to output when an {@link Object} is
      * output in summary mode.
      *
-     * <p>This is output after the size value.</p>
+     * <p>
+     * This is output after the size value.
+     * </p>
      *
-     * <p>{@code null} is accepted, but will be converted to
-     * an empty String.</p>
+     * <p>
+     * {@code null} is accepted, but will be converted to
+     * an empty String.
+     * </p>
      *
-     * @param summaryObjectEndText  the new end of summary text
+     * @param summaryObjectEndText  The new end of summary text
      */
     @Override
     public void setSummaryObjectEndText(final String summaryObjectEndText) {
@@ -465,12 +500,16 @@ public class StandardToStringStyle extends ToStringStyle {
      * Sets the start text to output when an {@link Object} is
      * output in summary mode.
      *
-     * <p>This is output before the size value.</p>
+     * <p>
+     * This is output before the size value.
+     * </p>
      *
-     * <p>{@code null} is accepted, but will be converted to
-     * an empty String.</p>
+     * <p>
+     * {@code null} is accepted, but will be converted to
+     * an empty String.
+     * </p>
      *
-     * @param summaryObjectStartText  the new start of summary text
+     * @param summaryObjectStartText  The new start of summary text
      */
     @Override
     public void setSummaryObjectStartText(final String summaryObjectStartText) {
@@ -480,7 +519,7 @@ public class StandardToStringStyle extends ToStringStyle {
     /**
      * Sets whether to use the class name.
      *
-     * @param useClassName  the new useClassName flag
+     * @param useClassName  The new useClassName flag
      */
     @Override
     public void setUseClassName(final boolean useClassName) {
@@ -490,7 +529,7 @@ public class StandardToStringStyle extends ToStringStyle {
     /**
      * Sets whether to use the field names passed in.
      *
-     * @param useFieldNames  the new useFieldNames flag
+     * @param useFieldNames  The new useFieldNames flag
      */
     @Override
     public void setUseFieldNames(final boolean useFieldNames) {
@@ -500,7 +539,7 @@ public class StandardToStringStyle extends ToStringStyle {
     /**
      * Sets whether to use the identity hash code.
      *
-     * @param useIdentityHashCode  the new useIdentityHashCode flag
+     * @param useIdentityHashCode  The new useIdentityHashCode flag
      */
     @Override
     public void setUseIdentityHashCode(final boolean useIdentityHashCode) {
@@ -510,7 +549,7 @@ public class StandardToStringStyle extends ToStringStyle {
     /**
      * Sets whether to output short or long class names.
      *
-     * @param useShortClassName  the new useShortClassName flag
+     * @param useShortClassName  The new useShortClassName flag
      * @since 2.0
      */
     @Override

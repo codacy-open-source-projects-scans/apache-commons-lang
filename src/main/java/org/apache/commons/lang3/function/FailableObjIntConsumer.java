@@ -22,7 +22,7 @@ import java.util.function.ObjIntConsumer;
 /**
  * A functional interface like {@link ObjIntConsumer} that declares a {@link Throwable}.
  *
- * @param <T> the type of the object argument to the operation.
+ * @param <T> The type of the object argument to the operation.
  * @param <E> The kind of thrown exception or error.
  * @since 3.11
  */
@@ -36,7 +36,7 @@ public interface FailableObjIntConsumer<T, E extends Throwable> {
     /**
      * Gets the NOP singleton.
      *
-     * @param <T> the type of the object argument to the operation.
+     * @param <T> The type of the object argument to the operation.
      * @param <E> The kind of thrown exception or error.
      * @return The NOP singleton.
      */
@@ -48,8 +48,8 @@ public interface FailableObjIntConsumer<T, E extends Throwable> {
     /**
      * Accepts the given arguments.
      *
-     * @param object the object parameter for the consumable to accept.
-     * @param value the int parameter for the consumable to accept.
+     * @param object The object parameter for the consumable to accept.
+     * @param value The int parameter for the consumable to accept.
      * @throws E Thrown when the consumer fails.
      */
     void accept(T object, int value) throws E;

@@ -34,7 +34,7 @@ public class UnicodeEscaper extends CodePointTranslator {
      * Constructs a {@link UnicodeEscaper} above the specified value (exclusive).
      *
      * @param codePoint above which to escape.
-     * @return the newly created {@link UnicodeEscaper} instance.
+     * @return The newly created {@link UnicodeEscaper} instance.
      */
     public static UnicodeEscaper above(final int codePoint) {
         return outsideOf(0, codePoint);
@@ -44,7 +44,7 @@ public class UnicodeEscaper extends CodePointTranslator {
      * Constructs a {@link UnicodeEscaper} below the specified value (exclusive).
      *
      * @param codePoint below which to escape.
-     * @return the newly created {@link UnicodeEscaper} instance.
+     * @return The newly created {@link UnicodeEscaper} instance.
      */
     public static UnicodeEscaper below(final int codePoint) {
         return outsideOf(codePoint, Integer.MAX_VALUE);
@@ -55,7 +55,7 @@ public class UnicodeEscaper extends CodePointTranslator {
      *
      * @param codePointLow above which to escape.
      * @param codePointHigh below which to escape.
-     * @return the newly created {@link UnicodeEscaper} instance.
+     * @return The newly created {@link UnicodeEscaper} instance.
      */
     public static UnicodeEscaper between(final int codePointLow, final int codePointHigh) {
         return new UnicodeEscaper(codePointLow, codePointHigh, true);
@@ -66,7 +66,7 @@ public class UnicodeEscaper extends CodePointTranslator {
      *
      * @param codePointLow below which to escape.
      * @param codePointHigh above which to escape.
-     * @return the newly created {@link UnicodeEscaper} instance.
+     * @return The newly created {@link UnicodeEscaper} instance.
      */
     public static UnicodeEscaper outsideOf(final int codePointLow, final int codePointHigh) {
         return new UnicodeEscaper(codePointLow, codePointHigh, false);
@@ -102,15 +102,20 @@ public class UnicodeEscaper extends CodePointTranslator {
     }
 
     /**
-     * Converts the given code point to a hexadecimal string of the form {@code "\\uXXXX"}
+     * Converts the given code point to a hexadecimal string of the form {@code "\\uXXXX"}, or the
+     * surrogate pair form {@code "\\uXXXX\\uXXXX"} for a supplementary code point.
      *
      * @param codePoint
      *            a Unicode code point.
-     * @return the hexadecimal string for the given code point.
+     * @return The hexadecimal string for the given code point.
      * @since 3.2
      */
     protected String toUtf16Escape(final int codePoint) {
-        return "\\u" + hex(codePoint);
+        if (Character.isBmpCodePoint(codePoint)) {
+            return "\\u" + hex(codePoint);
+        }
+        final char[] surrogatePair = Character.toChars(codePoint);
+        return "\\u" + hex(surrogatePair[0]) + "\\u" + hex(surrogatePair[1]);
     }
 
     /**

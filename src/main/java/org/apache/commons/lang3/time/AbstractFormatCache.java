@@ -48,7 +48,7 @@ abstract class AbstractFormatCache<F extends Format> {
         /**
          * Constructs an instance of {@link MultipartKey} to hold the specified objects.
          *
-         * @param keys the set of objects that make up the key.  Each key may be null.
+         * @param keys The set of objects that make up the key.  Each key may be null.
          */
         ArrayKey(final Object... keys) {
             this.keys = keys;
@@ -60,10 +60,7 @@ abstract class AbstractFormatCache<F extends Format> {
             if (this == obj) {
                 return true;
             }
-            if (obj == null) {
-                return false;
-            }
-            if (getClass() != obj.getClass()) {
+            if (obj == null || getClass() != obj.getClass()) {
                 return false;
             }
             final ArrayKey other = (ArrayKey) obj;
@@ -82,6 +79,15 @@ abstract class AbstractFormatCache<F extends Format> {
      */
     static final int NONE = -1;
 
+    /**
+     * Maximum number of entries a static cache in this package may hold before it is flushed.
+     * These caches live for the lifetime of the JVM and are keyed by caller-supplied values
+     * (pattern, time zone, locale), so without a bound, unbounded-cardinality inputs would pin
+     * memory forever. The bound is approximate under concurrency; flushing only costs
+     * re-creation of evicted entries.
+     */
+    static final int MAX_CACHE_SIZE = 1024;
+
     private static final ConcurrentMap<ArrayKey, String> dateTimeInstanceCache = new ConcurrentHashMap<>(7);
 
     /**
@@ -97,8 +103,8 @@ abstract class AbstractFormatCache<F extends Format> {
      * @param dateStyle  date style: FULL, LONG, MEDIUM, or SHORT, null indicates no date in format.
      * @param timeStyle  time style: FULL, LONG, MEDIUM, or SHORT, null indicates no time in format.
      * @param locale  The non-null locale of the desired format.
-     * @return a localized standard date/time format.
-     * @throws IllegalArgumentException if the Locale has no date/time pattern defined.
+     * @return A localized standard date/time format.
+     * @throws IllegalArgumentException Thrown if the Locale has no date/time pattern defined.
      */
     // package protected, for access from test code; do not make public or protected
     static String getPatternForStyle(final Integer dateStyle, final Integer timeStyle, final Locale locale) {
@@ -137,8 +143,8 @@ abstract class AbstractFormatCache<F extends Format> {
      * @param pattern  {@link java.text.SimpleDateFormat} compatible pattern, this will not be null.
      * @param timeZone  time zone, this will not be null.
      * @param locale  locale, this will not be null.
-     * @return a pattern based date/time formatter.
-     * @throws IllegalArgumentException if pattern is invalid or {@code null}.
+     * @return A pattern based date/time formatter.
+     * @throws IllegalArgumentException Thrown if pattern is invalid or {@code null}.
      */
     protected abstract F createInstance(String pattern, TimeZone timeZone, Locale locale);
 
@@ -149,8 +155,8 @@ abstract class AbstractFormatCache<F extends Format> {
      * @param dateStyle  date style: FULL, LONG, MEDIUM, or SHORT.
      * @param timeZone  optional time zone, overrides time zone of formatted date, null means use default Locale.
      * @param locale  optional locale, overrides system locale.
-     * @return a localized standard date/time formatter.
-     * @throws IllegalArgumentException if the Locale has no date/time pattern defined.
+     * @return A localized standard date/time formatter.
+     * @throws IllegalArgumentException Thrown if the Locale has no date/time pattern defined.
      */
     // package protected, for access from FastDateFormat; do not make public or protected
     F getDateInstance(final int dateStyle, final TimeZone timeZone, final Locale locale) {
@@ -165,8 +171,8 @@ abstract class AbstractFormatCache<F extends Format> {
      * @param timeStyle  time style: FULL, LONG, MEDIUM, or SHORT.
      * @param timeZone  optional time zone, overrides time zone of formatted date, null means use default Locale.
      * @param locale  optional locale, overrides system locale.
-     * @return a localized standard date/time formatter.
-     * @throws IllegalArgumentException if the Locale has no date/time pattern defined.
+     * @return A localized standard date/time formatter.
+     * @throws IllegalArgumentException Thrown if the Locale has no date/time pattern defined.
      */
     // package protected, for access from FastDateFormat; do not make public or protected
     F getDateTimeInstance(final int dateStyle, final int timeStyle, final TimeZone timeZone, final Locale locale) {
@@ -181,8 +187,8 @@ abstract class AbstractFormatCache<F extends Format> {
      * @param timeStyle  time style: FULL, LONG, MEDIUM, or SHORT, null indicates no time in format.
      * @param timeZone  optional time zone, overrides time zone of formatted date, null means use default Locale.
      * @param locale  optional locale, overrides system locale.
-     * @return a localized standard date/time formatter.
-     * @throws IllegalArgumentException if the Locale has no date/time pattern defined.
+     * @return A localized standard date/time formatter.
+     * @throws IllegalArgumentException Thrown if the Locale has no date/time pattern defined.
      */
     // This must remain private, see LANG-884
     private F getDateTimeInstance(final Integer dateStyle, final Integer timeStyle, final TimeZone timeZone, Locale locale) {
@@ -194,7 +200,7 @@ abstract class AbstractFormatCache<F extends Format> {
      * Gets a formatter instance using the default pattern in the
      * default time zone and locale.
      *
-     * @return a date/time formatter.
+     * @return A date/time formatter.
      */
     public F getInstance() {
         return getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, TimeZone.getDefault(), Locale.getDefault());
@@ -205,17 +211,23 @@ abstract class AbstractFormatCache<F extends Format> {
      * and locale.
      *
      * @param pattern  {@link java.text.SimpleDateFormat} compatible pattern, non-null.
-     * @param timeZone  the time zone, null means use the default TimeZone.
-     * @param locale  the locale, null means use the default Locale.
-     * @return a pattern based date/time formatter.
-     * @throws NullPointerException if pattern is {@code null}.
-     * @throws IllegalArgumentException if pattern is invalid.
+     * @param timeZone  The time zone, null means use the default TimeZone.
+     * @param locale  The locale, null means use the default Locale.
+     * @return A pattern based date/time formatter.
+     * @throws NullPointerException Thrown if pattern is {@code null}.
+     * @throws IllegalArgumentException Thrown if pattern is invalid.
      */
     public F getInstance(final String pattern, final TimeZone timeZone, final Locale locale) {
         Objects.requireNonNull(pattern, "pattern");
-        final TimeZone actualTimeZone = TimeZones.toTimeZone(timeZone);
+        // Snapshot the mutable zone so the cache key and formatter retain the same rules.
+        final TimeZone actualTimeZone = (TimeZone) TimeZones.toTimeZone(timeZone).clone();
         final Locale actualLocale = LocaleUtils.toLocale(locale);
         final ArrayKey key = new ArrayKey(pattern, actualTimeZone, actualLocale);
+        // Bound the cache: it is static and process-lifetime, so unbounded-cardinality keys
+        // (for example patterns derived from caller input) would otherwise pin memory forever.
+        if (instanceCache.size() >= MAX_CACHE_SIZE && !instanceCache.containsKey(key)) {
+            instanceCache.clear();
+        }
         return instanceCache.computeIfAbsent(key, k -> createInstance(pattern, actualTimeZone, actualLocale));
     }
 
@@ -226,8 +238,8 @@ abstract class AbstractFormatCache<F extends Format> {
      * @param timeStyle  time style: FULL, LONG, MEDIUM, or SHORT.
      * @param timeZone  optional time zone, overrides time zone of formatted date, null means use default Locale.
      * @param locale  optional locale, overrides system locale.
-     * @return a localized standard date/time formatter.
-     * @throws IllegalArgumentException if the Locale has no date/time pattern defined.
+     * @return A localized standard date/time formatter.
+     * @throws IllegalArgumentException Thrown if the Locale has no date/time pattern defined.
      */
     // package protected, for access from FastDateFormat; do not make public or protected
     F getTimeInstance(final int timeStyle, final TimeZone timeZone, final Locale locale) {

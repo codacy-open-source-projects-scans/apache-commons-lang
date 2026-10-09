@@ -17,16 +17,20 @@
 package org.apache.commons.lang3;
 
 import static org.apache.commons.lang3.LangAssertions.assertIllegalArgumentException;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTimeout;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.Random;
+import java.util.function.IntFunction;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
@@ -43,9 +47,42 @@ class RandomStringUtilsTest extends AbstractLangTest {
 
     private static final int LOOP_COUNT = 1_000;
 
+    /** Characters generated per iteration when checking that a documented range boundary is reachable. */
+    private static final int BOUNDARY_SAMPLE_LENGTH = 100;
+
     /** Maximum safe value for count to avoid overflow: (21x + 3) / 5 + 10 < 0x0FFF_FFFF */
     private static final int MAX_SAFE_COUNT = 63_913_201;
 
+
+    /**
+     * Asserts that a generator produces both ends of an inclusive character range and nothing outside it.
+     * <p>
+     * The random number generator of a {@link RandomStringUtils} instance cannot be injected, so reaching a boundary is
+     * sampled rather than forced: {@value #LOOP_COUNT} strings of {@value #BOUNDARY_SAMPLE_LENGTH} characters. Over a sample
+     * that size, a correct generator missing a given boundary character is not a failure mode that can be observed in
+     * practice.
+     * </p>
+     *
+     * @param generator    Generator under test, called with a character count.
+     * @param minInclusive Lowest character the generator is documented to produce.
+     * @param maxInclusive Highest character the generator is documented to produce.
+     */
+    private static void assertInclusiveRange(final IntFunction<String> generator, final char minInclusive, final char maxInclusive) {
+        boolean minFound = false;
+        boolean maxFound = false;
+        for (int i = 0; i < LOOP_COUNT; i++) {
+            final String randString = generator.apply(BOUNDARY_SAMPLE_LENGTH);
+            assertEquals(BOUNDARY_SAMPLE_LENGTH, randString.length(), "generated length");
+            for (int j = 0; j < randString.length(); j++) {
+                final char ch = randString.charAt(j);
+                assertTrue(ch >= minInclusive && ch <= maxInclusive, () -> "character out of range: " + (int) ch);
+                minFound |= ch == minInclusive;
+                maxFound |= ch == maxInclusive;
+            }
+        }
+        assertTrue(minFound, () -> "character not generated in " + LOOP_COUNT + " attempts: " + (int) minInclusive);
+        assertTrue(maxFound, () -> "character not generated in " + LOOP_COUNT + " attempts: " + (int) maxInclusive);
+    }
 
     static Stream<RandomStringUtils> randomProvider() {
         return Stream.of(RandomStringUtils.secure(), RandomStringUtils.secureStrong(), RandomStringUtils.insecure());
@@ -74,7 +111,6 @@ class RandomStringUtilsTest extends AbstractLangTest {
         final int start = Character.MAX_VALUE;
         final int end = Integer.MAX_VALUE;
 
-        @SuppressWarnings("serial")
         final Random fixedRandom = new Random() {
             @Override
             public int nextInt(final int n) {
@@ -93,6 +129,30 @@ class RandomStringUtilsTest extends AbstractLangTest {
         assertNotNull(new RandomStringUtils());
     }
 
+    /**
+     * A custom chars array throws IllegalArgumentException because validation loops treat the loop index as a char code point instead of an index into the
+     * chars array.
+     * <p>
+     * Pre-patch: random(5, 0, 0, true, false, new char[]{'a','b','c'}, rng) enters the "letters && !digits" loop, iterates i from 0 to chars.length, but checks
+     * Character.isLetter(i) where i=0,1,2 are control characters, so it throws IAE "No letters exist between start 0 and end 3".
+     * </p>
+     *
+     * <p>
+     * Post-patch: validation skips index-based char check when chars array is provided, or correctly checks chars[i] instead of i.
+     * </p>
+     */
+    @Test
+    void testCustomLetterCharsArrayDoesNotThrowIAE() {
+        final char[] letters = { 'a', 'b', 'c' };
+        assertDoesNotThrow(() -> {
+            final String result = RandomStringUtils.random(5, 0, 0, true, false, letters, new Random(42));
+            assertEquals(5, result.length());
+            for (final char c : result.toCharArray()) {
+                assertTrue(c == 'a' || c == 'b' || c == 'c', () -> "Expected char from {a,b,c} but got: " + c);
+            }
+        }, "RandomStringUtils.random() threw IAE for valid letter chars array - pre-patch behavior");
+    }
+
     @Test
     void testExceptionsRandom() {
         assertIllegalArgumentException(() -> RandomStringUtils.random(-1));
@@ -107,6 +167,10 @@ class RandomStringUtilsTest extends AbstractLangTest {
         assertIllegalArgumentException(() -> RandomStringUtils.random(8, 32, 48, false, true));
         assertIllegalArgumentException(() -> RandomStringUtils.random(8, 32, 65, true, false));
         assertIllegalArgumentException(() -> RandomStringUtils.random(1, Integer.MIN_VALUE, -10, false, false, null));
+        assertIllegalArgumentException(() -> RandomStringUtils.random(2, 4, 5, false, false, new char[] { 'a', 'b', 'c', 'd' }, new Random()));
+        assertIllegalArgumentException(() -> RandomStringUtils.random(2, 1, 5, false, false, new char[] { 'a', 'b', 'c', 'd' }, new Random()));
+        // From the mailing list
+        assertIllegalArgumentException(() -> RandomStringUtils.random(5, 0x80, 0xA0, true, false, null, new Random()));
     }
 
     @ParameterizedTest
@@ -196,7 +260,7 @@ class RandomStringUtilsTest extends AbstractLangTest {
      * Test homogeneity of random strings generated -- i.e., test that characters show up with expected frequencies in generated strings. Will fail randomly
      * about 1 in 100,000 times. Repeated failures indicate a problem.
      *
-     * @param rsu the instance to test.
+     * @param rsu The instance to test.
      */
     @ParameterizedTest
     @MethodSource("randomProvider")
@@ -270,7 +334,7 @@ class RandomStringUtilsTest extends AbstractLangTest {
     /**
      * Checks if the string got by {@link RandomStringUtils#random(int)} can be converted to UTF-8 and back without loss.
      *
-     * @param rsu the instance to test
+     * @param rsu The instance to test
      * @see <a href="https://issues.apache.org/jira/browse/LANG-100">LANG-100</a>
      */
     @ParameterizedTest
@@ -308,6 +372,36 @@ class RandomStringUtilsTest extends AbstractLangTest {
         final String msg = ex.getMessage();
         assertTrue(msg.contains("start"), "Message (" + msg + ") must contain 'start'");
         assertTrue(msg.contains("end"), "Message (" + msg + ") must contain 'end'");
+    }
+
+    /**
+     * Asking for {@code letters && digits} must never be stricter than asking for {@code digits} alone. The range
+     * {@code ['0', 'A')} holds the digits but no letters, so {@code random(count, '0', 'A', true, true, ...)} must
+     * generate digits like the digits-only call over the same range, not throw IllegalArgumentException.
+     */
+    @Test
+    void testLettersAndDigitsOverDigitOnlyRange() {
+        final String both = RandomStringUtils.random(100, '0', 'A', true, true, null, new Random(42));
+        assertEquals(100, both.length());
+        for (final char c : both.toCharArray()) {
+            assertTrue(c >= '0' && c <= '9', () -> "Expected a digit but got: " + c);
+        }
+        // digits alone already works over this range, so letters && digits must not reject it
+        assertDoesNotThrow(() -> RandomStringUtils.random(100, '0', 'A', false, true, null, new Random(42)));
+    }
+
+    /**
+     * The {@code letters && digits} ASCII fast path clamps {@code start} up to {@code '0'} and {@code end} down to
+     * {@code 'z' + 1}. A range sitting entirely above the alphanumerics, e.g. {@code ['z' + 1, 0x7f)}, collapses to
+     * {@code start >= end} after that clamp. It must throw a clear range IllegalArgumentException, not fall through to
+     * {@code nextBits(0)} which reports the unrelated "number of bits must be between 1 and 32".
+     */
+    @Test
+    void testLettersAndDigitsOverEmptyAsciiRange() {
+        final IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+                () -> RandomStringUtils.random(10, 'z' + 1, 0x7f, true, true, null, new Random(42)));
+        assertTrue(e.getMessage() != null && !e.getMessage().contains("number of bits"),
+                () -> "Expected a range-validation message but got: " + e.getMessage());
     }
 
     /**
@@ -381,6 +475,24 @@ class RandomStringUtilsTest extends AbstractLangTest {
     }
 
     /**
+     * random() hangs when the specified [start, end) range contains ONLY rejected code points (UNASSIGNED, PRIVATE_USE, SURROGATE). The loop increments count
+     * and retries indefinitely.
+     * <p>
+     * The private-use area U+E000..U+F8FF (0xE000..0xF900) contains only PRIVATE_USE code points, so random(1, 0xE000, 0xF900, false, false, null, rng) hangs
+     * forever pre-patch.
+     * </p>
+     * <ul>
+     * <li>Pre-patch: hangs indefinitely.</li>
+     * <li>Post-patch: throws IllegalArgumentException quickly.</li>
+     * </ul>
+     */
+    @Test
+    void testOnlyRejectedCodePoints() {
+        assertTimeout(Duration.ofSeconds(2),
+                () -> assertThrows(IllegalArgumentException.class, () -> RandomStringUtils.random(1, 0xE000, 0xF900, false, false, null, new Random(42))));
+    }
+
+    /**
      * Make sure boundary alpha characters are generated by randomAlphabetic This test will fail randomly with probability = 4 * (51/52)**1000 ~ 1.58E-8
      */
     @Test
@@ -403,7 +515,7 @@ class RandomStringUtilsTest extends AbstractLangTest {
     /**
      * Make sure boundary alpha characters are generated by randomAlphabetic This test will fail randomly with probability = 4 * (51/52)**1000 ~ 1.58E-8
      *
-     * @param rsu the instance to test
+     * @param rsu The instance to test
      */
     @ParameterizedTest
     @MethodSource("randomProvider")
@@ -500,7 +612,7 @@ class RandomStringUtilsTest extends AbstractLangTest {
     /**
      * Make sure boundary alphanumeric characters are generated by randomAlphaNumeric This test will fail randomly with probability = 6 * (61/62)**1000 ~ 5.2E-7
      *
-     * @param rsu the instance to test
+     * @param rsu The instance to test
      */
     @ParameterizedTest
     @MethodSource("randomProvider")
@@ -549,7 +661,7 @@ class RandomStringUtilsTest extends AbstractLangTest {
     /**
      * Test the implementation
      *
-     * @param rsu the instance to test.
+     * @param rsu The instance to test.
      */
     @ParameterizedTest
     @MethodSource("randomProvider")
@@ -644,28 +756,10 @@ class RandomStringUtilsTest extends AbstractLangTest {
         assertEquals("", r1, "random(0).equals(\"\")");
     }
 
-    /**
-     * Make sure 32 and 127 are generated by randomNumeric This test will fail randomly with probability = 2*(95/96)**1000 ~ 5.7E-5
-     *
-     * @param rsu the instance to test
-     */
     @ParameterizedTest
     @MethodSource("randomProvider")
     void testRandomAscii(final RandomStringUtils rsu) {
-        final char[] testChars = { (char) 32, (char) 126 };
-        final boolean[] found = { false, false };
-        // Test failures have been observed on GitHub builds with a 100 limit.
-        for (int i = 0; i < LOOP_COUNT; i++) {
-            final String randString = rsu.nextAscii(10);
-            for (int j = 0; j < testChars.length; j++) {
-                if (randString.indexOf(testChars[j]) > 0) {
-                    found[j] = true;
-                }
-            }
-        }
-        for (int i = 0; i < testChars.length; i++) {
-            assertTrue(found[i], "ascii character not generated in 1000 attempts: " + (int) testChars[i] + " -- repeated failures indicate a problem");
-        }
+        assertInclusiveRange(rsu::nextAscii, ' ', '~');
     }
 
     @ParameterizedTest
@@ -697,6 +791,25 @@ class RandomStringUtilsTest extends AbstractLangTest {
 
     @ParameterizedTest
     @MethodSource("randomProvider")
+    void testRandomAsciiRangeBoundaries(final RandomStringUtils rsu) {
+        assertInclusiveRange(count -> rsu.nextAscii(count, count + 1), ' ', '~');
+    }
+
+    /**
+     * Verifies that {@link RandomStringUtils#nextGraph(int)} generates both ends of the POSIX {@code [:graph:]} class,
+     * {@code '!'} (0x21) and {@code '~'} (0x7E), and nothing outside it.
+     *
+     * @param rsu The instance to test
+     * @see #assertInclusiveRange(IntFunction, char, char)
+     */
+    @ParameterizedTest
+    @MethodSource("randomProvider")
+    void testRandomGraphIncludesTilde(final RandomStringUtils rsu) {
+        assertInclusiveRange(rsu::nextGraph, '!', '~');
+    }
+
+    @ParameterizedTest
+    @MethodSource("randomProvider")
     void testRandomGraphRange(final RandomStringUtils rsu) {
         final int expectedMinLengthInclusive = 1;
         final int expectedMaxLengthExclusive = 11;
@@ -722,10 +835,26 @@ class RandomStringUtilsTest extends AbstractLangTest {
         assertEquals(expectedMaxLengthExclusive - 1, maxCreatedLength, "max generated, may fail randomly rarely");
     }
 
+    @ParameterizedTest
+    @MethodSource("randomProvider")
+    void testRandomGraphRangeBoundaries(final RandomStringUtils rsu) {
+        assertInclusiveRange(count -> rsu.nextGraph(count, count + 1), '!', '~');
+    }
+
+    @Test
+    void testRandomGraphStaticBoundaries() {
+        assertInclusiveRange(RandomStringUtils::randomGraph, '!', '~');
+    }
+
+    @Test
+    void testRandomGraphStaticRangeBoundaries() {
+        assertInclusiveRange(count -> RandomStringUtils.randomGraph(count, count + 1), '!', '~');
+    }
+
     /**
      * Make sure '0' and '9' are generated by randomNumeric This test will fail randomly with probability = 2 * (9/10)**1000 ~ 3.5E-46
      *
-     * @param rsu the instance to test
+     * @param rsu The instance to test
      */
     @ParameterizedTest
     @MethodSource("randomProvider")
@@ -780,6 +909,19 @@ class RandomStringUtilsTest extends AbstractLangTest {
         assertEquals(r1, r2, "r1.equals(r2)");
     }
 
+    /**
+     * Verifies that {@link RandomStringUtils#nextPrint(int)} generates both ends of the POSIX {@code [:print:]} class,
+     * space (0x20) and {@code '~'} (0x7E), and nothing outside it.
+     *
+     * @param rsu The instance to test
+     * @see #assertInclusiveRange(IntFunction, char, char)
+     */
+    @ParameterizedTest
+    @MethodSource("randomProvider")
+    void testRandomPrintIncludesTilde(final RandomStringUtils rsu) {
+        assertInclusiveRange(rsu::nextPrint, ' ', '~');
+    }
+
     @ParameterizedTest
     @MethodSource("randomProvider")
     void testRandomPrintRange(final RandomStringUtils rsu) {
@@ -807,10 +949,26 @@ class RandomStringUtilsTest extends AbstractLangTest {
         assertEquals(expectedMaxLengthExclusive - 1, maxCreatedLength, "max generated, may fail randomly rarely");
     }
 
+    @ParameterizedTest
+    @MethodSource("randomProvider")
+    void testRandomPrintRangeBoundaries(final RandomStringUtils rsu) {
+        assertInclusiveRange(count -> rsu.nextPrint(count, count + 1), ' ', '~');
+    }
+
+    @Test
+    void testRandomPrintStaticBoundaries() {
+        assertInclusiveRange(RandomStringUtils::randomPrint, ' ', '~');
+    }
+
+    @Test
+    void testRandomPrintStaticRangeBoundaries() {
+        assertInclusiveRange(count -> RandomStringUtils.randomPrint(count, count + 1), ' ', '~');
+    }
+
     /**
      * Test {@code RandomStringUtils.random} works appropriately when chars specified.
      *
-     * @param rsu the instance to test.
+     * @param rsu The instance to test.
      */
     @ParameterizedTest
     @MethodSource("randomProvider")

@@ -51,7 +51,7 @@ public class DurationUtils {
      * @param <T> The function exception.
      * @param consumer Accepting function.
      * @param duration The duration to pick apart.
-     * @throws T See the function signature.
+     * @throws T Thrown as described in the function signature.
      * @see StopWatch
      */
     @SuppressWarnings("boxing") // boxing unavoidable
@@ -68,7 +68,7 @@ public class DurationUtils {
      * @param key  The property name.
      * @param unit The unit that the duration is measured in, not null.
      * @param def  The default value in the given unit.
-     * @return a Duration of seconds.
+     * @return A Duration of seconds.
      * @since 3.19.0
      */
     public static Duration get(final String key, final TemporalUnit unit, final long def) {
@@ -84,7 +84,7 @@ public class DurationUtils {
      *
      * @param key The property name.
      * @param def The default value in milliseconds.
-     * @return a Duration of milliseconds.
+     * @return A Duration of milliseconds.
      * @since 3.19.0
      */
     public static Duration getMillis(final String key, final long def) {
@@ -133,7 +133,7 @@ public class DurationUtils {
      *
      * @param key The property name.
      * @param def The default value in seconds.
-     * @return a Duration of seconds.
+     * @return A Duration of seconds.
      * @since 3.19.0
      */
     public static Duration getSeconds(final String key, final long def) {
@@ -143,7 +143,7 @@ public class DurationUtils {
     /**
      * Tests whether the given Duration is positive (duration &gt; 0).
      *
-     * @param duration the value to test
+     * @param duration The value to test
      * @return whether the given Duration is positive (duration &gt; 0).
      */
     public static boolean isPositive(final Duration duration) {
@@ -162,7 +162,7 @@ public class DurationUtils {
      * @param <E> The type of exception throw by the lambda.
      * @param consumer What to execute.
      * @return The Duration of execution.
-     * @throws E thrown by the lambda.
+     * @throws E Thrown by the lambda.
      * @see StopWatch
      * @since 3.13.0
      */
@@ -176,7 +176,7 @@ public class DurationUtils {
      * @param <E> The type of exception throw by the lambda.
      * @param runnable What to execute.
      * @return The Duration of execution.
-     * @throws E thrown by the lambda.
+     * @throws E Thrown by the lambda.
      * @see StopWatch
      * @since 3.13.0
      */
@@ -187,8 +187,8 @@ public class DurationUtils {
     /**
      * Computes the Duration between a start instant and now.
      *
-     * @param startInclusive the start instant, inclusive, not null.
-     * @return a {@link Duration}, not null.
+     * @param startInclusive The start instant, inclusive, not null.
+     * @return A {@link Duration}, not null.
      * @since 3.13.0
      */
     public static Duration since(final Temporal startInclusive) {
@@ -203,7 +203,7 @@ public class DurationUtils {
      */
     static ChronoUnit toChronoUnit(final TimeUnit timeUnit) {
         // TODO when using Java >= 9: Use TimeUnit.toChronoUnit().
-        switch (Objects.requireNonNull(timeUnit)) {
+        switch (Objects.requireNonNull(timeUnit, "timeUnit")) {
         case NANOSECONDS:
             return ChronoUnit.NANOS;
         case MICROSECONDS:
@@ -226,33 +226,57 @@ public class DurationUtils {
     /**
      * Converts an amount and TimeUnit into a Duration.
      *
-     * @param amount   the amount of the duration, measured in terms of the unit, positive or negative
-     * @param timeUnit the unit that the duration is measured in, must have an exact duration, not null
-     * @return a Duration.
+     * @param amount   The amount of the duration, measured in terms of the unit, positive or negative
+     * @param timeUnit The unit that the duration is measured in, must have an exact duration, not null
+     * @return A Duration.
      */
     public static Duration toDuration(final long amount, final TimeUnit timeUnit) {
         return Duration.of(amount, toChronoUnit(timeUnit));
     }
 
     /**
-     * Converts a Duration to milliseconds bound to an int (instead of a long).
+     * Converts a Duration to milliseconds bound to an {@code int} (instead of a {@code long}).
      * <p>
      * Handy for low-level APIs that take millisecond timeouts in ints rather than longs.
      * </p>
      * <ul>
-     * <li>If the duration milliseconds are greater than {@link Integer#MAX_VALUE}, then return
-     * {@link Integer#MAX_VALUE}.</li>
-     * <li>If the duration milliseconds are lesser than {@link Integer#MIN_VALUE}, then return
-     * {@link Integer#MIN_VALUE}.</li>
+     * <li>If the duration milliseconds are greater than {@link Integer#MAX_VALUE}, then return {@link Integer#MAX_VALUE}.</li>
+     * <li>If the duration milliseconds are lesser than {@link Integer#MIN_VALUE}, then return {@link Integer#MIN_VALUE}.</li>
      * </ul>
      *
      * @param duration The duration to convert, not null.
      * @return int milliseconds.
+     * @see Duration#toMillis()
+     * @see Integer#MIN_VALUE
+     * @see Integer#MAX_VALUE
      */
     public static int toMillisInt(final Duration duration) {
         Objects.requireNonNull(duration, "duration");
         // intValue() does not do a narrowing conversion here
-        return LONG_TO_INT_RANGE.fit(Long.valueOf(duration.toMillis())).intValue();
+        return LONG_TO_INT_RANGE.fit(Long.valueOf(toMillisLong(duration))).intValue();
+    }
+
+    /**
+     * Converts a Duration to milliseconds bound to a {@code long} without throwing {@link ArithmeticException}.
+     * <ul>
+     * <li>If the duration milliseconds are greater than {@link Long#MAX_VALUE}, then return {@link Long#MAX_VALUE}.</li>
+     * <li>If the duration milliseconds are lesser than {@link Long#MIN_VALUE}, then return {@link Long#MIN_VALUE}.</li>
+     * </ul>
+     *
+     * @param duration The duration to convert, not null.
+     * @return long milliseconds.
+     * @see Duration#toMillis()
+     * @see Long#MIN_VALUE
+     * @see Long#MAX_VALUE
+     * @since 3.21.0
+     */
+    public static long toMillisLong(final Duration duration) {
+        Objects.requireNonNull(duration, "duration");
+        try {
+            return duration.toMillis();
+        } catch (final ArithmeticException e) {
+            return duration.isNegative() ? Long.MIN_VALUE : Long.MAX_VALUE;
+        }
     }
 
     /**

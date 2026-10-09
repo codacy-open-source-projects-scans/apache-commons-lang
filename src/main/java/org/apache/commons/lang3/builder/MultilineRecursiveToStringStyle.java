@@ -25,7 +25,9 @@ import org.apache.commons.lang3.StringUtils;
  * But instead a single line like the {@link RecursiveToStringStyle} this creates a multiline String
  * similar to the {@link ToStringStyle#MULTI_LINE_STYLE}.
  *
- * <p>To use this class write code as follows:</p>
+ * <p>
+ * To use this class write code as follows:
+ * </p>
  *
  * <pre>
  * public class Job {
@@ -206,7 +208,7 @@ public class MultilineRecursiveToStringStyle extends RecursiveToStringStyle {
      * Creates a StringBuilder responsible for the indenting.
      *
      * @param spaces how far to indent
-     * @return a StringBuilder with {spaces} leading space characters.
+     * @return A StringBuilder with {spaces} leading space characters.
      */
     private String spacer(final int spaces) {
         return StringUtils.repeat(' ', spaces);

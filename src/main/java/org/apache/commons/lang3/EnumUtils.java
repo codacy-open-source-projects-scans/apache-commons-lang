@@ -33,7 +33,9 @@ import org.apache.commons.lang3.stream.Streams;
 /**
  * Provides methods for Java enums.
  *
- * <p>#ThreadSafe#</p>
+ * <p>
+ * #ThreadSafe#
+ * </p>
  *
  * @since 3.0
  */
@@ -47,11 +49,11 @@ public class EnumUtils {
     /**
      * Validate {@code enumClass}.
      *
-     * @param <E> the type of the enumeration.
+     * @param <E> The type of the enumeration.
      * @param enumClass to check.
      * @return {@code enumClass}.
-     * @throws NullPointerException if {@code enumClass} is {@code null}.
-     * @throws IllegalArgumentException if {@code enumClass} is not an enum class.
+     * @throws NullPointerException Thrown if {@code enumClass} is {@code null}.
+     * @throws IllegalArgumentException Thrown if {@code enumClass} is not an enum class.
      * @since 3.2
      */
     private static <E extends Enum<E>> Class<E> asEnum(final Class<E> enumClass) {
@@ -63,11 +65,11 @@ public class EnumUtils {
     /**
      * Validate that {@code enumClass} is compatible with representation in a {@code long}.
      *
-     * @param <E> the type of the enumeration.
+     * @param <E> The type of the enumeration.
      * @param enumClass to check.
      * @return {@code enumClass}.
-     * @throws NullPointerException if {@code enumClass} is {@code null}.
-     * @throws IllegalArgumentException if {@code enumClass} is not an enum class or has more than 64 values.
+     * @throws NullPointerException Thrown if {@code enumClass} is {@code null}.
+     * @throws IllegalArgumentException Thrown if {@code enumClass} is not an enum class or has more than 64 values.
      * @since 3.0.1
      */
     private static <E extends Enum<E>> Class<E> checkBitVectorable(final Class<E> enumClass) {
@@ -80,17 +82,21 @@ public class EnumUtils {
     /**
      * Creates a long bit vector representation of the given array of Enum values.
      *
-     * <p>This generates a value that is usable by {@link EnumUtils#processBitVector}.</p>
+     * <p>
+     * This generates a value that is usable by {@link EnumUtils#processBitVector}.
+     * </p>
      *
-     * <p>Do not use this method if you have more than 64 values in your Enum, as this
-     * would create a value greater than a long can hold.</p>
+     * <p>
+     * Do not use this method if you have more than 64 values in your Enum, as this
+     * would create a value greater than a long can hold.
+     * </p>
      *
-     * @param enumClass the class of the enum we are working with, not {@code null}.
-     * @param values    the values we want to convert, not {@code null}.
+     * @param enumClass The class of the enum we are working with, not {@code null}.
+     * @param values    The values we want to convert, not {@code null}.
      * @param <E>       the type of the enumeration.
-     * @return a long whose value provides a binary representation of the given set of enum values.
-     * @throws NullPointerException if {@code enumClass} or {@code values} is {@code null}.
-     * @throws IllegalArgumentException if {@code enumClass} is not an enum class or has more than 64 values.
+     * @return A long whose value provides a binary representation of the given set of enum values.
+     * @throws NullPointerException Thrown if {@code enumClass} or {@code values} is {@code null}.
+     * @throws IllegalArgumentException Thrown if {@code enumClass} is not an enum class or has more than 64 values.
      * @since 3.0.1
      * @see #generateBitVectors(Class, Iterable)
      */
@@ -103,17 +109,21 @@ public class EnumUtils {
     /**
      * Creates a long bit vector representation of the given subset of an Enum.
      *
-     * <p>This generates a value that is usable by {@link EnumUtils#processBitVector}.</p>
+     * <p>
+     * This generates a value that is usable by {@link EnumUtils#processBitVector}.
+     * </p>
      *
-     * <p>Do not use this method if you have more than 64 values in your Enum, as this
-     * would create a value greater than a long can hold.</p>
+     * <p>
+     * Do not use this method if you have more than 64 values in your Enum, as this
+     * would create a value greater than a long can hold.
+     * </p>
      *
-     * @param enumClass the class of the enum we are working with, not {@code null}.
-     * @param values    the values we want to convert, not {@code null}, neither containing {@code null}.
+     * @param enumClass The class of the enum we are working with, not {@code null}.
+     * @param values    The values we want to convert, not {@code null}, neither containing {@code null}.
      * @param <E>       the type of the enumeration.
-     * @return a long whose value provides a binary representation of the given set of enum values.
-     * @throws NullPointerException if {@code enumClass} or {@code values} is {@code null}.
-     * @throws IllegalArgumentException if {@code enumClass} is not an enum class or has more than 64 values,
+     * @return A long whose value provides a binary representation of the given set of enum values.
+     * @throws NullPointerException Thrown if {@code enumClass} or {@code values} is {@code null}.
+     * @throws IllegalArgumentException Thrown if {@code enumClass} is not an enum class or has more than 64 values,
      *                                  or if any {@code values} {@code null}.
      * @since 3.0.1
      * @see #generateBitVectors(Class, Iterable)
@@ -132,17 +142,21 @@ public class EnumUtils {
     /**
      * Creates a bit vector representation of the given subset of an Enum using as many {@code long}s as needed.
      *
-     * <p>This generates a value that is usable by {@link EnumUtils#processBitVectors}.</p>
+     * <p>
+     * This generates a value that is usable by {@link EnumUtils#processBitVectors}.
+     * </p>
      *
-     * <p>Use this method if you have more than 64 values in your Enum.</p>
+     * <p>
+     * Use this method if you have more than 64 values in your Enum.
+     * </p>
      *
-     * @param enumClass the class of the enum we are working with, not {@code null}.
-     * @param values    the values we want to convert, not {@code null}, neither containing {@code null}.
+     * @param enumClass The class of the enum we are working with, not {@code null}.
+     * @param values    The values we want to convert, not {@code null}, neither containing {@code null}.
      * @param <E>       the type of the enumeration.
-     * @return a long[] whose values provide a binary representation of the given set of enum values
+     * @return A long[] whose values provide a binary representation of the given set of enum values
      *         with the least significant digits rightmost.
-     * @throws NullPointerException if {@code enumClass} or {@code values} is {@code null}.
-     * @throws IllegalArgumentException if {@code enumClass} is not an enum class, or if any {@code values} {@code null}.
+     * @throws NullPointerException Thrown if {@code enumClass} or {@code values} is {@code null}.
+     * @throws IllegalArgumentException Thrown if {@code enumClass} is not an enum class, or if any {@code values} {@code null}.
      * @since 3.2
      */
     @SafeVarargs
@@ -162,17 +176,21 @@ public class EnumUtils {
     /**
      * Creates a bit vector representation of the given subset of an Enum using as many {@code long}s as needed.
      *
-     * <p>This generates a value that is usable by {@link EnumUtils#processBitVectors}.</p>
+     * <p>
+     * This generates a value that is usable by {@link EnumUtils#processBitVectors}.
+     * </p>
      *
-     * <p>Use this method if you have more than 64 values in your Enum.</p>
+     * <p>
+     * Use this method if you have more than 64 values in your Enum.
+     * </p>
      *
-     * @param enumClass the class of the enum we are working with, not {@code null}.
-     * @param values    the values we want to convert, not {@code null}, neither containing {@code null}.
+     * @param enumClass The class of the enum we are working with, not {@code null}.
+     * @param values    The values we want to convert, not {@code null}, neither containing {@code null}.
      * @param <E>       the type of the enumeration.
-     * @return a long[] whose values provide a binary representation of the given set of enum values
+     * @return A long[] whose values provide a binary representation of the given set of enum values
      *         with the least significant digits rightmost.
-     * @throws NullPointerException if {@code enumClass} or {@code values} is {@code null}.
-     * @throws IllegalArgumentException if {@code enumClass} is not an enum class, or if any {@code values} {@code null}.
+     * @throws NullPointerException Thrown if {@code enumClass} or {@code values} is {@code null}.
+     * @throws IllegalArgumentException Thrown if {@code enumClass} is not an enum class, or if any {@code values} {@code null}.
      * @since 3.2
      */
     public static <E extends Enum<E>> long[] generateBitVectors(final Class<E> enumClass, final Iterable<? extends E> values) {
@@ -191,13 +209,15 @@ public class EnumUtils {
     /**
      * Gets the enum for the class, returning {@code null} if not found.
      *
-     * <p>This method differs from {@link Enum#valueOf} in that it does not throw an exception
-     * for an invalid enum name.</p>
+     * <p>
+     * This method differs from {@link Enum#valueOf} in that it does not throw an exception
+     * for an invalid enum name.
+     * </p>
      *
-     * @param <E> the type of the enumeration.
-     * @param enumClass  the class of the enum to query, not null.
-     * @param enumName   the enum name, null returns null.
-     * @return the enum, null if not found.
+     * @param <E> The type of the enumeration.
+     * @param enumClass  The class of the enum to query, not null.
+     * @param enumName   The enum name, null returns null.
+     * @return The enum, null if not found.
      */
     public static <E extends Enum<E>> E getEnum(final Class<E> enumClass, final String enumName) {
         return getEnum(enumClass, enumName, null);
@@ -206,14 +226,16 @@ public class EnumUtils {
     /**
      * Gets the enum for the class, returning {@code defaultEnum} if not found.
      *
-     * <p>This method differs from {@link Enum#valueOf} in that it does not throw an exception
-     * for an invalid enum name.</p>
+     * <p>
+     * This method differs from {@link Enum#valueOf} in that it does not throw an exception
+     * for an invalid enum name.
+     * </p>
      *
-     * @param <E> the type of the enumeration.
-     * @param enumClass   the class of the enum to query, null returns default enum.
-     * @param enumName    the enum name, null returns default enum.
-     * @param defaultEnum the default enum.
-     * @return the enum, default enum if not found.
+     * @param <E> The type of the enumeration.
+     * @param enumClass   The class of the enum to query, null returns default enum.
+     * @param enumName    The enum name, null returns default enum.
+     * @param defaultEnum The default enum.
+     * @return The enum, default enum if not found.
      * @since 3.10
      */
     public static <E extends Enum<E>> E getEnum(final Class<E> enumClass, final String enumName, final E defaultEnum) {
@@ -230,13 +252,15 @@ public class EnumUtils {
     /**
      * Gets the enum for the class, returning {@code null} if not found.
      *
-     * <p>This method differs from {@link Enum#valueOf} in that it does not throw an exception
-     * for an invalid enum name and performs case insensitive matching of the name.</p>
+     * <p>
+     * This method differs from {@link Enum#valueOf} in that it does not throw an exception
+     * for an invalid enum name and performs case insensitive matching of the name.
+     * </p>
      *
      * @param <E>         the type of the enumeration.
-     * @param enumClass   the class of the enum to query, may be null.
-     * @param enumName    the enum name, null returns null.
-     * @return the enum, null if not found.
+     * @param enumClass   The class of the enum to query, may be null.
+     * @param enumName    The enum name, null returns null.
+     * @return The enum, null if not found.
      * @since 3.8
      */
     public static <E extends Enum<E>> E getEnumIgnoreCase(final Class<E> enumClass, final String enumName) {
@@ -246,14 +270,16 @@ public class EnumUtils {
     /**
      * Gets the enum for the class, returning {@code defaultEnum} if not found.
      *
-     * <p>This method differs from {@link Enum#valueOf} in that it does not throw an exception
-     * for an invalid enum name and performs case insensitive matching of the name.</p>
+     * <p>
+     * This method differs from {@link Enum#valueOf} in that it does not throw an exception
+     * for an invalid enum name and performs case insensitive matching of the name.
+     * </p>
      *
      * @param <E>         the type of the enumeration.
-     * @param enumClass   the class of the enum to query, null returns default enum.
-     * @param enumName    the enum name, null returns default enum.
-     * @param defaultEnum the default enum.
-     * @return the enum, default enum if not found.
+     * @param enumClass   The class of the enum to query, null returns default enum.
+     * @param enumName    The enum name, null returns default enum.
+     * @param defaultEnum The default enum.
+     * @return The enum, default enum if not found.
      * @since 3.10
      */
     public static <E extends Enum<E>> E getEnumIgnoreCase(final Class<E> enumClass, final String enumName,
@@ -264,11 +290,13 @@ public class EnumUtils {
     /**
      * Gets the {@link List} of enums.
      *
-     * <p>This method is useful when you need a list of enums rather than an array.</p>
+     * <p>
+     * This method is useful when you need a list of enums rather than an array.
+     * </p>
      *
-     * @param <E> the type of the enumeration.
-     * @param enumClass  the class of the enum to query, not null.
-     * @return the modifiable list of enums, never null.
+     * @param <E> The type of the enumeration.
+     * @param enumClass  The class of the enum to query, not null.
+     * @return The modifiable list of enums, never null.
      */
     public static <E extends Enum<E>> List<E> getEnumList(final Class<E> enumClass) {
         return new ArrayList<>(Arrays.asList(enumClass.getEnumConstants()));
@@ -277,11 +305,13 @@ public class EnumUtils {
     /**
      * Gets the {@link Map} of enums by name.
      *
-     * <p>This method is useful when you need a map of enums by name.</p>
+     * <p>
+     * This method is useful when you need a map of enums by name.
+     * </p>
      *
-     * @param <E> the type of the enumeration.
-     * @param enumClass  the class of the enum to query, not null.
-     * @return the modifiable map of enum names to enums, never null.
+     * @param <E> The type of the enumeration.
+     * @param enumClass  The class of the enum to query, not null.
+     * @return The modifiable map of enum names to enums, never null.
      */
     public static <E extends Enum<E>> Map<String, E> getEnumMap(final Class<E> enumClass) {
         return getEnumMap(enumClass, E::name);
@@ -296,9 +326,9 @@ public class EnumUtils {
      *
      * @param <E>         the type of enumeration.
      * @param <K>         the type of the map key.
-     * @param enumClass   the class of the enum to query, not null.
-     * @param keyFunction the function to query for the key, not null.
-     * @return the modifiable map of enums, never null.
+     * @param enumClass   The class of the enum to query, not null.
+     * @param keyFunction The function to query for the key, not null.
+     * @return The modifiable map of enums, never null.
      * @since 3.13.0
      */
     public static <E extends Enum<E>, K> Map<K, E> getEnumMap(final Class<E> enumClass, final Function<E, K> keyFunction) {
@@ -316,10 +346,10 @@ public class EnumUtils {
      * </p>
      *
      * @param <E>         the type of the enumeration.
-     * @param enumClass   the class of the enum to query, not null.
-     * @param propName    the system property key for the enum name, null returns default enum.
-     * @param defaultEnum the default enum.
-     * @return the enum, default enum if not found.
+     * @param enumClass   The class of the enum to query, not null.
+     * @param propName    The system property key for the enum name, null returns default enum.
+     * @param defaultEnum The default enum.
+     * @return The enum, default enum if not found.
      * @since 3.13.0
      */
     public static <E extends Enum<E>> E getEnumSystemProperty(final Class<E> enumClass, final String propName, final E defaultEnum) {
@@ -335,11 +365,11 @@ public class EnumUtils {
      * </p>
      *
      * @param <E>           the type of the enumeration.
-     * @param enumClass     the class of the enum to query, not null.
-     * @param value         the enum name, null returns default enum.
-     * @param toIntFunction the function that gets an int for an enum for comparison to {@code value}.
-     * @param defaultEnum   the default enum.
-     * @return an enum, default enum if not found.
+     * @param enumClass     The class of the enum to query, not null.
+     * @param value         The enum name, null returns default enum.
+     * @param toIntFunction The function that gets an int for an enum for comparison to {@code value}.
+     * @param defaultEnum   The default enum.
+     * @return An enum, default enum if not found.
      * @since 3.18.0
      */
     public static <E extends Enum<E>> E getFirstEnum(final Class<E> enumClass, final int value, final ToIntFunction<E> toIntFunction, final E defaultEnum) {
@@ -352,15 +382,17 @@ public class EnumUtils {
     /**
      * Gets the enum for the class, returning {@code defaultEnum} if not found.
      *
-     * <p>This method differs from {@link Enum#valueOf} in that it does not throw an exception
-     * for an invalid enum name and performs case insensitive matching of the name.</p>
+     * <p>
+     * This method differs from {@link Enum#valueOf} in that it does not throw an exception
+     * for an invalid enum name and performs case insensitive matching of the name.
+     * </p>
      *
      * @param <E>         the type of the enumeration.
-     * @param enumClass   the class of the enum to query, null returns default enum.
-     * @param enumName    the enum name, null returns default enum.
-     * @param stringFunction the function that gets the string for an enum for comparison to {@code enumName}.
-     * @param defaultEnum the default enum.
-     * @return an enum, default enum if not found.
+     * @param enumClass   The class of the enum to query, null returns default enum.
+     * @param enumName    The enum name, null returns default enum.
+     * @param stringFunction The function that gets the string for an enum for comparison to {@code enumName}.
+     * @param defaultEnum The default enum.
+     * @return An enum, default enum if not found.
      * @since 3.13.0
      */
     public static <E extends Enum<E>> E getFirstEnumIgnoreCase(final Class<E> enumClass, final String enumName, final Function<E, String> stringFunction,
@@ -376,15 +408,15 @@ public class EnumUtils {
     }
 
     /**
-     * Checks if the specified name is a valid enum for the class.
+     * Tests whether the specified name is a valid enum for the class.
      *
      * <p>
      * This method differs from {@link Enum#valueOf} in that it checks if the name is a valid enum without needing to catch the exception.
      * </p>
      *
      * @param <E>       the type of the enumeration.
-     * @param enumClass the class of the enum to query, null returns false.
-     * @param enumName  the enum name, null returns false.
+     * @param enumClass The class of the enum to query, null returns false.
+     * @param enumName  The enum name, null returns false.
      * @return true if the enum name is valid, otherwise false.
      */
     public static <E extends Enum<E>> boolean isValidEnum(final Class<E> enumClass, final String enumName) {
@@ -392,7 +424,7 @@ public class EnumUtils {
     }
 
     /**
-     * Checks if the specified name is a valid enum for the class.
+     * Tests whether the specified name is a valid enum for the class.
      *
      * <p>
      * This method differs from {@link Enum#valueOf} in that it checks if the name is a valid enum without needing to catch the exception and performs case
@@ -400,8 +432,8 @@ public class EnumUtils {
      * </p>
      *
      * @param <E>       the type of the enumeration.
-     * @param enumClass the class of the enum to query, null returns false.
-     * @param enumName  the enum name, null returns false.
+     * @param enumClass The class of the enum to query, null returns false.
+     * @param enumName  The enum name, null returns false.
      * @return true if the enum name is valid, otherwise false.
      * @since 3.8
      */
@@ -413,14 +445,16 @@ public class EnumUtils {
      * Convert a long value created by {@link EnumUtils#generateBitVector} into the set of
      * enum values that it represents.
      *
-     * <p>If you store this value, beware any changes to the enum that would affect ordinal values.</p>
+     * <p>
+     * If you store this value, beware any changes to the enum that would affect ordinal values.
+     * </p>
      *
-     * @param enumClass the class of the enum we are working with, not {@code null}.
-     * @param value     the long value representation of a set of enum values.
+     * @param enumClass The class of the enum we are working with, not {@code null}.
+     * @param value     The long value representation of a set of enum values.
      * @param <E>       the type of the enumeration.
-     * @return a set of enum values.
-     * @throws NullPointerException if {@code enumClass} is {@code null}.
-     * @throws IllegalArgumentException if {@code enumClass} is not an enum class or has more than 64 values.
+     * @return A set of enum values.
+     * @throws NullPointerException Thrown if {@code enumClass} is {@code null}.
+     * @throws IllegalArgumentException Thrown if {@code enumClass} is not an enum class or has more than 64 values.
      * @since 3.0.1
      */
     public static <E extends Enum<E>> EnumSet<E> processBitVector(final Class<E> enumClass, final long value) {
@@ -431,14 +465,16 @@ public class EnumUtils {
      * Convert a {@code long[]} created by {@link EnumUtils#generateBitVectors} into the set of
      * enum values that it represents.
      *
-     * <p>If you store this value, beware any changes to the enum that would affect ordinal values.</p>
+     * <p>
+     * If you store this value, beware any changes to the enum that would affect ordinal values.
+     * </p>
      *
-     * @param enumClass the class of the enum we are working with, not {@code null}.
-     * @param values     the long[] bearing the representation of a set of enum values, the least significant digits rightmost, not {@code null}.
+     * @param enumClass The class of the enum we are working with, not {@code null}.
+     * @param values     The long[] bearing the representation of a set of enum values, the least significant digits rightmost, not {@code null}.
      * @param <E>       the type of the enumeration.
-     * @return a set of enum values.
-     * @throws NullPointerException if {@code enumClass} is {@code null}.
-     * @throws IllegalArgumentException if {@code enumClass} is not an enum class.
+     * @return A set of enum values.
+     * @throws NullPointerException Thrown if {@code enumClass} is {@code null}.
+     * @throws IllegalArgumentException Thrown if {@code enumClass} is not an enum class.
      * @since 3.2
      */
     public static <E extends Enum<E>> EnumSet<E> processBitVectors(final Class<E> enumClass, final long... values) {
@@ -458,8 +494,8 @@ public class EnumUtils {
      * Returns a sequential ordered stream whose elements are the given class' enum values.
      *
      * @param <T>   the type of stream elements.
-     * @param clazz the class containing the enum values, may be null.
-     * @return the new stream, empty of {@code clazz} is null.
+     * @param clazz The class containing the enum values, may be null.
+     * @return The new stream, empty of {@code clazz} is null.
      * @since 3.18.0
      * @see Class#getEnumConstants()
      */

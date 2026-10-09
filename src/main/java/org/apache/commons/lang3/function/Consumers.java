@@ -34,8 +34,8 @@ public class Consumers {
     /**
      * Applies the given {@link Consumer} action to the object if the consumer is not {@code null}. Otherwise, does nothing.
      *
-     * @param consumer the consumer to consume.
-     * @param object   the object to be consumed.
+     * @param consumer The consumer to consume.
+     * @param object   The object to be consumed.
      * @param <T>      the type of the argument the consumer accepts.
      * @since 3.15.0
      */
@@ -49,7 +49,7 @@ public class Consumers {
      * Gets the NOP Consumer singleton.
      *
      * @param <T> type type to consume.
-     * @return the NOP Consumer singleton.
+     * @return The NOP Consumer singleton.
      */
     @SuppressWarnings("unchecked")
     public static <T> Consumer<T> nop() {

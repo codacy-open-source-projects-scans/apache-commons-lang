@@ -50,19 +50,19 @@ public abstract class Diff<T> extends Pair<T, T> {
      *            the field name.
      */
     protected Diff(final String fieldName) {
-        this.fieldName = Objects.requireNonNull(fieldName);
+        this.fieldName = Objects.requireNonNull(fieldName, "fieldName");
         this.type = ObjectUtils.getIfNull(TypeUtils.getTypeArguments(getClass(), Diff.class).get(Diff.class.getTypeParameters()[0]), Object.class);
     }
 
     Diff(final String fieldName, final Type type) {
-        this.fieldName = Objects.requireNonNull(fieldName);
-        this.type = Objects.requireNonNull(type);
+        this.fieldName = Objects.requireNonNull(fieldName, "fieldName");
+        this.type = Objects.requireNonNull(type, "type");
     }
 
     /**
      * Gets the name of the field.
      *
-     * @return the field name.
+     * @return The field name.
      */
     public final String getFieldName() {
         return fieldName;
@@ -71,7 +71,7 @@ public abstract class Diff<T> extends Pair<T, T> {
     /**
      * Gets the type of the field.
      *
-     * @return the field type.
+     * @return The field type.
      * @deprecated Unused, will be removed in 4.0.0.
      */
     @Deprecated
@@ -80,7 +80,7 @@ public abstract class Diff<T> extends Pair<T, T> {
     }
 
     /**
-     * Throws {@link UnsupportedOperationException}.
+     * Sets no value and always throws {@link UnsupportedOperationException}.
      *
      * @param value
      *            ignored.
@@ -99,7 +99,7 @@ public abstract class Diff<T> extends Pair<T, T> {
      * [fieldname: left-value, right-value]
      * </pre>
      *
-     * @return the string representation.
+     * @return The string representation.
      */
     @Override
     public final String toString() {

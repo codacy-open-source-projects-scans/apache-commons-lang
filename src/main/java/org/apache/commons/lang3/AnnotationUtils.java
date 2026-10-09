@@ -20,6 +20,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 
+import org.apache.commons.lang3.builder.AbstractReflection;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.commons.lang3.exception.UncheckedException;
@@ -27,18 +28,24 @@ import org.apache.commons.lang3.exception.UncheckedException;
 /**
  * Helper methods for working with {@link Annotation} instances.
  *
- * <p>This class contains various utility methods that make working with
- * annotations simpler.</p>
+ * <p>
+ * This class contains various utility methods that make working with
+ * annotations simpler.
+ * </p>
  *
- * <p>{@link Annotation} instances are always proxy objects; unfortunately
+ * <p>
+ * {@link Annotation} instances are always proxy objects; unfortunately
  * dynamic proxies cannot be depended upon to know how to implement certain
  * methods in the same manner as would be done by "natural" {@link Annotation}s.
  * The methods presented in this class can be used to avoid that possibility. It
  * is of course also possible for dynamic proxies to actually delegate their
  * e.g. {@link Annotation#equals(Object)}/{@link Annotation#hashCode()}/
- * {@link Annotation#toString()} implementations to {@link AnnotationUtils}.</p>
+ * {@link Annotation#toString()} implementations to {@link AnnotationUtils}.
+ * </p>
  *
- * <p>#ThreadSafe#</p>
+ * <p>
+ * #ThreadSafe#
+ * </p>
  *
  * @since 3.0
  */
@@ -93,9 +100,9 @@ public class AnnotationUtils {
     /**
      * Helper method for comparing two arrays of annotations.
      *
-     * @param a1 the first array
-     * @param a2 the second array
-     * @return a flag whether these arrays are equal
+     * @param a1 The first array
+     * @param a2 The second array
+     * @return A flag whether these arrays are equal
      */
     private static boolean annotationArrayMemberEquals(final Annotation[] a1, final Annotation[] a2) {
         if (a1.length != a2.length) {
@@ -112,10 +119,10 @@ public class AnnotationUtils {
     /**
      * Helper method for comparing two objects of an array type.
      *
-     * @param componentType the component type of the array
-     * @param o1 the first object
-     * @param o2 the second object
-     * @return a flag whether these objects are equal
+     * @param componentType The component type of the array
+     * @param o1 The first object
+     * @param o2 The second object
+     * @return A flag whether these objects are equal
      */
     private static boolean arrayMemberEquals(final Class<?> componentType, final Object o1, final Object o2) {
         if (componentType.isAnnotation()) {
@@ -151,9 +158,9 @@ public class AnnotationUtils {
     /**
      * Helper method for generating a hash code for an array.
      *
-     * @param componentType the component type of the array
-     * @param o the array
-     * @return a hash code for the specified array
+     * @param componentType The component type of the array
+     * @param o The array
+     * @return A hash code for the specified array
      */
     private static int arrayMemberHash(final Class<?> componentType, final Object o) {
         if (componentType.equals(Byte.TYPE)) {
@@ -187,9 +194,9 @@ public class AnnotationUtils {
      * Checks if two annotations are equal using the criteria for equality
      * presented in the {@link Annotation#equals(Object)} API docs.
      *
-     * @param a1 the first Annotation to compare, {@code null} returns
+     * @param a1 The first Annotation to compare, {@code null} returns
      * {@code false} unless both are {@code null}
-     * @param a2 the second Annotation to compare, {@code null} returns
+     * @param a2 The second Annotation to compare, {@code null} returns
      * {@code false} unless both are {@code null}
      * @return {@code true} if the two annotations are {@code equal} or both
      * {@code null}
@@ -212,6 +219,7 @@ public class AnnotationUtils {
             for (final Method m : type1.getDeclaredMethods()) {
                 if (m.getParameterTypes().length == 0
                         && isValidAnnotationMemberType(m.getReturnType())) {
+                    AbstractReflection.setAccessible(AbstractReflection.getForceAccessible(), m);
                     final Object v1 = m.invoke(a1);
                     final Object v2 = m.invoke(a2);
                     if (!memberEquals(m.getReturnType(), v1, v2)) {
@@ -220,7 +228,7 @@ public class AnnotationUtils {
                 }
             }
         } catch (final ReflectiveOperationException ex) {
-            return false;
+            throw new IllegalStateException(ex);
         }
         return true;
     }
@@ -229,19 +237,18 @@ public class AnnotationUtils {
      * Generate a hash code for the given annotation using the algorithm
      * presented in the {@link Annotation#hashCode()} API docs.
      *
-     * @param a the Annotation for a hash code calculation is desired, not
+     * @param a The Annotation for a hash code calculation is desired, not
      * {@code null}
-     * @return the calculated hash code
-     * @throws RuntimeException if an {@link Exception} is encountered during
-     * annotation member access
-     * @throws IllegalStateException if an annotation method invocation returns
-     * {@code null}
+     * @return The calculated hash code
+     * @throws RuntimeException Thrown if an {@link Exception} is encountered during annotation member access.
+     * @throws IllegalStateException Thrown if an annotation method invocation returns {@code null}.
      */
     public static int hashCode(final Annotation a) {
         int result = 0;
         final Class<? extends Annotation> type = a.annotationType();
         for (final Method m : type.getDeclaredMethods()) {
             try {
+                AbstractReflection.setAccessible(AbstractReflection.getForceAccessible(), m);
                 final Object value = m.invoke(a);
                 if (value == null) {
                     throw new IllegalStateException(String.format("Annotation method %s returned null", m));
@@ -258,9 +265,9 @@ public class AnnotationUtils {
     /**
      * Helper method for generating a hash code for a member of an annotation.
      *
-     * @param name the name of the member
-     * @param value the value of the member
-     * @return a hash code for this member
+     * @param name The name of the member
+     * @param value The value of the member
+     * @return A hash code for this member
      */
     private static int hashMember(final String name, final Object value) {
         final int part1 = name.hashCode() * 127;
@@ -274,14 +281,16 @@ public class AnnotationUtils {
     }
 
     /**
-     * Checks if the specified type is permitted as an annotation member.
+     * Tests whether the specified type is permitted as an annotation member.
      *
-     * <p>The Java language specification only permits certain types to be used
+     * <p>
+     * The Java language specification only permits certain types to be used
      * in annotations. These include {@link String}, {@link Class}, primitive
      * types, {@link Annotation}, {@link Enum}, and single-dimensional arrays of
-     * these types.</p>
+     * these types.
+     * </p>
      *
-     * @param type the type to check, {@code null}
+     * @param type The type to check, {@code null}
      * @return {@code true} if the type is a valid type to use in an annotation
      */
     public static boolean isValidAnnotationMemberType(Class<?> type) {
@@ -300,10 +309,10 @@ public class AnnotationUtils {
      * equal. This method is used to compare the parameters of two annotation
      * instances.
      *
-     * @param type the type of the objects to be compared
-     * @param o1 the first object
-     * @param o2 the second object
-     * @return a flag whether these objects are equal
+     * @param type The type of the objects to be compared
+     * @param o1 The first object
+     * @param o2 The second object
+     * @return A flag whether these objects are equal
      */
     private static boolean memberEquals(final Class<?> type, final Object o1, final Object o2) {
         if (o1 == o2) {
@@ -325,8 +334,8 @@ public class AnnotationUtils {
      * Generate a string representation of an Annotation, as suggested by
      * {@link Annotation#toString()}.
      *
-     * @param a the annotation of which a string representation is desired
-     * @return the standard string representation of an annotation, not
+     * @param a The annotation of which a string representation is desired
+     * @return The standard string representation of an annotation, not
      * {@code null}
      */
     public static String toString(final Annotation a) {
@@ -336,6 +345,7 @@ public class AnnotationUtils {
                 continue; // what?
             }
             try {
+                AbstractReflection.setAccessible(AbstractReflection.getForceAccessible(), m);
                 builder.append(m.getName(), m.invoke(a));
             } catch (final ReflectiveOperationException ex) {
                 throw new UncheckedException(ex);
@@ -348,8 +358,10 @@ public class AnnotationUtils {
      * {@link AnnotationUtils} instances should NOT be constructed in
      * standard programming. Instead, the class should be used statically.
      *
-     * <p>This constructor is public to permit tools that require a JavaBean
-     * instance to operate.</p>
+     * <p>
+     * This constructor is public to permit tools that require a JavaBean
+     * instance to operate.
+     * </p>
      *
      * @deprecated TODO Make private in 4.0.
      */

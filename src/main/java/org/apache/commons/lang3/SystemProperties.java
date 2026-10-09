@@ -1224,10 +1224,10 @@ public final class SystemProperties {
     /**
      * The System property name {@value}.
      *
-     * @see <a href="https://docs.oracle.com/en/java/javase/25/docs/api/system-properties.html">jdk.xml.entityReplacementLimi_t</a>
+     * @see <a href="https://docs.oracle.com/en/java/javase/25/docs/api/system-properties.html">jdk.xml.entityReplacementLimit</a>
      * @since 3.15.0
      */
-    public static final String JDK_XML_ENTITY_REPLACEMENT_LIMIT = "jdk.xml.entityReplacementLimi_t";
+    public static final String JDK_XML_ENTITY_REPLACEMENT_LIMIT = "jdk.xml.entityReplacementLimit";
 
     /**
      * The System property name {@value}.
@@ -1601,13 +1601,17 @@ public final class SystemProperties {
     /**
      * Gets the current value for the property named {@code "SimpleClassName.Key"} as a {@code boolean}.
      * <p>
+     * The parsing rules are defined by {@link Boolean#parseBoolean(String)}.
+     * </p>
+     * <p>
      * If a {@link SecurityException} is caught, the return value is {@code null}.
      * </p>
      *
      * @param clazz           The Class to use for the SimpleClassName.
      * @param key             The subkey.
      * @param defaultIfAbsent The default value.
-     * @return an int or {@code defaultIfAbsent}'s value.
+     * @return An int or {@code defaultIfAbsent}'s value.
+     * @see Boolean#parseBoolean(String)
      * @see Class#getSimpleName()
      * @since 3.19.0
      */
@@ -1618,12 +1622,16 @@ public final class SystemProperties {
     /**
      * Gets the current value for the property named {@code key} as a {@code boolean}.
      * <p>
+     * The parsing rules are defined by {@link Boolean#parseBoolean(String)}.
+     * </p>
+     * <p>
      * If a {@link SecurityException} is caught, the return value is {@code null}.
      * </p>
      *
      * @param key             The key.
      * @param defaultIfAbsent The default value.
-     * @return a {@code boolean} or {@code defaultIfAbsent}'s value.
+     * @return A {@code boolean} or {@code defaultIfAbsent}'s value.
+     * @see Boolean#parseBoolean(String)
      */
     public static boolean getBoolean(final String key, final BooleanSupplier defaultIfAbsent) {
         final String str = getProperty(key);
@@ -1933,13 +1941,17 @@ public final class SystemProperties {
     /**
      * Gets the current value for the property named {@code "SimpleClassName.Key"} as an {@code int}.
      * <p>
+     * The parsing rules are as {@link Integer#parseInt(String)}.
+     * </p>
+     * <p>
      * If a {@link SecurityException} is caught, the return value is {@code null}.
      * </p>
      *
      * @param clazz           The Class to use for the SimpleClassName.
      * @param key             The subkey.
      * @param defaultIfAbsent The default value.
-     * @return an int or {@code defaultIfAbsent}'s value.
+     * @return An int or {@code defaultIfAbsent}'s value.
+     * @see Integer#parseInt(String)
      * @see Class#getSimpleName()
      * @since 3.19.0
      */
@@ -1950,12 +1962,16 @@ public final class SystemProperties {
     /**
      * Gets the current value for the property named {@code key} as an {@code int}.
      * <p>
+     * The parsing rules are as {@link Integer#parseInt(String)}.
+     * </p>
+     * <p>
      * If a {@link SecurityException} is caught, the return value is {@code null}.
      * </p>
      *
      * @param key             The key.
      * @param defaultIfAbsent The default value.
-     * @return an {@code int} or {@code defaultIfAbsent}'s value.
+     * @return An {@code int} or {@code defaultIfAbsent}'s value.
+     * @see Integer#parseInt(String)
      */
     public static int getInt(final String key, final IntSupplier defaultIfAbsent) {
         final String str = getProperty(key);
@@ -3687,7 +3703,7 @@ public final class SystemProperties {
      * </p>
      *
      * @param defaultIfAbsent get this Supplier when the property is empty or throws SecurityException.
-     * @return the current value from the system properties map.
+     * @return The current value from the system properties map.
      * @since 3.15.0
      */
     public static String getLineSeparator(final Supplier<String> defaultIfAbsent) {
@@ -3697,13 +3713,17 @@ public final class SystemProperties {
     /**
      * Gets the current value for the property named {@code "SimpleClassName.Key"} as a {@code long}.
      * <p>
+     * The parsing rules are as {@link Long#parseLong(String)}.
+     * </p>
+     * <p>
      * If a {@link SecurityException} is caught, the return value is {@code null}.
      * </p>
      *
      * @param clazz           The Class to use for the SimpleClassName.
      * @param key             The subkey.
      * @param defaultIfAbsent The default value.
-     * @return a long or {@code defaultIfAbsent}'s value.
+     * @return A long or {@code defaultIfAbsent}'s value.
+     * @see Long#parseLong(String)
      * @see Class#getSimpleName()
      * @since 3.19.0
      */
@@ -3714,12 +3734,16 @@ public final class SystemProperties {
     /**
      * Gets the current value for the property named {@code key} as a {@code long}.
      * <p>
+     * The parsing rules are as {@link Long#parseLong(String)}.
+     * </p>
+     * <p>
      * If a {@link SecurityException} is caught, the return value is {@code null}.
      * </p>
      *
      * @param key             The key.
      * @param defaultIfAbsent The default value.
-     * @return a {@code long} or {@code defaultIfAbsent}'s value.
+     * @return A {@code long} or {@code defaultIfAbsent}'s value.
+     * @see Long#parseLong(String)
      */
     public static long getLong(final String key, final LongSupplier defaultIfAbsent) {
         final String str = getProperty(key);
@@ -3848,12 +3872,12 @@ public final class SystemProperties {
      *
      * @param key             The key.
      * @param defaultIfAbsent The default value.
-     * @return a {@link Path} or {@code defaultIfAbsent}'s value.
+     * @return A {@link Path} or {@code defaultIfAbsent}'s value.
      * @since 3.20.0
      */
     public static Path getPath(final String key, final Supplier<Path> defaultIfAbsent) {
         final String str = getProperty(key);
-        return str == null ? defaultIfAbsent != null ? defaultIfAbsent.get() : null : Paths.get(str);
+        return str == null ? Suppliers.get(defaultIfAbsent) : Paths.get(str);
     }
 
     /**
@@ -3887,9 +3911,9 @@ public final class SystemProperties {
      * If a {@link SecurityException} is caught, the return value is {@code null}.
      * </p>
      *
-     * @param property        the system property name.
+     * @param property        The system property name.
      * @param defaultIfAbsent use this value when the property is empty or throws SecurityException.
-     * @return the system property value or {@code null} if a security problem occurs.
+     * @return The system property value or {@code null} if a security problem occurs.
      */
     static String getProperty(final String property, final String defaultIfAbsent) {
         return getProperty(property, () -> defaultIfAbsent);
@@ -3901,9 +3925,9 @@ public final class SystemProperties {
      * If a {@link SecurityException} is caught, the return value is {@code null}.
      * </p>
      *
-     * @param property        the system property name.
+     * @param property        The system property name.
      * @param defaultIfAbsent get this Supplier when the property is empty or throws SecurityException.
-     * @return the system property value or {@code null} if a security problem occurs.
+     * @return The system property value or {@code null} if a security problem occurs.
      */
     static String getProperty(final String property, final Supplier<String> defaultIfAbsent) {
         try {
@@ -3912,10 +3936,8 @@ public final class SystemProperties {
             }
             return StringUtils.getIfEmpty(System.getProperty(property), defaultIfAbsent);
         } catch (final SecurityException ignore) {
-            // We are not allowed to look at this property.
-            //
-            // System.err.println("Caught a SecurityException reading the system property '" + property
-            // + "'; the SystemUtils property value will default to null.");
+            // We are not allowed to look at this property; fall through to the default silently
+            // (the SecurityManager that raises this is terminally deprecated as of Java 17 / JEP 411).
             return defaultIfAbsent.get();
         }
     }
@@ -4236,7 +4258,7 @@ public final class SystemProperties {
      * If a {@link SecurityException} is caught, the return value is {@code false}.
      * </p>
      *
-     * @param property the system property name.
+     * @param property The system property name.
      * @return whether the given property is set.
      * @since 3.18.0
      */

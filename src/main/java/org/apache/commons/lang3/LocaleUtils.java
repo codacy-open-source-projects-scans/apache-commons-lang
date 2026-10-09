@@ -83,22 +83,23 @@ public class LocaleUtils {
     /**
      * Concurrent map of language locales by country.
      */
-    private static final ConcurrentMap<String, List<Locale>> cLanguagesByCountry = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<String, List<Locale>> ccToLocalesMap = new ConcurrentHashMap<>();
+
 
     /**
      * Concurrent map of country locales by language.
      */
-    private static final ConcurrentMap<String, List<Locale>> cCountriesByLanguage = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<String, List<Locale>> lcToLocalesMap = new ConcurrentHashMap<>();
 
     /**
-     * Obtains an unmodifiable and sorted list of installed locales.
+     * Gets an unmodifiable and sorted list of installed locales.
      *
      * <p>
      * This method is a wrapper around {@link Locale#getAvailableLocales()}. It is more efficient, as the JDK method must create a new array each time it is
      * called.
      * </p>
      *
-     * @return the unmodifiable and sorted list of available locales.
+     * @return The unmodifiable and sorted list of available locales.
      */
     public static List<Locale> availableLocaleList() {
         return SyncAvoid.AVAILABLE_LOCALE_ULIST;
@@ -109,35 +110,51 @@ public class LocaleUtils {
     }
 
     /**
-     * Obtains an unmodifiable set of installed locales.
+     * Gets an unmodifiable set of installed locales.
      *
      * <p>
      * This method is a wrapper around {@link Locale#getAvailableLocales()}. It is more efficient, as the JDK method must create a new array each time it is
      * called.
      * </p>
      *
-     * @return the unmodifiable set of available locales.
+     * @return The unmodifiable set of available locales.
      */
     public static Set<Locale> availableLocaleSet() {
         return SyncAvoid.AVAILABLE_LOCALE_USET;
     }
 
     /**
-     * Obtains the list of countries supported for a given language.
+     * Gets the list of countries supported for a given language.
      *
      * <p>
      * This method takes a language code and searches to find the countries available for that language. Variant locales are removed.
      * </p>
      *
-     * @param languageCode the 2 letter language code, null returns empty.
-     * @return an unmodifiable List of Locale objects, not null.
+     * @param languageCode The 2 letter language code, null returns empty.
+     * @return An unmodifiable List of Locale objects, not null.
      */
     public static List<Locale> countriesByLanguage(final String languageCode) {
-        if (languageCode == null) {
+        // Only syntactically valid ISO 639 codes can match an available locale's language; anything
+        // else is answered without touching the cache so that arbitrary caller strings are never
+        // retained for the lifetime of the class loader.
+        if (languageCode == null || !languageCode.isEmpty() && !isISO639LanguageCode(languageCode)) {
             return Collections.emptyList();
         }
-        return cCountriesByLanguage.computeIfAbsent(languageCode, lc -> Collections
+        return lcToLocalesMap.computeIfAbsent(languageCode, lc -> Collections
                 .unmodifiableList(availableLocaleList(locale -> languageCode.equals(locale.getLanguage()) && !hasCountry(locale) && hasVariant(locale))));
+    }
+
+    static ConcurrentMap<String, List<Locale>> getCcToLocalesMap() {
+        return ccToLocalesMap;
+    }
+
+    /**
+     * Gets the cache of country locales by language.
+     *
+     * @return the cache of country locales by language.
+     */
+    static ConcurrentMap<String, List<Locale>> getLcToLocalesMap() {
+        return lcToLocalesMap;
     }
 
     /**
@@ -181,9 +198,9 @@ public class LocaleUtils {
     }
 
     /**
-     * Checks if the locale specified is in the set of available locales.
+     * Tests whether the locale specified is in the set of available locales.
      *
-     * @param locale the Locale object to check if it is available.
+     * @param locale The Locale object to check if it is available.
      * @return true if the locale is a known locale.
      */
     public static boolean isAvailableLocale(final Locale locale) {
@@ -193,8 +210,8 @@ public class LocaleUtils {
     /**
      * Tests whether the given String is a <a href="https://www.iso.org/iso-3166-country-codes.html">ISO 3166</a> alpha-2 country code.
      *
-     * @param str the String to check.
-     * @return true, is the given String is a <a href="https://www.iso.org/iso-3166-country-codes.html">ISO 3166</a> compliant country code.
+     * @param str The String to check.
+     * @return true if the given String is a <a href="https://www.iso.org/iso-3166-country-codes.html">ISO 3166</a> compliant country code.
      */
     private static boolean isISO3166CountryCode(final String str) {
         return StringUtils.isAllUpperCase(str) && isAlpha2Len(str);
@@ -203,7 +220,7 @@ public class LocaleUtils {
     /**
      * Tests whether the given String is a <a href="https://www.iso.org/iso-639-language-code">ISO 639</a> compliant language code.
      *
-     * @param str the String to check.
+     * @param str The String to check.
      * @return true, if the given String is a <a href="https://www.iso.org/iso-639-language-code">ISO 639</a> compliant language code.
      */
     private static boolean isISO639LanguageCode(final String str) {
@@ -217,7 +234,7 @@ public class LocaleUtils {
      * equal to {@code "und"}.
      * </p>
      *
-     * @param locale the locale to test.
+     * @param locale The locale to test.
      * @return whether a Locale's language is undetermined.
      * @see Locale#toLanguageTag()
      * @since 3.14.0
@@ -227,10 +244,10 @@ public class LocaleUtils {
     }
 
     /**
-     * TestsNo whether the given String is a UN M.49 numeric area code.
+     * Tests whether the given String is a UN M.49 numeric area code.
      *
-     * @param str the String to check.
-     * @return true, is the given String is a UN M.49 numeric area code.
+     * @param str The String to check.
+     * @return true if the given String is a UN M.49 numeric area code.
      */
     private static boolean isNumericAreaCode(final String str) {
         return StringUtils.isNumeric(str) && isAlpha3Len(str);
@@ -243,14 +260,17 @@ public class LocaleUtils {
      * This method takes a country code and searches to find the languages available for that country. Variant locales are removed.
      * </p>
      *
-     * @param countryCode the 2-letter country code, null returns empty.
-     * @return an unmodifiable List of Locale objects, not null.
+     * @param countryCode The 2-letter country code, null returns empty.
+     * @return An unmodifiable List of Locale objects, not null.
      */
     public static List<Locale> languagesByCountry(final String countryCode) {
-        if (countryCode == null) {
+        // Only syntactically valid ISO 3166 alpha-2 / UN M.49 numeric codes can match an available
+        // locale's country; anything else is answered without touching the cache so that arbitrary
+        // caller strings are never retained for the lifetime of the class loader.
+        if (countryCode == null || !countryCode.isEmpty() && !isISO3166CountryCode(countryCode) && !isNumericAreaCode(countryCode)) {
             return Collections.emptyList();
         }
-        return cLanguagesByCountry.computeIfAbsent(countryCode,
+        return ccToLocalesMap.computeIfAbsent(countryCode,
                 k -> Collections.unmodifiableList(availableLocaleList(locale -> countryCode.equals(locale.getCountry()) && hasVariant(locale))));
     }
 
@@ -262,8 +282,8 @@ public class LocaleUtils {
      *   = [Locale("fr", "CA", "xxx"), Locale("fr", "CA"), Locale("fr")]
      * </pre>
      *
-     * @param locale the locale to start from.
-     * @return the unmodifiable list of Locale objects, 0 being locale, not null.
+     * @param locale The locale to start from.
+     * @return The unmodifiable list of Locale objects, 0 being locale, not null.
      */
     public static List<Locale> localeLookupList(final Locale locale) {
         return localeLookupList(locale, locale);
@@ -282,9 +302,9 @@ public class LocaleUtils {
      * contain the same locale twice.
      * </p>
      *
-     * @param locale        the locale to start from, null returns empty list.
-     * @param defaultLocale the default locale to use if no other is found.
-     * @return the unmodifiable list of Locale objects, 0 being locale, not null.
+     * @param locale        The locale to start from, null returns empty list.
+     * @param defaultLocale The default locale to use if no other is found.
+     * @return The unmodifiable list of Locale objects, 0 being locale, not null.
      */
     public static List<Locale> localeLookupList(final Locale locale, final Locale defaultLocale) {
         final List<Locale> list = new ArrayList<>(4);
@@ -308,8 +328,8 @@ public class LocaleUtils {
      *
      * @param country An ISO 3166 alpha-2 country code or a UN M.49 numeric-3 area code. See the {@linkplain Locale} class description about valid country
      *                values.
-     * @throws NullPointerException thrown if either argument is null.
-     * @return a new new Locale for the given country.
+     * @throws NullPointerException Thrown if either argument is null.
+     * @return A new Locale for the given country.
      * @see Locale#Locale(String, String)
      */
     static Locale ofCountry(final String country) {
@@ -322,10 +342,11 @@ public class LocaleUtils {
      * See {@link Locale} for the format.
      * </p>
      *
-     * @param str the String to parse as a Locale.
-     * @return a Locale parsed from the given String.
-     * @throws IllegalArgumentException if the given String cannot be parsed.
+     * @param str The String to parse as a Locale.
+     * @return A Locale parsed from the given String.
+     * @throws IllegalArgumentException Thrown if the given String cannot be parsed.
      * @see Locale
+     * @see <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/Locale.html#special_cases_constructor">Locale special cases</a>
      */
     private static Locale parseLocale(final String str) {
         if (isISO639LanguageCode(str)) {
@@ -337,12 +358,20 @@ public class LocaleUtils {
         final String language = segments[0];
         if (segments.length == 2) {
             final String country = segments[1];
-            if (isISO639LanguageCode(language) && isISO3166CountryCode(country) || isNumericAreaCode(country)) {
+            if (isISO639LanguageCode(language) && (isISO3166CountryCode(country) || isNumericAreaCode(country))) {
                 return new Locale(language, country);
             }
         } else if (segments.length == limit) {
             final String country = segments[1];
             final String variant = segments[2];
+            // Special case 1: https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/Locale.html#special_cases_constructor
+            if (str.equals("th_TH_TH_#u-nu-thai")) {
+                return new Locale(language, country, "TH");
+            }
+            // Special case 2: https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/Locale.html#special_cases_constructor
+            if (str.equals("ja_JP_JP_#u-ca-japanese")) {
+                return new Locale(language, country, "JP");
+            }
             if (isISO639LanguageCode(language) && (country.isEmpty() || isISO3166CountryCode(country) || isNumericAreaCode(country)) && !variant.isEmpty()) {
                 return new Locale(language, country, variant);
             }
@@ -356,8 +385,8 @@ public class LocaleUtils {
     /**
      * Returns the given locale if non-{@code null}, otherwise {@link Locale#getDefault()}.
      *
-     * @param locale a locale or {@code null}.
-     * @return the given locale if non-{@code null}, otherwise {@link Locale#getDefault()}.
+     * @param locale A locale or {@code null}.
+     * @return The given locale if non-{@code null}, otherwise {@link Locale#getDefault()}.
      * @since 3.12.0
      */
     public static Locale toLocale(final Locale locale) {
@@ -391,11 +420,12 @@ public class LocaleUtils {
      * a dash. The length must be correct.
      * </p>
      *
-     * @param str the locale String to convert, null returns null.
-     * @return a Locale, null if null input.
-     * @throws IllegalArgumentException if the string is an invalid format.
+     * @param str The locale String to convert, null returns null.
+     * @return A Locale, null if null input.
+     * @throws IllegalArgumentException Thrown if the string is an invalid format.
      * @see Locale#forLanguageTag(String)
      * @see Locale#getISOCountries()
+     * @see <a href="https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/Locale.html#special_cases_constructor">Locale special cases</a>
      */
     public static Locale toLocale(final String str) {
         if (str == null) {
@@ -404,9 +434,6 @@ public class LocaleUtils {
         }
         if (str.isEmpty()) { // LANG-941 - JDK 8 introduced an empty locale where all fields are blank
             return new Locale(StringUtils.EMPTY, StringUtils.EMPTY);
-        }
-        if (str.contains("#")) { // LANG-879 - Cannot handle Java 7 script & extensions
-            throw new IllegalArgumentException("Invalid locale format: " + str);
         }
         final int len = str.length();
         if (len < 2) {
@@ -425,10 +452,7 @@ public class LocaleUtils {
             if (len == 3) {
                 return new Locale(StringUtils.EMPTY, str.substring(1, 3));
             }
-            if (len < 5) {
-                throw new IllegalArgumentException("Invalid locale format: " + str);
-            }
-            if (str.charAt(3) != ch0) {
+            if (len < 5 || str.charAt(3) != ch0) {
                 throw new IllegalArgumentException("Invalid locale format: " + str);
             }
             return new Locale(StringUtils.EMPTY, str.substring(1, 3), str.substring(4));

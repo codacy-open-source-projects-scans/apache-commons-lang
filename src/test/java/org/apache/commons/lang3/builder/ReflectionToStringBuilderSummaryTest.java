@@ -16,12 +16,9 @@
  */
 package org.apache.commons.lang3.builder;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-import org.apache.commons.lang3.AbstractLangTest;
 import org.junit.jupiter.api.Test;
 
-class ReflectionToStringBuilderSummaryTest extends AbstractLangTest {
+class ReflectionToStringBuilderSummaryTest extends AbstractBuilderTest {
 
     @SuppressWarnings("unused")
     private final String stringField = "string";
@@ -31,8 +28,7 @@ class ReflectionToStringBuilderSummaryTest extends AbstractLangTest {
 
     @Test
     void testSummary() {
-        assertEquals("[stringField=string,summaryString=<String>]",
-                new ReflectionToStringBuilder(this, ToStringStyle.NO_CLASS_NAME_STYLE).build());
+        assertEqualsIfAccessible("[stringField=string,summaryString=<String>]", new ReflectionToStringBuilder(this, ToStringStyle.NO_CLASS_NAME_STYLE).build());
     }
 
 }

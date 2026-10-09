@@ -28,8 +28,8 @@ import java.util.function.Function;
  * This is a functional interface whose functional method is {@link #accept(Object)}.
  * </p>
  *
- * @param <T> the type of the input to the operation
- * @param <E> Thrown exception type.
+ * @param <T> The type of the argument the consumer accepts.
+ * @param <E> The thrown exception type.
  * @since 3.11
  */
 @FunctionalInterface
@@ -40,10 +40,26 @@ public interface FailableConsumer<T, E extends Throwable> {
     FailableConsumer NOP = Function.identity()::apply;
 
     /**
+     * Applies the given {@link FailableConsumer} action to the object if the consumer is not {@code null}. Otherwise, does nothing.
+     *
+     * @param consumer The consumer to consume.
+     * @param object   The object to be consumed.
+     * @param <T>      the type of the argument the consumer accepts.
+     * @param <E>      The thrown exception type.
+     * @throws E Thrown when the consumer fails.
+     * @since 3.21.0
+     */
+    static <T, E extends Throwable> void accept(final FailableConsumer<T, E> consumer, final T object) throws E {
+        if (consumer != null) {
+            consumer.accept(object);
+        }
+    }
+
+    /**
      * Gets the NOP singleton.
      *
-     * @param <T> Consumed type 1.
-     * @param <E> The kind of thrown exception or error.
+     * @param <T> The type of the argument the consumer accepts.
+     * @param <E> The thrown exception type.
      * @return The NOP singleton.
      */
     @SuppressWarnings("unchecked")
@@ -54,7 +70,7 @@ public interface FailableConsumer<T, E extends Throwable> {
     /**
      * Accepts the given arguments.
      *
-     * @param object the parameter for the consumable to accept
+     * @param object The parameter for the consumable to accept
      * @throws E Thrown when the consumer fails.
      */
     void accept(T object) throws E;
@@ -62,12 +78,12 @@ public interface FailableConsumer<T, E extends Throwable> {
     /**
      * Returns a composed {@link Consumer} like {@link Consumer#andThen(Consumer)}.
      *
-     * @param after the operation to perform after this operation
-     * @return a composed {@link Consumer} like {@link Consumer#andThen(Consumer)}.
-     * @throws NullPointerException when {@code after} is null
+     * @param after The operation to perform after this operation
+     * @return A composed {@link Consumer} like {@link Consumer#andThen(Consumer)}.
+     * @throws NullPointerException Thrown when {@code after} is null.
      */
     default FailableConsumer<T, E> andThen(final FailableConsumer<? super T, E> after) {
-        Objects.requireNonNull(after);
+        Objects.requireNonNull(after, "after");
         return (final T t) -> {
             accept(t);
             after.accept(t);

@@ -17,14 +17,35 @@
 
 package org.apache.commons.lang3.function;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.io.IOException;
+
+import org.apache.commons.lang3.AbstractLangTest;
 import org.junit.jupiter.api.Test;
 
 /**
  * Tests {@link FailableSupplier}.
  */
-class FailableSupplierTest {
+class FailableSupplierTest extends AbstractLangTest {
+
+    @Test
+    void testGet_returnsValue() throws IOException {
+        final FailableSupplier<String, IOException> supplier = () -> "hello";
+        assertEquals("hello", supplier.get());
+    }
+
+    @Test
+    void testGet_throwsException() {
+        final IOException expected = new IOException("fail");
+        final FailableSupplier<String, IOException> supplier = () -> {
+            throw expected;
+        };
+        final IOException thrown = assertThrows(IOException.class, supplier::get);
+        assertEquals(expected, thrown);
+    }
 
     @Test
     void testNULL() throws Throwable {

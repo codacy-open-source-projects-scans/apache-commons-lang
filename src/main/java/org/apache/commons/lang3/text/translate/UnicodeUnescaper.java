@@ -14,20 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.commons.lang3.text.translate;
 
 import java.io.IOException;
 import java.io.Writer;
 
+import org.apache.commons.lang3.CharUtils;
+
 /**
- * Translates escaped Unicode values of the form \\u+\d\d\d\d back to
- * Unicode. It supports multiple 'u' characters and will work with or
- * without the +.
+ * Translates escaped Unicode values of the form \\u+\d\d\d\d back to Unicode. It supports multiple 'u' characters and will work with or without the +.
+ * <p>
+ * Only ASCII hexadecimal digits ({@code [0-9a-fA-F]}) are accepted in the four-digit value. Malformed sequences - non-ASCII-hex digits, sign characters,
+ * or an escape truncated by the end of the input - are not translated and pass through unchanged.
+ * </p>
  *
  * @since 3.0
  * @deprecated As of <a href="https://commons.apache.org/proper/commons-lang/changes-report.html#a3.6">3.6</a>, use Apache Commons Text
- * <a href="https://commons.apache.org/proper/commons-text/javadocs/api-release/org/apache/commons/text/translate/UnicodeUnescaper.html">
- * UnicodeUnescaper</a>.
+ *             <a href="https://commons.apache.org/proper/commons-text/javadocs/api-release/org/apache/commons/text/translate/UnicodeUnescaper.html">
+ *             UnicodeUnescaper</a>.
  */
 @Deprecated
 public class UnicodeUnescaper extends CharSequenceTranslator {
@@ -50,25 +55,27 @@ public class UnicodeUnescaper extends CharSequenceTranslator {
             while (index + i < input.length() && input.charAt(index + i) == 'u') {
                 i++;
             }
-
             if (index + i < input.length() && input.charAt(index + i) == '+') {
                 i++;
             }
-
             if (index + i + 4 <= input.length()) {
                 // Get 4 hex digits
                 final CharSequence unicode = input.subSequence(index + i, index + i + 4);
-
-                try {
-                    final int value = Integer.parseInt(unicode.toString(), 16);
-                    out.write((char) value);
-                } catch (final NumberFormatException nfe) {
-                    throw new IllegalArgumentException("Unable to parse unicode value: " + unicode, nfe);
+                // Pre-validate that all four characters are ASCII hexadecimal digits, mirroring
+                // NumericEntityUnescaper's CharUtils.isHex discipline. Integer.parseInt is looser than
+                // the \\uXXXX format: it accepts a leading sign and, via Character.digit, decimal digits
+                // from any Unicode script and fullwidth Latin hex letters. Anything that is not a
+                // well-formed escape is not translated and passes through verbatim.
+                for (int j = 0; j < 4; j++) {
+                    if (!CharUtils.isHex(unicode.charAt(j))) {
+                        return 0;
+                    }
                 }
+                out.write((char) Integer.parseInt(unicode.toString(), 16));
                 return i + 4;
             }
-            throw new IllegalArgumentException("Less than 4 hex digits in unicode value: '" + input.subSequence(index, input.length())
-                    + "' due to end of CharSequence");
+            // Truncated escape at the end of the input: not a well-formed escape, pass through verbatim.
+            return 0;
         }
         return 0;
     }

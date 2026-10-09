@@ -21,12 +21,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.TimeZone;
 
+import org.apache.commons.lang3.AbstractLangTest;
 import org.junit.jupiter.api.Test;
 
 /**
  * Tests {@link TimeZones}.
  */
-class TimeZonesTest {
+class TimeZonesTest extends AbstractLangTest {
 
     static final String TIME_ZONE_GET_AVAILABLE_IDS = "java.util.TimeZone#getAvailableIDs()";
 
@@ -35,5 +36,11 @@ class TimeZonesTest {
         assertEquals(TimeZone.getDefault(), TimeZones.toTimeZone(null));
         assertEquals(TimeZone.getDefault(), TimeZones.toTimeZone(TimeZone.getDefault()));
         assertEquals(TimeZones.GMT, TimeZones.toTimeZone(TimeZones.GMT));
+        final TimeZone timeZone = TimeZones.toTimeZone(TimeZones.GMT);
+        assertEquals(TimeZones.GMT.getID(), timeZone.getID());
+        assertEquals(TimeZones.GMT.toString(), timeZone.toString());
+        final TimeZone unwrap = ((ImmutableTimeZone) TimeZones.GMT).unwrap();
+        assertEquals(unwrap.getID(), timeZone.getID());
+        assertEquals(unwrap.toString(), timeZone.toString());
     }
 }

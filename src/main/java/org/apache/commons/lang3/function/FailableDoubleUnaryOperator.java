@@ -36,7 +36,7 @@ public interface FailableDoubleUnaryOperator<E extends Throwable> {
      * Returns a unary operator that always returns its input argument.
      *
      * @param <E> The kind of thrown exception or error.
-     * @return a unary operator that always returns its input argument
+     * @return A unary operator that always returns its input argument
      */
     static <E extends Throwable> FailableDoubleUnaryOperator<E> identity() {
         return t -> t;
@@ -57,22 +57,22 @@ public interface FailableDoubleUnaryOperator<E extends Throwable> {
      * Returns a composed {@link FailableDoubleUnaryOperator} like
      * {@link DoubleUnaryOperator#andThen(DoubleUnaryOperator)}.
      *
-     * @param after the operator to apply after this one.
-     * @return a composed {@link FailableDoubleUnaryOperator} like
+     * @param after The operator to apply after this one.
+     * @return A composed {@link FailableDoubleUnaryOperator} like
      *         {@link DoubleUnaryOperator#andThen(DoubleUnaryOperator)}.
-     * @throws NullPointerException if after is null.
+     * @throws NullPointerException Thrown if after is null.
      * @see #compose(FailableDoubleUnaryOperator)
      */
     default FailableDoubleUnaryOperator<E> andThen(final FailableDoubleUnaryOperator<E> after) {
-        Objects.requireNonNull(after);
+        Objects.requireNonNull(after, "after");
         return (final double t) -> after.applyAsDouble(applyAsDouble(t));
     }
 
     /**
      * Applies this operator to the given operand.
      *
-     * @param operand the operand
-     * @return the operator result
+     * @param operand The operand
+     * @return The operator result
      * @throws E Thrown when a consumer fails.
      */
     double applyAsDouble(double operand) throws E;
@@ -81,14 +81,14 @@ public interface FailableDoubleUnaryOperator<E extends Throwable> {
      * Returns a composed {@link FailableDoubleUnaryOperator} like
      * {@link DoubleUnaryOperator#compose(DoubleUnaryOperator)}.
      *
-     * @param before the operator to apply before this one.
-     * @return a composed {@link FailableDoubleUnaryOperator} like
+     * @param before The operator to apply before this one.
+     * @return A composed {@link FailableDoubleUnaryOperator} like
      *         {@link DoubleUnaryOperator#compose(DoubleUnaryOperator)}.
-     * @throws NullPointerException if before is null.
+     * @throws NullPointerException Thrown if before is null.
      * @see #andThen(FailableDoubleUnaryOperator)
      */
     default FailableDoubleUnaryOperator<E> compose(final FailableDoubleUnaryOperator<E> before) {
-        Objects.requireNonNull(before);
+        Objects.requireNonNull(before, "before");
         return (final double v) -> applyAsDouble(before.applyAsDouble(v));
     }
 }

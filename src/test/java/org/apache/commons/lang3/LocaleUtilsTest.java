@@ -36,12 +36,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.concurrent.ConcurrentMap;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.junitpioneer.jupiter.DefaultLocale;
+import org.junitpioneer.jupiter.ReadsDefaultLocale;
 
 /**
  * Tests for {@link LocaleUtils}.
@@ -124,8 +127,8 @@ class LocaleUtilsTest extends AbstractLangTest {
     /**
      * Helper method for local lookups.
      *
-     * @param locale  the input locale
-     * @param defaultLocale  the input default locale
+     * @param locale  The input locale
+     * @param defaultLocale  The input default locale
      * @param expected  expected results
      */
     private static void assertLocaleLookupList(final Locale locale, final Locale defaultLocale, final Locale[] expected) {
@@ -139,7 +142,7 @@ class LocaleUtilsTest extends AbstractLangTest {
     }
 
     /**
-     * @param coll  the collection to check
+     * @param coll  The collection to check
      */
     private static void assertUnmodifiableCollection(final Collection<?> coll) {
         assertThrows(UnsupportedOperationException.class, () -> coll.add(null));
@@ -148,7 +151,7 @@ class LocaleUtilsTest extends AbstractLangTest {
     /**
      * Pass in a valid language, test toLocale.
      *
-     * @param language  the language string
+     * @param language  The language string
      */
     private static void assertValidToLocale(final String language) {
         final Locale locale = LocaleUtils.toLocale(language);
@@ -194,6 +197,7 @@ class LocaleUtilsTest extends AbstractLangTest {
     }
 
     @BeforeEach
+    @ReadsDefaultLocale
     public void setUp() {
         // Testing #LANG-304. Must be called before availableLocaleSet is called.
         LocaleUtils.isAvailableLocale(Locale.getDefault());
@@ -256,6 +260,27 @@ class LocaleUtilsTest extends AbstractLangTest {
         assertCountriesByLanguage("it", new String[]{"IT", "CH"});
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = {"x", "abcd", "EN", "e1", "en-US", " "})
+    void testCountriesByLanguageDoesNotCacheInvalidLanguageCode(final String languageCode) {
+        final ConcurrentMap<String, List<Locale>> map = LocaleUtils.getLcToLocalesMap();
+        assertFalse(map.containsKey(languageCode));
+        final int cacheSize = map.size();
+        assertTrue(LocaleUtils.countriesByLanguage(languageCode).isEmpty());
+        assertEquals(cacheSize, map.size());
+        assertFalse(map.containsKey(languageCode));
+    }
+
+    @Test
+    void testIllegalLanguageWithNumericCountry() {
+        assertIllegalArgumentException(() -> LocaleUtils.toLocale("../../unexpected_001"));
+    }
+
+    @Test
+    void testIllegalSingleCharLanguageWithNumericCountry() {
+        assertIllegalArgumentException(() -> LocaleUtils.toLocale("x_001"));
+    }
+
     /**
      * Test availableLocaleSet() method.
      */
@@ -286,6 +311,14 @@ class LocaleUtilsTest extends AbstractLangTest {
         assertEquals(set.contains(LOCALE_QQ_ZZ), LocaleUtils.isLanguageUndetermined(LOCALE_QQ_ZZ));
         //
         assertTrue(LocaleUtils.isLanguageUndetermined(null));
+    }
+
+    /**
+     * Tests #LANG-1823
+     */
+    @Test
+    void testLang1823() {
+        assertValidToLocale("th_TH_#Thai", "th", "TH", "#Thai");
     }
 
     /**
@@ -335,6 +368,17 @@ class LocaleUtilsTest extends AbstractLangTest {
         assertLanguageByCountry("GB", new String[]{"en"});
         assertLanguageByCountry("ZZ", new String[0]);
         assertLanguageByCountry("CH", new String[]{"fr", "de", "it"});
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"x", "abcd", "English", "e1", "en-US", " "})
+    void testLanguagesByCountryDoesNotCacheInvalidLanguageCode(final String languageCode) {
+        final ConcurrentMap<String, List<Locale>> map = LocaleUtils.getCcToLocalesMap();
+        assertFalse(map.containsKey(languageCode));
+        final int cacheSize = map.size();
+        assertTrue(LocaleUtils.languagesByCountry(languageCode).isEmpty());
+        assertEquals(cacheSize, map.size());
+        assertFalse(map.containsKey(languageCode));
     }
 
     /**
@@ -417,21 +461,32 @@ class LocaleUtilsTest extends AbstractLangTest {
         // Check if it's possible to recreate the Locale using just the standard constructor
         final Locale locale = new Locale(actualLocale.getLanguage(), actualLocale.getCountry(), actualLocale.getVariant());
         if (actualLocale.equals(locale)) { // it is possible for LocaleUtils.toLocale to handle these Locales
+            assertEquals(actualLocale, LocaleUtils.toLocale(actualLocale.toString()));
             final String str = actualLocale.toString();
             // Look for the script/extension suffix
             int suff = str.indexOf("_#");
-            if (suff == - 1) {
+            if (suff == -1) {
                 suff = str.indexOf("#");
             }
             String localeStr = str;
             if (suff >= 0) { // we have a suffix
-                assertIllegalArgumentException(() -> LocaleUtils.toLocale(str));
-                // try without suffix
                 localeStr = str.substring(0, suff);
             }
-            final Locale loc = LocaleUtils.toLocale(localeStr);
-            assertEquals(actualLocale, loc);
+            assertEquals(actualLocale, LocaleUtils.toLocale(localeStr));
         }
+    }
+
+    /**
+     * Special cases from https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/util/Locale.html#special_cases_constructor
+     */
+    @Test
+    void testSpecialCases() {
+        assertValidToLocale("th_TH_TH", "th", "TH", "TH");
+        assertValidToLocale("ja_JP_JP", "ja", "JP", "JP");
+        // "th_TH_TH_#u-nu-thai" and friends
+        LocaleUtils.localeLookupList(new Locale("th", "TH", "TH")).forEach(locale -> assertEquals(locale, LocaleUtils.toLocale(locale.toString())));
+        // "ja_JP_JP_#u-ca-japanese" and friends
+        LocaleUtils.localeLookupList(new Locale("ja", "JP", "JP")).forEach(locale -> assertEquals(locale, LocaleUtils.toLocale(locale.toString())));
     }
 
     /**
@@ -511,6 +566,7 @@ class LocaleUtilsTest extends AbstractLangTest {
      * Test toLocale(Locale) method.
      */
     @Test
+    @ReadsDefaultLocale
     void testToLocale_Locale_defaults() {
         assertNull(LocaleUtils.toLocale((String) null));
         assertEquals(Locale.getDefault(), LocaleUtils.toLocale((Locale) null));

@@ -23,8 +23,10 @@ import java.lang.reflect.Method;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
@@ -68,7 +70,9 @@ public class ExceptionUtils {
      * Used when printing stack frames to denote the start of a
      * wrapped exception.
      *
-     * <p>Package private for accessibility by test suite.</p>
+     * <p>
+     * Package private for accessibility by test suite.
+     * </p>
      */
     static final String WRAPPED_MARKER = " [wrapped] ";
 
@@ -172,7 +176,7 @@ public class ExceptionUtils {
      * </p>
      *
      * @param throwable The Throwable to traverse.
-     * @param consumer a non-interfering action to perform on the elements.
+     * @param consumer A non-interfering action to perform on the elements.
      * @since 3.13.0
      */
     public static void forEach(final Throwable throwable, final Consumer<Throwable> consumer) {
@@ -180,7 +184,7 @@ public class ExceptionUtils {
     }
 
     /**
-     * Introspects the {@link Throwable} to obtain the cause.
+     * Gets the cause by introspecting the {@link Throwable}.
      *
      * <p>
      * The method searches for methods with specific names that return a {@link Throwable} object. This will pick up most wrapping exceptions, including those
@@ -188,7 +192,7 @@ public class ExceptionUtils {
      * </p>
      *
      * <p>
-     * The default list searched for are:
+     * The default list of method names to search for is:
      * </p>
      * <ul>
      * <li>{@code getCause()}</li>
@@ -205,8 +209,8 @@ public class ExceptionUtils {
      * If none of the above is found, returns {@code null}.
      * </p>
      *
-     * @param throwable the throwable to introspect for a cause, may be null.
-     * @return the cause of the {@link Throwable}, {@code null} if none found or null throwable input.
+     * @param throwable The throwable to introspect for a cause, may be null.
+     * @return The cause of the {@link Throwable}, {@code null} if none found or null throwable input.
      * @since 1.0
      * @deprecated This feature will be removed in Lang 4, use {@link Throwable#getCause} instead.
      */
@@ -216,15 +220,15 @@ public class ExceptionUtils {
     }
 
     /**
-     * Introspects the {@link Throwable} to obtain the cause.
+     * Gets the cause by introspecting the {@link Throwable}.
      *
      * <p>
      * A {@code null} set of method names means use the default set. A {@code null} in the set of method names will be ignored.
      * </p>
      *
-     * @param throwable   the throwable to introspect for a cause, may be null.
-     * @param methodNames the method names, null treated as default set.
-     * @return the cause of the {@link Throwable}, {@code null} if none found or null throwable input.
+     * @param throwable   The throwable to introspect for a cause, may be null.
+     * @param methodNames The method names, null treated as default set.
+     * @return The cause of the {@link Throwable}, {@code null} if none found or null throwable input.
      * @since 1.0
      * @deprecated This feature will be removed in Lang 4, use {@link Throwable#getCause} instead.
      */
@@ -246,9 +250,9 @@ public class ExceptionUtils {
     /**
      * Gets a {@link Throwable} by method name.
      *
-     * @param throwable  the exception to examine.
-     * @param methodName  the name of the method to find and invoke.
-     * @return the wrapped exception, or {@code null} if not found.
+     * @param throwable  The exception to examine.
+     * @param methodName  The name of the method to find and invoke.
+     * @return The wrapped exception, or {@code null} if not found.
      */
     // TODO: Remove in Lang 4
     private static Throwable getCauseUsingMethodName(final Throwable throwable, final String methodName) {
@@ -268,7 +272,9 @@ public class ExceptionUtils {
     /**
      * Gets the default names used when searching for the cause of an exception.
      *
-     * <p>This may be modified and used in the overloaded getCause(Throwable, String[]) method.</p>
+     * <p>
+     * This may be modified and used in the overloaded getCause(Throwable, String[]) method.
+     * </p>
      *
      * @return cloned array of the default method names.
      * @since 3.0
@@ -286,8 +292,8 @@ public class ExceptionUtils {
      * {ClassNameWithoutPackage}: {ThrowableMessage}
      * </p>
      *
-     * @param th  the throwable to get a message for, null returns empty string.
-     * @return the message, non-null.
+     * @param th  The throwable to get a message for, null returns empty string.
+     * @return The message, non-null.
      * @since 2.2
      */
     public static String getMessage(final Throwable th) {
@@ -299,19 +305,23 @@ public class ExceptionUtils {
     }
 
     /**
-     * Walks the {@link Throwable} to obtain its root cause.
+     * Gets the root cause by walking the exception chain.
      *
-     * <p>This method walks through the exception chain until the last element,
+     * <p>
+     * This method walks through the exception chain until the last element,
      * the root cause of the chain, using {@link Throwable#getCause()}, and
-     * returns that exception.</p>
+     * returns that exception.
+     * </p>
      *
-     * <p>This method handles recursive cause chains that might
+     * <p>
+     * This method handles recursive cause chains that might
      * otherwise cause infinite loops. The cause chain is processed until
      * the end, or until the next item in the chain is already
-     * processed. If we detect a loop, then return the element before the loop.</p>
+     * processed. If we detect a loop, then return the element before the loop.
+     * </p>
      *
-     * @param throwable  the throwable to get the root cause for, may be null.
-     * @return the root cause of the {@link Throwable},
+     * @param throwable  The throwable to get the root cause for, may be null.
+     * @return The root cause of the {@link Throwable},
      *  {@code null} if null throwable input.
      */
     public static Throwable getRootCause(final Throwable throwable) {
@@ -326,8 +336,8 @@ public class ExceptionUtils {
      * {ClassNameWithoutPackage}: {ThrowableMessage}
      * </p>
      *
-     * @param throwable  the throwable to get a message for, null returns empty string.
-     * @return the message, non-null.
+     * @param throwable  The throwable to get a message for, null returns empty string.
+     * @return The message, non-null.
      * @since 2.2
      */
     public static String getRootCauseMessage(final Throwable throwable) {
@@ -339,13 +349,23 @@ public class ExceptionUtils {
      * Gets a compact stack trace for the root cause of the supplied
      * {@link Throwable}.
      *
-     * <p>The output of this method is consistent across JDK versions.
+     * <p>
+     * The output of this method is consistent across JDK versions.
      * It consists of the root exception followed by each of its wrapping
      * exceptions separated by '[wrapped]'. Note that this is the opposite
-     * order to the JDK1.4 display.</p>
+     * order to the JDK1.4 display.
+     * </p>
      *
-     * @param throwable  the throwable to examine, may be null.
-     * @return an array of stack trace frames, never null.
+     * <p>
+     * <strong>Note:</strong> the frames are recovered by re-parsing the text produced by {@link Throwable#printStackTrace()}, they are not read from
+     * {@link Throwable#getStackTrace()}. A line inside an exception <em>message</em> that mimics a stack frame (leading whitespace, then {@code "at "},
+     * then a class/method reference with {@code '('}) is indistinguishable from a real frame: untrusted message content can therefore inject fabricated
+     * frames into this output and cause the real frames that follow to be dropped. Do not treat this output as forensic evidence when exception messages
+     * may contain untrusted input; read {@link Throwable#getStackTrace()} for structured frames that cannot be forged by message content.
+     * </p>
+     *
+     * @param throwable  The throwable to examine, may be null.
+     * @return An array of stack trace frames, never null.
      * @since 2.0
      */
     public static String[] getRootCauseStackTrace(final Throwable throwable) {
@@ -360,8 +380,16 @@ public class ExceptionUtils {
      * its wrapping exceptions separated by '[wrapped]'. Note that this is the opposite order to the JDK1.4 display.
      * </p>
      *
-     * @param throwable the throwable to examine, may be null.
-     * @return a list of stack trace frames, never null.
+     * <p>
+     * <strong>Note:</strong> the frames are recovered by re-parsing the text produced by {@link Throwable#printStackTrace()}, they are not read from
+     * {@link Throwable#getStackTrace()}. A line inside an exception <em>message</em> that mimics a stack frame (leading whitespace, then {@code "at "},
+     * then a class/method reference with {@code '('}) is indistinguishable from a real frame: untrusted message content can therefore inject fabricated
+     * frames into this output and cause the real frames that follow to be dropped. Do not treat this output as forensic evidence when exception messages
+     * may contain untrusted input; read {@link Throwable#getStackTrace()} for structured frames that cannot be forged by message content.
+     * </p>
+     *
+     * @param throwable The throwable to examine, may be null.
+     * @return A list of stack trace frames, never null.
      * @since 3.13.0
      */
     public static List<String> getRootCauseStackTraceList(final Throwable throwable) {
@@ -393,8 +421,12 @@ public class ExceptionUtils {
      * is not included. Only the trace of the specified exception is
      * returned, any caused by trace is stripped.
      *
-     * <p>This works in most cases and will only fail if the exception
-     * message contains a line that starts with: {@code "<whitespace>at"}.</p>
+     * <p>
+     * This works by re-parsing the text produced by {@link Throwable#printStackTrace()}: a line is treated as a frame if, after leading
+     * whitespace, it starts with {@code "at "} followed by a class/method reference and {@code '('} (see {@link #isStackFrame(String)}). It
+     * will mis-parse if the exception message contains a line of exactly that shape: such a line is counted as a frame and the real frames
+     * that follow the remaining message lines are dropped.
+     * </p>
      *
      * @param throwable is any throwable.
      * @return List of stack frames.
@@ -407,9 +439,7 @@ public class ExceptionUtils {
         boolean traceStarted = false;
         while (frames.hasMoreTokens()) {
             final String token = frames.nextToken();
-            // Determine if the line starts with "<whitespace>at"
-            final int at = token.indexOf("at");
-            if (at != NOT_FOUND && token.substring(0, at).trim().isEmpty()) {
+            if (isStackFrame(token)) {
                 traceStarted = true;
                 list.add(token);
             } else if (traceStarted) {
@@ -422,10 +452,12 @@ public class ExceptionUtils {
     /**
      * Gets an array where each element is a line from the argument.
      *
-     * <p>The end of line is determined by the value of {@link System#lineSeparator()}.</p>
+     * <p>
+     * The end of line is determined by the value of {@link System#lineSeparator()}.
+     * </p>
      *
-     * @param stackTrace  a stack trace String.
-     * @return an array where each element is a line from the argument.
+     * @param stackTrace  A stack trace String.
+     * @return An array where each element is a line from the argument.
      */
     static String[] getStackFrames(final String stackTrace) {
         return new IterableStringTokenizer(stackTrace, System.lineSeparator()).toArray();
@@ -441,8 +473,8 @@ public class ExceptionUtils {
      * uses {@link Throwable#printStackTrace(java.io.PrintWriter)}.
      * </p>
      *
-     * @param throwable  the {@link Throwable} to examine, may be null.
-     * @return an array of strings describing each stack frame, never null.
+     * @param throwable  The {@link Throwable} to examine, may be null.
+     * @return An array of strings describing each stack frame, never null.
      */
     public static String[] getStackFrames(final Throwable throwable) {
         if (throwable == null) {
@@ -459,8 +491,8 @@ public class ExceptionUtils {
      * uses {@link Throwable#printStackTrace(java.io.PrintWriter)}.
      * </p>
      *
-     * @param throwable  the {@link Throwable} to be examined, may be null.
-     * @return the stack trace as generated by the exception's
+     * @param throwable  The {@link Throwable} to be examined, may be null.
+     * @return The stack trace as generated by the exception's
      * {@code printStackTrace(PrintWriter)} method, or an empty String if {@code null} input.
      */
     public static String getStackTrace(final Throwable throwable) {
@@ -476,17 +508,21 @@ public class ExceptionUtils {
      * Gets a count of the number of {@link Throwable} objects in the
      * exception chain.
      *
-     * <p>A throwable without cause will return {@code 1}.
+     * <p>
+     * A throwable without cause will return {@code 1}.
      * A throwable with one cause will return {@code 2} and so on.
-     * A {@code null} throwable will return {@code 0}.</p>
+     * A {@code null} throwable will return {@code 0}.
+     * </p>
      *
-     * <p>This method handles recursive cause chains
+     * <p>
+     * This method handles recursive cause chains
      * that might otherwise cause infinite loops. The cause chain is
      * processed until the end, or until the next item in the
-     * chain is already in the result.</p>
+     * chain is already in the result.
+     * </p>
      *
-     * @param throwable  the throwable to inspect, may be null.
-     * @return the count of throwables, zero on null input.
+     * @param throwable  The throwable to inspect, may be null.
+     * @return The count of throwables, zero on null input.
      */
     public static int getThrowableCount(final Throwable throwable) {
         return getThrowableList(throwable).size();
@@ -496,24 +532,29 @@ public class ExceptionUtils {
      * Gets the list of {@link Throwable} objects in the
      * exception chain.
      *
-     * <p>A throwable without cause will return a list containing
+     * <p>
+     * A throwable without cause will return a list containing
      * one element - the input throwable.
      * A throwable with one cause will return a list containing
      * two elements. - the input throwable and the cause throwable.
-     * A {@code null} throwable will return a list of size zero.</p>
+     * A {@code null} throwable will return a list of size zero.
+     * </p>
      *
-     * <p>This method handles recursive cause chains that might
+     * <p>
+     * This method handles recursive cause chains that might
      * otherwise cause infinite loops. The cause chain is processed until
      * the end, or until the next item in the chain is already
-     * in the result list.</p>
+     * in the result list, compared by identity.
+     * </p>
      *
-     * @param throwable  the throwable to inspect, may be null.
-     * @return the list of throwables, never null.
+     * @param throwable  The throwable to inspect, may be null.
+     * @return The list of throwables, never null.
      * @since 2.2
      */
     public static List<Throwable> getThrowableList(Throwable throwable) {
         final List<Throwable> list = new ArrayList<>();
-        while (throwable != null && !list.contains(throwable)) {
+        final Set<Throwable> seen = Collections.newSetFromMap(new IdentityHashMap<>());
+        while (throwable != null && seen.add(throwable)) {
             list.add(throwable);
             throwable = throwable.getCause();
         }
@@ -524,19 +565,23 @@ public class ExceptionUtils {
      * Gets the list of {@link Throwable} objects in the
      * exception chain.
      *
-     * <p>A throwable without cause will return an array containing
+     * <p>
+     * A throwable without cause will return an array containing
      * one element - the input throwable.
      * A throwable with one cause will return an array containing
      * two elements. - the input throwable and the cause throwable.
-     * A {@code null} throwable will return an array of size zero.</p>
+     * A {@code null} throwable will return an array of size zero.
+     * </p>
      *
-     * <p>This method handles recursive cause chains
+     * <p>
+     * This method handles recursive cause chains
      * that might otherwise cause infinite loops. The cause chain is
      * processed until the end, or until the next item in the
-     * chain is already in the result array.</p>
+     * chain is already in the result array.
+     * </p>
      *
-     * @param throwable  the throwable to inspect, may be null.
-     * @return the array of throwables, never null.
+     * @param throwable  The throwable to inspect, may be null.
+     * @return The array of throwables, never null.
      * @see #getThrowableList(Throwable)
      */
     public static Throwable[] getThrowables(final Throwable throwable) {
@@ -567,9 +612,9 @@ public class ExceptionUtils {
     /**
      * Worker method for the {@code indexOfType} methods.
      *
-     * @param throwable the throwable to inspect, may be null.
-     * @param type      the type to search for, subclasses match, null returns -1.
-     * @param fromIndex the (zero-based) index of the starting position, negative treated as zero, larger than chain size returns -1.
+     * @param throwable The throwable to inspect, may be null.
+     * @param type      The type to search for, subclasses match, null returns -1.
+     * @param fromIndex The (zero-based) index of the starting position, negative treated as zero, larger than chain size returns -1.
      * @param subclass  if {@code true}, compares with {@link Class#isAssignableFrom(Class)}, otherwise compares using references.
      * @return index of the {@code type} within throwables nested within the specified {@code throwable}.
      */
@@ -606,13 +651,15 @@ public class ExceptionUtils {
      * Subclasses of the specified class do not match - see
      * {@link #indexOfType(Throwable, Class)} for the opposite.
      *
-     * <p>A {@code null} throwable returns {@code -1}.
+     * <p>
+     * A {@code null} throwable returns {@code -1}.
      * A {@code null} type returns {@code -1}.
-     * No match in the chain returns {@code -1}.</p>
+     * No match in the chain returns {@code -1}.
+     * </p>
      *
-     * @param throwable  the throwable to inspect, may be null.
-     * @param clazz  the class to search for, subclasses do not match, null returns -1.
-     * @return the index into the throwable chain, -1 if no match or null input.
+     * @param throwable  The throwable to inspect, may be null.
+     * @param clazz  The class to search for, subclasses do not match, null returns -1.
+     * @return The index into the throwable chain, -1 if no match or null input.
      */
     public static int indexOfThrowable(final Throwable throwable, final Class<? extends Throwable> clazz) {
         return indexOf(throwable, clazz, 0, false);
@@ -627,10 +674,10 @@ public class ExceptionUtils {
      * treated as zero. A start index greater than the number of throwables returns {@code -1}.
      * </p>
      *
-     * @param throwable the throwable to inspect, may be null.
-     * @param clazz     the class to search for, subclasses do not match, null returns -1.
-     * @param fromIndex the (zero-based) index of the starting position, negative treated as zero, larger than chain size returns -1.
-     * @return the index into the throwable chain, -1 if no match or null input.
+     * @param throwable The throwable to inspect, may be null.
+     * @param clazz     The class to search for, subclasses do not match, null returns -1.
+     * @param fromIndex The (zero-based) index of the starting position, negative treated as zero, larger than chain size returns -1.
+     * @return The index into the throwable chain, -1 if no match or null input.
      */
     public static int indexOfThrowable(final Throwable throwable, final Class<? extends Throwable> clazz, final int fromIndex) {
         return indexOf(throwable, clazz, fromIndex, false);
@@ -642,13 +689,15 @@ public class ExceptionUtils {
      * Subclasses of the specified class do match - see
      * {@link #indexOfThrowable(Throwable, Class)} for the opposite.
      *
-     * <p>A {@code null} throwable returns {@code -1}.
+     * <p>
+     * A {@code null} throwable returns {@code -1}.
      * A {@code null} type returns {@code -1}.
-     * No match in the chain returns {@code -1}.</p>
+     * No match in the chain returns {@code -1}.
+     * </p>
      *
-     * @param throwable  the throwable to inspect, may be null.
-     * @param type  the type to search for, subclasses match, null returns -1.
-     * @return the index into the throwable chain, -1 if no match or null input.
+     * @param throwable  The throwable to inspect, may be null.
+     * @param type  The type to search for, subclasses match, null returns -1.
+     * @return The index into the throwable chain, -1 if no match or null input.
      * @since 2.1
      */
     public static int indexOfType(final Throwable throwable, final Class<? extends Throwable> type) {
@@ -664,10 +713,10 @@ public class ExceptionUtils {
      * treated as zero. A start index greater than the number of throwables returns {@code -1}.
      * </p>
      *
-     * @param throwable the throwable to inspect, may be null.
-     * @param type      the type to search for, subclasses match, null returns -1.
-     * @param fromIndex the (zero-based) index of the starting position, negative treated as zero, larger than chain size returns -1.
-     * @return the index into the throwable chain, -1 if no match or null input.
+     * @param throwable The throwable to inspect, may be null.
+     * @param type      The type to search for, subclasses match, null returns -1.
+     * @param fromIndex The (zero-based) index of the starting position, negative treated as zero, larger than chain size returns -1.
+     * @return The index into the throwable chain, -1 if no match or null input.
      * @since 2.1
      */
     public static int indexOfType(final Throwable throwable, final Class<? extends Throwable> type, final int fromIndex) {
@@ -675,7 +724,7 @@ public class ExceptionUtils {
     }
 
     /**
-     * Checks if a throwable represents a checked exception
+     * Tests whether a throwable represents a checked exception.
      *
      * @param throwable
      *            The throwable to check.
@@ -687,7 +736,50 @@ public class ExceptionUtils {
     }
 
     /**
-     * Checks if a throwable represents an unchecked exception
+     * Tests whether a line from {@link #getStackTrace(Throwable)} output looks like a stack frame, mirroring the syntax emitted by
+     * {@link Throwable#printStackTrace()}: leading whitespace, then {@code "at "}, then a class/method reference containing no whitespace,
+     * then {@code '('}, for example {@code "\tat com.example.Foo.bar(Foo.java:42)"}. The reference is matched as any non-empty run of
+     * non-whitespace characters, because {@link StackTraceElement#toString()} never emits whitespace before the opening parenthesis: this
+     * accepts classic frames as well as class loader or module prefixes ({@code "app//"}, {@code "java.base/"}), module versions
+     * ({@code "com.foo.mod@1.0.3/"}), lambda and hidden-class names ({@code "$$Lambda$17/0x..."}), {@code <init>}/{@code <clinit>} and
+     * JVM-language name mangling, without maintaining a character whitelist that could reject a legitimate frame (and thereby suppress
+     * it and every frame below it).
+     *
+     * <p>
+     * This is deliberately stricter than matching any line whose first non-whitespace characters are {@code "at"}, so that ordinary
+     * message text such as {@code " attack detected"} or {@code "at your request"} is not mistaken for a frame; a message line crafted to
+     * match the full frame syntax is still indistinguishable from a real frame.
+     * </p>
+     *
+     * @param token one line of printed stack trace text.
+     * @return whether the line has the syntax of a printed stack frame.
+     */
+    private static boolean isStackFrame(final String token) {
+        int i = 0;
+        final int len = token.length();
+        while (i < len && Character.isWhitespace(token.charAt(i))) {
+            i++;
+        }
+        // Frames printed by Throwable are indented: require leading whitespace, then "at ".
+        if (i == 0 || !token.startsWith("at ", i)) {
+            return false;
+        }
+        i += 3;
+        final int paren = token.indexOf('(', i);
+        if (paren <= i) {
+            return false;
+        }
+        // StackTraceElement.toString() never emits whitespace between "at " and '(': any whitespace there means message text.
+        for (int j = i; j < paren; j++) {
+            if (Character.isWhitespace(token.charAt(j))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Tests whether a throwable represents an unchecked exception.
      *
      * @param throwable
      *            The throwable to check.
@@ -715,7 +807,15 @@ public class ExceptionUtils {
      * that don't have nested causes.
      * </p>
      *
-     * @param throwable  the throwable to output.
+     * <p>
+     * <strong>Note:</strong> the frames are recovered by re-parsing the text produced by {@link Throwable#printStackTrace()}, they are not read from
+     * {@link Throwable#getStackTrace()}. A line inside an exception <em>message</em> that mimics a stack frame (leading whitespace, then {@code "at "},
+     * then a class/method reference with {@code '('}) is indistinguishable from a real frame: untrusted message content can therefore inject fabricated
+     * frames into this output and cause the real frames that follow to be dropped. Do not treat this output as forensic evidence when exception messages
+     * may contain untrusted input; read {@link Throwable#getStackTrace()} for structured frames that cannot be forged by message content.
+     * </p>
+     *
+     * @param throwable  The throwable to output.
      * @since 2.0
      */
     public static void printRootCauseStackTrace(final Throwable throwable) {
@@ -725,20 +825,34 @@ public class ExceptionUtils {
     /**
      * Prints a compact stack trace for the root cause of a throwable.
      *
-     * <p>The compact stack trace starts with the root cause and prints
+     * <p>
+     * The compact stack trace starts with the root cause and prints
      * stack frames up to the place where it was caught and wrapped.
      * Then it prints the wrapped exception and continues with stack frames
-     * until the wrapper exception is caught and wrapped again, etc.</p>
+     * until the wrapper exception is caught and wrapped again, etc.
+     * </p>
      *
-     * <p>The output of this method is consistent across JDK versions.
-     * Note that this is the opposite order to the JDK1.4 display.</p>
+     * <p>
+     * The output of this method is consistent across JDK versions.
+     * Note that this is the opposite order to the JDK1.4 display.
+     * </p>
      *
-     * <p>The method is equivalent to {@code printStackTrace} for throwables
-     * that don't have nested causes.</p>
+     * <p>
+     * The method is equivalent to {@code printStackTrace} for throwables
+     * that don't have nested causes.
+     * </p>
      *
-     * @param throwable  the throwable to output, may be null.
-     * @param printStream  the stream to output to, may not be null.
-     * @throws NullPointerException if the printStream is {@code null}.
+     * <p>
+     * <strong>Note:</strong> the frames are recovered by re-parsing the text produced by {@link Throwable#printStackTrace()}, they are not read from
+     * {@link Throwable#getStackTrace()}. A line inside an exception <em>message</em> that mimics a stack frame (leading whitespace, then {@code "at "},
+     * then a class/method reference with {@code '('}) is indistinguishable from a real frame: untrusted message content can therefore inject fabricated
+     * frames into this output and cause the real frames that follow to be dropped. Do not treat this output as forensic evidence when exception messages
+     * may contain untrusted input; read {@link Throwable#getStackTrace()} for structured frames that cannot be forged by message content.
+     * </p>
+     *
+     * @param throwable  The throwable to output, may be null.
+     * @param printStream  The stream to output to, may not be null.
+     * @throws NullPointerException Thrown if the printStream is {@code null}.
      * @since 2.0
      */
     @SuppressWarnings("resource")
@@ -754,20 +868,34 @@ public class ExceptionUtils {
     /**
      * Prints a compact stack trace for the root cause of a throwable.
      *
-     * <p>The compact stack trace starts with the root cause and prints
+     * <p>
+     * The compact stack trace starts with the root cause and prints
      * stack frames up to the place where it was caught and wrapped.
      * Then it prints the wrapped exception and continues with stack frames
-     * until the wrapper exception is caught and wrapped again, etc.</p>
+     * until the wrapper exception is caught and wrapped again, etc.
+     * </p>
      *
-     * <p>The output of this method is consistent across JDK versions.
-     * Note that this is the opposite order to the JDK1.4 display.</p>
+     * <p>
+     * The output of this method is consistent across JDK versions.
+     * Note that this is the opposite order to the JDK1.4 display.
+     * </p>
      *
-     * <p>The method is equivalent to {@code printStackTrace} for throwables
-     * that don't have nested causes.</p>
+     * <p>
+     * The method is equivalent to {@code printStackTrace} for throwables
+     * that don't have nested causes.
+     * </p>
      *
-     * @param throwable  the throwable to output, may be null.
-     * @param printWriter  the writer to output to, may not be null.
-     * @throws NullPointerException if the printWriter is {@code null}.
+     * <p>
+     * <strong>Note:</strong> the frames are recovered by re-parsing the text produced by {@link Throwable#printStackTrace()}, they are not read from
+     * {@link Throwable#getStackTrace()}. A line inside an exception <em>message</em> that mimics a stack frame (leading whitespace, then {@code "at "},
+     * then a class/method reference with {@code '('}) is indistinguishable from a real frame: untrusted message content can therefore inject fabricated
+     * frames into this output and cause the real frames that follow to be dropped. Do not treat this output as forensic evidence when exception messages
+     * may contain untrusted input; read {@link Throwable#getStackTrace()} for structured frames that cannot be forged by message content.
+     * </p>
+     *
+     * @param throwable  The throwable to output, may be null.
+     * @param printWriter  The writer to output to, may not be null.
+     * @throws NullPointerException Thrown if the printWriter is {@code null}.
      * @since 2.0
      */
     @SuppressWarnings("resource")
@@ -785,7 +913,7 @@ public class ExceptionUtils {
      *
      * @param causeFrames  stack trace of a cause throwable.
      * @param wrapperFrames  stack trace of a wrapper throwable.
-     * @throws NullPointerException if either argument is null.
+     * @throws NullPointerException Thrown if either argument is null.
      * @since 2.0
      */
     public static void removeCommonFrames(final List<String> causeFrames, final List<String> wrapperFrames) {
@@ -900,10 +1028,10 @@ public class ExceptionUtils {
     /**
      * Worker method for the {@code throwableOfType} methods.
      *
-     * @param <T> the type of Throwable you are searching.
-     * @param throwable  the throwable to inspect, may be null.
-     * @param type  the type to search, subclasses match, null returns null.
-     * @param fromIndex  the (zero-based) index of the starting position,
+     * @param <T> The type of Throwable you are searching.
+     * @param throwable  The throwable to inspect, may be null.
+     * @param type  The type to search, subclasses match, null returns null.
+     * @param fromIndex  The (zero-based) index of the starting position,
      *  negative treated as zero, larger than chain size returns null.
      * @param subclass if {@code true}, compares with {@link Class#isAssignableFrom(Class)}, otherwise compares
      * using references.
@@ -942,14 +1070,16 @@ public class ExceptionUtils {
      * Subclasses of the specified class do not match - see
      * {@link #throwableOfType(Throwable, Class)} for the opposite.
      *
-     * <p>A {@code null} throwable returns {@code null}.
+     * <p>
+     * A {@code null} throwable returns {@code null}.
      * A {@code null} type returns {@code null}.
-     * No match in the chain returns {@code null}.</p>
+     * No match in the chain returns {@code null}.
+     * </p>
      *
-     * @param <T> the type of Throwable you are searching.
-     * @param throwable  the throwable to inspect, may be null.
-     * @param clazz  the class to search for, subclasses do not match, null returns null.
-     * @return the first matching throwable from the throwable chain, null if no match or null input.
+     * @param <T> The type of Throwable you are searching.
+     * @param throwable  The throwable to inspect, may be null.
+     * @param clazz  The class to search for, subclasses do not match, null returns null.
+     * @return The first matching throwable from the throwable chain, null if no match or null input.
      * @since 3.10
      */
     public static <T extends Throwable> T throwableOfThrowable(final Throwable throwable, final Class<T> clazz) {
@@ -966,10 +1096,10 @@ public class ExceptionUtils {
      * </p>
      *
      * @param <T>       the type of Throwable you are searching.
-     * @param throwable the throwable to inspect, may be null.
-     * @param clazz     the class to search for, subclasses do not match, null returns null.
-     * @param fromIndex the (zero-based) index of the starting position, negative treated as zero, larger than chain size returns null.
-     * @return the first matching throwable from the throwable chain, null if no match or null input.
+     * @param throwable The throwable to inspect, may be null.
+     * @param clazz     The class to search for, subclasses do not match, null returns null.
+     * @param fromIndex The (zero-based) index of the starting position, negative treated as zero, larger than chain size returns null.
+     * @return The first matching throwable from the throwable chain, null if no match or null input.
      * @since 3.10
      */
     public static <T extends Throwable> T throwableOfThrowable(final Throwable throwable, final Class<T> clazz, final int fromIndex) {
@@ -982,14 +1112,16 @@ public class ExceptionUtils {
      * Subclasses of the specified class do match - see
      * {@link #throwableOfThrowable(Throwable, Class)} for the opposite.
      *
-     * <p>A {@code null} throwable returns {@code null}.
+     * <p>
+     * A {@code null} throwable returns {@code null}.
      * A {@code null} type returns {@code null}.
-     * No match in the chain returns {@code null}.</p>
+     * No match in the chain returns {@code null}.
+     * </p>
      *
-     * @param <T> the type of Throwable you are searching.
-     * @param throwable  the throwable to inspect, may be null.
-     * @param type  the type to search for, subclasses match, null returns null.
-     * @return the first matching throwable from the throwable chain, null if no match or null input.
+     * @param <T> The type of Throwable you are searching.
+     * @param throwable  The throwable to inspect, may be null.
+     * @param type  The type to search for, subclasses match, null returns null.
+     * @return The first matching throwable from the throwable chain, null if no match or null input.
      * @since 3.10
      */
     public static <T extends Throwable> T throwableOfType(final Throwable throwable, final Class<T> type) {
@@ -1006,10 +1138,10 @@ public class ExceptionUtils {
      * </p>
      *
      * @param <T>       the type of Throwable you are searching.
-     * @param throwable the throwable to inspect, may be null.
-     * @param type      the type to search for, subclasses match, null returns null.
-     * @param fromIndex the (zero-based) index of the starting position, negative treated as zero, larger than chain size returns null.
-     * @return the first matching throwable from the throwable chain, null if no match or null input.
+     * @param throwable The throwable to inspect, may be null.
+     * @param type      The type to search for, subclasses match, null returns null.
+     * @param fromIndex The (zero-based) index of the starting position, negative treated as zero, larger than chain size returns null.
+     * @return The first matching throwable from the throwable chain, null if no match or null input.
      * @since 3.10
      */
     public static <T extends Throwable> T throwableOfType(final Throwable throwable, final Class<T> type, final int fromIndex) {
@@ -1020,8 +1152,8 @@ public class ExceptionUtils {
      * Tests whether the specified {@link Throwable} is unchecked and throws it if so.
      *
      * @param <T> The Throwable type.
-     * @param throwable the throwable to test and throw or return.
-     * @return the given throwable.
+     * @param throwable The throwable to test and throw or return.
+     * @return The given throwable.
      * @since 3.13.0
      * @deprecated Use {@link #throwUnchecked(Throwable)}.
      */
@@ -1040,8 +1172,8 @@ public class ExceptionUtils {
      * Tests whether the specified {@link Throwable} is unchecked and throws it if so.
      *
      * @param <T> The Throwable type.
-     * @param throwable the throwable to test and throw or return.
-     * @return the given throwable.
+     * @param throwable The throwable to test and throw or return.
+     * @return The given throwable.
      * @since 3.14.0
      */
     public static <T extends Throwable> T throwUnchecked(final T throwable) {

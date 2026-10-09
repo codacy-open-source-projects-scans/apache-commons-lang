@@ -21,11 +21,13 @@ package org.apache.commons.lang3.builder;
  * for differences. The {@link DiffResult} object retrieved can be queried
  * for a list of differences or printed using the {@link DiffResult#toString()}.
  *
- * <p>The calculation of the differences is <em>consistent with equals</em> if
+ * <p>
+ * The calculation of the differences is <em>consistent with equals</em> if
  * and only if {@code d1.equals(d2)} implies {@code d1.diff(d2) == ""}.
  * It is strongly recommended that implementations are consistent with equals
  * to avoid confusion. Note that {@code null} is not an instance of any class
- * and {@code d1.diff(null)} should throw a {@link NullPointerException}.</p>
+ * and {@code d1.diff(null)} should throw a {@link NullPointerException}.
+ * </p>
  *
  * <p>
  * {@link Diffable} classes lend themselves well to unit testing, in which a
@@ -36,7 +38,7 @@ package org.apache.commons.lang3.builder;
  * Assert.assertEquals(expected.diff(result), expected, result);
  * </pre>
  *
- * @param <T> the type of objects that this object may be differentiated against
+ * @param <T> The type of objects that this object may be differentiated against
  * @since 3.3
  */
 @FunctionalInterface
@@ -46,9 +48,9 @@ public interface Diffable<T> {
      * Retrieves a list of the differences between
      * this object and the supplied object.
      *
-     * @param obj the object to diff against, can be {@code null}
-     * @return a list of differences
-     * @throws NullPointerException if the specified object is {@code null}
+     * @param obj The object to diff against, can be {@code null}
+     * @return A list of differences
+     * @throws NullPointerException Thrown if the specified object is {@code null}.
      */
     DiffResult<T> diff(T obj);
 }

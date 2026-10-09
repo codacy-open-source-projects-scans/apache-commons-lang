@@ -66,10 +66,10 @@ class DateUtilsRoundingTest extends AbstractLangTest {
      * lastRoundDownDate should round down to roundedDownDate<br>
      * lastRoundDownDate + 1 millisecond should round up to roundedUpDate
      *
-     * @param roundedUpDate the next rounded date after <strong>roundedDownDate</strong> when using <strong>calendarField</strong>
-     * @param roundedDownDate the result if <strong>lastRoundDownDate</strong> was rounded with <strong>calendarField</strong>
+     * @param roundedUpDate The next rounded date after <strong>roundedDownDate</strong> when using <strong>calendarField</strong>
+     * @param roundedDownDate The result if <strong>lastRoundDownDate</strong> was rounded with <strong>calendarField</strong>
      * @param lastRoundDownDate rounding this value with <strong>calendarField</strong> will result in <strong>roundedDownDate</strong>
-     * @param calendarField a Calendar.field value
+     * @param calendarField A Calendar.field value
      */
     protected void baseRoundTest(final Date roundedUpDate, final Date roundedDownDate, final Date lastRoundDownDate, final int calendarField) {
         final Date firstRoundUpDate = DateUtils.addMilliseconds(lastRoundDownDate, 1);
@@ -118,8 +118,8 @@ class DateUtilsRoundingTest extends AbstractLangTest {
      * lastTruncateDate + 1 millisecond should never round down to truncatedDate
      *
      * @param truncatedDate expected Date when <strong>lastTruncateDate</strong> is truncated with <strong>calendarField</strong>
-     * @param lastTruncateDate the last possible Date which will truncate to <strong>truncatedDate</strong> with <strong>calendarField</strong>
-     * @param calendarField a Calendar.field value
+     * @param lastTruncateDate The last possible Date which will truncate to <strong>truncatedDate</strong> with <strong>calendarField</strong>
+     * @param calendarField A Calendar.field value
      */
     protected void baseTruncateTest(final Date truncatedDate, final Date lastTruncateDate, final int calendarField) {
         final Date nextTruncateDate = DateUtils.addMilliseconds(lastTruncateDate, 1);
@@ -167,9 +167,9 @@ class DateUtilsRoundingTest extends AbstractLangTest {
      * Any January 1 could be considered as the ultimate extreme.
      * Instead of comparing the results if the input has a difference of 1 millisecond we check the output to be exactly January first.
      *
-     * @param minDate the lower bound
-     * @param maxDate the upper bound
-     * @param calendarField a Calendar.field value
+     * @param minDate The lower bound
+     * @param maxDate The upper bound
+     * @param calendarField A Calendar.field value
      */
     protected void roundToJanuaryFirst(final Date minDate, final Date maxDate, final int calendarField) {
         assertEquals(januaryOneDate, DateUtils.round(januaryOneDate, calendarField),
@@ -228,7 +228,7 @@ class DateUtilsRoundingTest extends AbstractLangTest {
      * Includes rounding the extremes of both AM and PM of one day
      * Includes rounding to January 1
      *
-     * @throws Exception so we don't have to catch it
+     * @throws Exception Thrown if an operation in the test fails.
      */
     @Test
     void testRoundAmPm() throws Exception {
@@ -256,7 +256,7 @@ class DateUtilsRoundingTest extends AbstractLangTest {
      * Includes rounding the extremes of one day
      * Includes rounding to January 1
      *
-     * @throws Exception so we don't have to catch it
+     * @throws Exception Thrown if an operation in the test fails.
      */
     @Test
     void testRoundDate() throws Exception {
@@ -283,7 +283,7 @@ class DateUtilsRoundingTest extends AbstractLangTest {
      * Includes rounding the extremes of one day
      * Includes rounding to January 1
      *
-     * @throws Exception so we don't have to catch it
+     * @throws Exception Thrown if an operation in the test fails.
      */
     @Test
     void testRoundDayOfMonth() throws Exception {
@@ -310,7 +310,7 @@ class DateUtilsRoundingTest extends AbstractLangTest {
      * Includes rounding the extremes of one hour
      * Includes rounding to January 1
      *
-     * @throws Exception so we don't have to catch it
+     * @throws Exception Thrown if an operation in the test fails.
      */
     @Test
     void testRoundHour() throws Exception {
@@ -337,7 +337,7 @@ class DateUtilsRoundingTest extends AbstractLangTest {
      * Includes rounding the extremes of one hour
      * Includes rounding to January 1
      *
-     * @throws Exception so we don't have to catch it
+     * @throws Exception Thrown if an operation in the test fails.
      */
     @Test
     void testRoundHourOfDay() throws Exception {
@@ -364,7 +364,7 @@ class DateUtilsRoundingTest extends AbstractLangTest {
      * Includes rounding the extremes of one second
      * Includes rounding to January 1
      *
-     * @throws Exception so we don't have to catch it
+     * @throws Exception Thrown if an operation in the test fails.
      */
     @Test
     void testRoundMilliSecond() throws Exception {
@@ -389,7 +389,7 @@ class DateUtilsRoundingTest extends AbstractLangTest {
      * Includes rounding the extremes of one minute
      * Includes rounding to January 1
      *
-     * @throws Exception so we don't have to catch it
+     * @throws Exception Thrown if an operation in the test fails.
      */
     @Test
     void testRoundMinute() throws Exception {
@@ -416,7 +416,7 @@ class DateUtilsRoundingTest extends AbstractLangTest {
      * Includes rounding months with 28, 29, 30 and 31 days
      * Includes rounding to January 1
      *
-     * @throws Exception so we don't have to catch it
+     * @throws Exception Thrown if an operation in the test fails.
      */
     @Test
     void testRoundMonth() throws Exception {
@@ -457,7 +457,7 @@ class DateUtilsRoundingTest extends AbstractLangTest {
      * Includes rounding the extremes of one second
      * Includes rounding to January 1
      *
-     * @throws Exception so we don't have to catch it
+     * @throws Exception Thrown if an operation in the test fails.
      */
     @Test
     void testRoundSecond() throws Exception {
@@ -484,7 +484,7 @@ class DateUtilsRoundingTest extends AbstractLangTest {
      * Includes rounding months with 28, 29, 30 and 31 days, each with first and second half
      * Includes rounding to January 1
      *
-     * @throws Exception so we don't have to catch it
+     * @throws Exception Thrown if an operation in the test fails.
      */
     @Test
     void testRoundSemiMonth() throws Exception {
@@ -546,7 +546,7 @@ class DateUtilsRoundingTest extends AbstractLangTest {
     /**
      * Tests DateUtils.round()-method with Calendar.Year
      *
-     * @throws Exception so we don't have to catch it
+     * @throws Exception Thrown if an operation in the test fails.
      */
     @Test
     void testRoundYear() throws Exception {
@@ -561,7 +561,7 @@ class DateUtilsRoundingTest extends AbstractLangTest {
      * Test DateUtils.truncate()-method with Calendar.AM_PM
      * Includes truncating the extremes of both AM and PM of one day
      *
-     * @throws Exception so we don't have to catch it
+     * @throws Exception Thrown if an operation in the test fails.
      */
     @Test
     void testTruncateAmPm() throws Exception {
@@ -577,7 +577,7 @@ class DateUtilsRoundingTest extends AbstractLangTest {
     /**
      * Test DateUtils.truncate()-method with Calendar.DATE
      *
-     * @throws Exception so we don't have to catch it
+     * @throws Exception Thrown if an operation in the test fails.
      */
     @Test
     void testTruncateDate() throws Exception {
@@ -589,7 +589,7 @@ class DateUtilsRoundingTest extends AbstractLangTest {
     /**
      * Test DateUtils.truncate()-method with Calendar.DAY_OF_MONTH
      *
-     * @throws Exception so we don't have to catch it
+     * @throws Exception Thrown if an operation in the test fails.
      */
     @Test
     void testTruncateDayOfMonth() throws Exception {
@@ -601,7 +601,7 @@ class DateUtilsRoundingTest extends AbstractLangTest {
     /**
      * Test DateUtils.truncate()-method with Calendar.HOUR
      *
-     * @throws Exception so we don't have to catch it
+     * @throws Exception Thrown if an operation in the test fails.
      */
     @Test
     void testTruncateHour() throws Exception {
@@ -613,7 +613,7 @@ class DateUtilsRoundingTest extends AbstractLangTest {
     /**
      * Test DateUtils.truncate()-method with Calendar.HOUR_OF_DAY
      *
-     * @throws Exception so we don't have to catch it
+     * @throws Exception Thrown if an operation in the test fails.
      */
     @Test
     void testTruncateHourOfDay() throws Exception {
@@ -634,7 +634,7 @@ class DateUtilsRoundingTest extends AbstractLangTest {
     /**
      * Test DateUtils.truncate()-method with Calendar.MINUTE
      *
-     * @throws Exception so we don't have to catch it
+     * @throws Exception Thrown if an operation in the test fails.
      */
     @Test
     void testTruncateMinute() throws Exception {
@@ -646,7 +646,7 @@ class DateUtilsRoundingTest extends AbstractLangTest {
     /**
      * Test DateUtils.truncate()-method with Calendar.MONTH
      *
-     * @throws Exception so we don't have to catch it
+     * @throws Exception Thrown if an operation in the test fails.
      */
     @Test
     void testTruncateMonth() throws Exception {
@@ -659,7 +659,7 @@ class DateUtilsRoundingTest extends AbstractLangTest {
     /**
      * Test DateUtils.truncate()-method with Calendar.SECOND
      *
-     * @throws Exception so we don't have to catch it
+     * @throws Exception Thrown if an operation in the test fails.
      */
     @Test
     void testTruncateSecond() throws Exception {
@@ -672,7 +672,7 @@ class DateUtilsRoundingTest extends AbstractLangTest {
      * Test DateUtils.truncate()-method with DateUtils.SEMI_MONTH
      * Includes truncating months with 28, 29, 30 and 31 days, each with first and second half
      *
-     * @throws Exception so we don't have to catch it
+     * @throws Exception Thrown if an operation in the test fails.
      */
     @Test
     void testTruncateSemiMonth() throws Exception {
@@ -722,7 +722,7 @@ class DateUtilsRoundingTest extends AbstractLangTest {
     /**
      * Test DateUtils.truncate()-method with Calendar.YEAR
      *
-     * @throws Exception so we don't have to catch it
+     * @throws Exception Thrown if an operation in the test fails.
      */
     @Test
     void testTruncateYear() throws Exception {

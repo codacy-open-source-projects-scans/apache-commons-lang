@@ -69,12 +69,12 @@ class StopWatchTest extends AbstractLangTest {
         return set(watch, nanos);
     }
 
-    private StopWatch set(final StopWatch watch, final long nanos) {
+    private StopWatch set(final StopWatch watch, final long elapsed) {
         try {
             final long currentNanos = System.nanoTime();
             final List<StopWatch.Split> splits = new ArrayList<>();
-            splits.add(new StopWatch.Split(String.valueOf(0), Duration.ofNanos(nanos)));
-            FieldUtils.writeField(watch, "startTimeNanos", currentNanos - nanos, true);
+            splits.add(new StopWatch.Split(String.valueOf(0), Duration.ofNanos(elapsed)));
+            FieldUtils.writeField(watch, "startTimeNanos", currentNanos - elapsed, true);
             FieldUtils.writeField(watch, "stopTimeNanos", currentNanos, true);
             FieldUtils.writeField(watch, "splits", splits, true);
         } catch (final IllegalAccessException e) {
@@ -87,7 +87,7 @@ class StopWatchTest extends AbstractLangTest {
      * Sleeps the requested duration plus one millisecond. On Java 8, sleeping for 2 or 20 millis can sleep for a tiny bit less.
      *
      * @param duration How long to sleep.
-     * @throws InterruptedException if any thread has interrupted the current thread.
+     * @throws InterruptedException Thrown if any thread has interrupted the current thread.
      */
     private void sleepPlus1(final Duration duration) throws InterruptedException {
         ThreadUtils.sleep(duration.plusMillis(1));
@@ -145,6 +145,17 @@ class StopWatchTest extends AbstractLangTest {
         final String formatSplitTime = watch.formatSplitTime();
         assertNotEquals(ZERO_TIME_ELAPSED, formatSplitTime);
         assertTrue(formatSplitTime.startsWith(ZERO_HOURS_PREFIX), "formatSplitTime");
+    }
+
+    @Test
+    void testFormatSplitTimeExceedingIntMillis() throws Exception {
+        final StopWatch watch = StopWatch.createStarted();
+        // Backdate the start so the split spans more than Integer.MAX_VALUE milliseconds (about 24.86 days).
+        FieldUtils.writeField(watch, "startTimeNanos", System.nanoTime() - TimeUnit.DAYS.toNanos(30), true);
+        watch.split();
+        final long splitMillis = watch.getSplitDuration().toMillis();
+        assertTrue(splitMillis > Integer.MAX_VALUE, "precondition: split must exceed Integer.MAX_VALUE millis");
+        assertEquals(DurationFormatUtils.formatDurationHMS(splitMillis), watch.formatSplitTime(), "formatSplitTime");
     }
 
     @Test
@@ -265,6 +276,12 @@ class StopWatchTest extends AbstractLangTest {
 
         watch.reset();
         assertThrows(IllegalStateException.class, watch::getStartTime, "Calling getStartTime on a reset, but unstarted StopWatch should throw an exception");
+    }
+
+    @Test
+    void testGetStopTime() throws InterruptedException {
+        final StopWatch watch = StopWatch.createStarted();
+        assertEquals(0, watch.getStopTime());
     }
 
     @RepeatedTest(10)
@@ -446,12 +463,6 @@ class StopWatchTest extends AbstractLangTest {
     }
 
     @Test
-    void testGetStopTime() throws InterruptedException {
-        final StopWatch watch = StopWatch.createStarted();
-        assertEquals(0, watch.getStopTime());
-    }
-
-    @Test
     void testStopInstantSimple() throws InterruptedException {
         final StopWatch watch = StopWatch.createStarted();
         final long testStartMillis = System.currentTimeMillis();
@@ -488,9 +499,9 @@ class StopWatchTest extends AbstractLangTest {
         final Duration sleepDuration = MIN_DURATION;
         final long sleepMillis = sleepDuration.toMillis();
         sleepPlus1(sleepDuration);
-        watch.suspend();
         final long testSuspendMillis = System.currentTimeMillis();
         final long testSuspendNanos = System.nanoTime();
+        watch.suspend();
         final long testSuspendTimeNanos = testSuspendNanos - testStartNanos;
         // See sleepPlus1
         final Duration testSuspendDuration = Duration.ofNanos(testSuspendTimeNanos).plusMillis(1);

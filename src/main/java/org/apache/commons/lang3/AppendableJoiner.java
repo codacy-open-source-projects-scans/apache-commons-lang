@@ -39,7 +39,7 @@ import org.apache.commons.lang3.function.FailableBiConsumer;
  * </p>
  *
  * <pre>{@code
- * // A reuseable instance
+ * // A reusable instance
  * private static final AppendableJoiner<Object> JOINER = AppendableJoiner.builder()
  *     .setPrefix("[")
  *     .setSuffix("]")
@@ -73,7 +73,7 @@ import org.apache.commons.lang3.function.FailableBiConsumer;
  * This class is immutable and thread-safe.
  * </p>
  *
- * @param <T> the type of elements to join.
+ * @param <T> The type of elements to join.
  * @see Appendable
  * @see StringBuilder
  * @see String#join(CharSequence, CharSequence...)
@@ -86,7 +86,7 @@ public final class AppendableJoiner<T> {
     /**
      * Builds instances of {@link AppendableJoiner}.
      *
-     * @param <T> the type of elements to join.
+     * @param <T> The type of elements to join.
      */
     public static final class Builder<T> implements Supplier<AppendableJoiner<T>> {
 
@@ -167,7 +167,7 @@ public final class AppendableJoiner<T> {
      * Creates a new builder.
      *
      * @param <T> The type of elements.
-     * @return a new builder.
+     * @return A new builder.
      */
     public static <T> Builder<T> builder() {
         return new Builder<>();
@@ -278,7 +278,7 @@ public final class AppendableJoiner<T> {
      *
      * @param stringBuilder The target.
      * @param elements      The source.
-     * @return the given target StringBuilder.
+     * @return The given target StringBuilder.
      */
     public StringBuilder join(final StringBuilder stringBuilder, @SuppressWarnings("unchecked") final T... elements) {
         return joinSB(stringBuilder, prefix, suffix, delimiter, appender, elements);
@@ -291,7 +291,7 @@ public final class AppendableJoiner<T> {
      * @param appendable The target.
      * @param elements   The source.
      * @return The given StringBuilder.
-     * @throws IOException If an I/O error occurs
+     * @throws IOException Thrown if an I/O error occurs.
      */
     public <A extends Appendable> A joinA(final A appendable, final Iterable<T> elements) throws IOException {
         return joinIterable(appendable, prefix, suffix, delimiter, appender, elements);
@@ -304,7 +304,7 @@ public final class AppendableJoiner<T> {
      * @param appendable The target.
      * @param elements   The source.
      * @return The given StringBuilder.
-     * @throws IOException If an I/O error occurs
+     * @throws IOException Thrown if an I/O error occurs.
      */
     public <A extends Appendable> A joinA(final A appendable, @SuppressWarnings("unchecked") final T... elements) throws IOException {
         return joinA(appendable, prefix, suffix, delimiter, appender, elements);

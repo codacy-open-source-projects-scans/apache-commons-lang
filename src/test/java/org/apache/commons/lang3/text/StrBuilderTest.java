@@ -76,7 +76,7 @@ class StrBuilderTest extends AbstractLangTest {
     void test_LANG_1131_EqualsWithNullStrBuilder() {
         final StrBuilder sb = new StrBuilder();
         final StrBuilder other = null;
-        assertFalse(sb.equals(other));
+        assertNotEquals(sb, other);
     }
 
     @Test
@@ -656,21 +656,21 @@ class StrBuilderTest extends AbstractLangTest {
     void testEquals() {
         final StrBuilder sb1 = new StrBuilder();
         final StrBuilder sb2 = new StrBuilder();
-        assertTrue(sb1.equals(sb2));
-        assertTrue(sb1.equals(sb1));
-        assertTrue(sb2.equals(sb2));
+        assertEquals(sb1, sb2);
+        assertEquals(sb1, sb1);
+        assertEquals(sb2, sb2);
         assertEquals(sb1, sb2);
 
         sb1.append("abc");
-        assertFalse(sb1.equals(sb2));
+        assertNotEquals(sb1, sb2);
         assertNotEquals(sb1, sb2);
 
         sb2.append("ABC");
-        assertFalse(sb1.equals(sb2));
+        assertNotEquals(sb1, sb2);
         assertNotEquals(sb1, sb2);
 
         sb2.clear().append("abc");
-        assertTrue(sb1.equals(sb2));
+        assertEquals(sb1, sb2);
         assertEquals(sb1, sb2);
 
         assertNotEquals(sb1, Integer.valueOf(1));
@@ -697,6 +697,16 @@ class StrBuilderTest extends AbstractLangTest {
         assertTrue(sb2.equalsIgnoreCase(sb2));
 
         sb2.clear().append("aBc");
+        assertTrue(sb1.equalsIgnoreCase(sb2));
+
+        // characters that only fold together via toLowerCase, matching String.equalsIgnoreCase
+        sb1.clear().append("\u004B"); // LATIN CAPITAL LETTER K
+        sb2.clear().append("\u212A"); // KELVIN SIGN, lower-cases to 'k'
+        assertTrue(sb1.equalsIgnoreCase(sb2));
+        assertTrue(sb2.equalsIgnoreCase(sb1));
+
+        sb1.clear().append("\u00E5"); // LATIN SMALL LETTER A WITH RING ABOVE
+        sb2.clear().append("\u212B"); // ANGSTROM SIGN, lower-cases to the same
         assertTrue(sb1.equalsIgnoreCase(sb2));
     }
 
@@ -1049,6 +1059,11 @@ class StrBuilderTest extends AbstractLangTest {
         assertEquals(1, sb.lastIndexOf("ba"));
         assertEquals("abab".lastIndexOf("ba"), sb.lastIndexOf("ba"));
 
+        assertEquals(4, sb.lastIndexOf(""));
+        //should work like String#lastIndexOf
+        assertEquals("abab".lastIndexOf(""), sb.lastIndexOf(""));
+        assertEquals("".lastIndexOf(""), new StrBuilder().lastIndexOf(""));
+
         assertEquals(-1, sb.lastIndexOf("z"));
 
         assertEquals(-1, sb.lastIndexOf((String) null));
@@ -1177,6 +1192,8 @@ class StrBuilderTest extends AbstractLangTest {
         assertEquals("", sb.midString(0, -1));
         assertEquals("", sb.midString(20, 2));
         assertEquals("hello", sb.midString(14, 22));
+        // a length that overflows index + length must still return the rest
+        assertEquals("hello", sb.midString(14, Integer.MAX_VALUE));
     }
 
     @Test
@@ -1629,6 +1646,21 @@ class StrBuilderTest extends AbstractLangTest {
         sb.clear().append(true);
         assertEquals("eurt", sb.reverse().toString());
         assertEquals("true", sb.reverse().toString());
+    }
+
+    @Test
+    void testReverseSurrogatePairs() {
+        // U+1F600 GRINNING FACE is a supplementary code point encoded as a surrogate pair; reversing
+        // must keep the pair intact (high before low) like StringBuilder, not split it into garbage.
+        final String emoji = "😀";
+        assertEquals(new StringBuilder("a" + emoji + "b").reverse().toString(), new StrBuilder("a" + emoji + "b").reverse().toString());
+        assertEquals("b" + emoji + "a", new StrBuilder("a" + emoji + "b").reverse().toString());
+
+        final String emoji2 = "😁";
+        assertEquals(emoji2 + emoji, new StrBuilder(emoji + emoji2).reverse().toString());
+
+        // An unpaired high surrogate has no partner and is left where it lands.
+        assertEquals("b\uD800a", new StrBuilder("a\uD800b").reverse().toString());
     }
 
     @Test

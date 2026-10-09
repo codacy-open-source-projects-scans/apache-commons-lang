@@ -68,19 +68,19 @@ public interface FailableBiPredicate<T, U, E extends Throwable> {
     /**
      * Returns a composed {@link FailableBiPredicate} like {@link BiPredicate#and(BiPredicate)}.
      *
-     * @param other a predicate that will be logically-ANDed with this predicate.
-     * @return a composed {@link FailableBiPredicate} like {@link BiPredicate#and(BiPredicate)}.
-     * @throws NullPointerException if other is null
+     * @param other A predicate that will be logically-ANDed with this predicate.
+     * @return A composed {@link FailableBiPredicate} like {@link BiPredicate#and(BiPredicate)}.
+     * @throws NullPointerException Thrown if other is null.
      */
     default FailableBiPredicate<T, U, E> and(final FailableBiPredicate<? super T, ? super U, E> other) {
-        Objects.requireNonNull(other);
+        Objects.requireNonNull(other, "other");
         return (final T t, final U u) -> test(t, u) && other.test(t, u);
     }
 
     /**
      * Returns a predicate that negates this predicate.
      *
-     * @return a predicate that negates this predicate.
+     * @return A predicate that negates this predicate.
      */
     default FailableBiPredicate<T, U, E> negate() {
         return (final T t, final U u) -> !test(t, u);
@@ -89,21 +89,21 @@ public interface FailableBiPredicate<T, U, E extends Throwable> {
     /**
      * Returns a composed {@link FailableBiPredicate} like {@link BiPredicate#and(BiPredicate)}.
      *
-     * @param other a predicate that will be logically-ORed with this predicate.
-     * @return a composed {@link FailableBiPredicate} like {@link BiPredicate#and(BiPredicate)}.
-     * @throws NullPointerException if other is null
+     * @param other A predicate that will be logically-ORed with this predicate.
+     * @return A composed {@link FailableBiPredicate} like {@link BiPredicate#and(BiPredicate)}.
+     * @throws NullPointerException Thrown if other is null.
      */
     default FailableBiPredicate<T, U, E> or(final FailableBiPredicate<? super T, ? super U, E> other) {
-        Objects.requireNonNull(other);
+        Objects.requireNonNull(other, "other");
         return (final T t, final U u) -> test(t, u) || other.test(t, u);
     }
 
     /**
      * Tests the predicate.
      *
-     * @param object1 the first object to test the predicate on
-     * @param object2 the second object to test the predicate on
-     * @return the predicate's evaluation
+     * @param object1 The first object to test the predicate on
+     * @param object2 The second object to test the predicate on
+     * @return The predicate's evaluation
      * @throws E Thrown when this predicate fails.
      */
     boolean test(T object1, U object2) throws E;

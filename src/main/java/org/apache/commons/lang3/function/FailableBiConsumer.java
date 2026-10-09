@@ -51,8 +51,8 @@ public interface FailableBiConsumer<T, U, E extends Throwable> {
     /**
      * Accepts the given arguments.
      *
-     * @param t the first parameter for the consumable to accept
-     * @param u the second parameter for the consumable to accept
+     * @param t The first parameter for the consumable to accept
+     * @param u The second parameter for the consumable to accept
      * @throws E Thrown when the consumer fails.
      */
     void accept(T t, U u) throws E;
@@ -60,12 +60,12 @@ public interface FailableBiConsumer<T, U, E extends Throwable> {
     /**
      * Returns a composed {@link FailableBiConsumer} like {@link BiConsumer#andThen(BiConsumer)}.
      *
-     * @param after the operation to perform after this one.
-     * @return a composed {@link FailableBiConsumer} like {@link BiConsumer#andThen(BiConsumer)}.
-     * @throws NullPointerException when {@code after} is null.
+     * @param after The operation to perform after this one.
+     * @return A composed {@link FailableBiConsumer} like {@link BiConsumer#andThen(BiConsumer)}.
+     * @throws NullPointerException Thrown when {@code after} is null.
      */
     default FailableBiConsumer<T, U, E> andThen(final FailableBiConsumer<? super T, ? super U, E> after) {
-        Objects.requireNonNull(after);
+        Objects.requireNonNull(after, "after");
         return (t, u) -> {
             accept(t, u);
             after.accept(t, u);

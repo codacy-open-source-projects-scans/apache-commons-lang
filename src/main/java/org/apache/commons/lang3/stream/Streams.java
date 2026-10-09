@@ -135,7 +135,7 @@ public class Streams {
         /**
          * Creates a spliterator reporting the given estimated size and additionalCharacteristics.
          *
-         * @param estimatedSize the estimated size of this spliterator if known, otherwise {@code Long.MAX_VALUE}.
+         * @param estimatedSize The estimated size of this spliterator if known, otherwise {@code Long.MAX_VALUE}.
          * @param additionalCharacteristics properties of this spliterator's source or elements. If {@code SIZED} is reported then this spliterator will
          *        additionally report {@code SUBSIZED}.
          * @param enumeration The Enumeration to wrap.
@@ -228,7 +228,7 @@ public class Streams {
         /**
          * Throws IllegalStateException if this stream is already terminated.
          *
-         * @throws IllegalStateException if this stream is already terminated.
+         * @throws IllegalStateException Thrown if this stream is already terminated.
          */
         protected void assertNotTerminated() {
             if (terminated) {
@@ -286,10 +286,10 @@ public class Streams {
          * }
          * </pre>
          *
-         * @param <R> the type of the result
-         * @param <A> the intermediate accumulation type of the {@link Collector}
-         * @param collector the {@link Collector} describing the reduction
-         * @return the result of the reduction
+         * @param <R> The type of the result
+         * @param <A> The intermediate accumulation type of the {@link Collector}
+         * @param collector The {@link Collector} describing the reduction
+         * @return The result of the reduction
          * @see #collect(Supplier, BiConsumer, BiConsumer)
          * @see Collectors
          */
@@ -337,7 +337,7 @@ public class Streams {
          *
          * @param <R> type of the result
          * @param <A> Type of the accumulator.
-         * @param supplier a function that creates a new result container. For a parallel execution, this function may be called
+         * @param supplier A function that creates a new result container. For a parallel execution, this function may be called
          *        multiple times and must return a fresh value each time.
          * @param accumulator An associative, non-interfering, stateless function for incorporating an additional element into a
          *        result
@@ -356,9 +356,9 @@ public class Streams {
          * This is an intermediate operation.
          * </p>
          *
-         * @param predicate a non-interfering, stateless predicate to apply to each element to determine if it should be
+         * @param predicate A non-interfering, stateless predicate to apply to each element to determine if it should be
          *        included.
-         * @return the new stream
+         * @return The new stream
          */
         public FailableStream<T> filter(final FailablePredicate<T, ?> predicate) {
             assertNotTerminated();
@@ -378,7 +378,7 @@ public class Streams {
          * chooses. If the action accesses shared state, it is responsible for providing the required synchronization.
          * </p>
          *
-         * @param action a non-interfering action to perform on the elements
+         * @param action A non-interfering action to perform on the elements
          */
         public void forEach(final FailableConsumer<T, ?> action) {
             makeTerminated();
@@ -388,7 +388,7 @@ public class Streams {
         /**
          * Marks this stream as terminated.
          *
-         * @throws IllegalStateException if this stream is already terminated.
+         * @throws IllegalStateException Thrown if this stream is already terminated.
          */
         protected void makeTerminated() {
             assertNotTerminated();
@@ -404,7 +404,7 @@ public class Streams {
          *
          * @param <R> The element type of the new stream
          * @param mapper A non-interfering, stateless function to apply to each element
-         * @return the new stream
+         * @return The new stream
          */
         public <R> FailableStream<R> map(final FailableFunction<T, R, ?> mapper) {
             assertNotTerminated();
@@ -459,9 +459,9 @@ public class Streams {
          * reduced risk of data races.
          * </p>
          *
-         * @param identity the identity value for the accumulating function
-         * @param accumulator an associative, non-interfering, stateless function for combining two values
-         * @return the result of the reduction
+         * @param identity The identity value for the accumulating function
+         * @param accumulator An associative, non-interfering, stateless function for combining two values
+         * @return The result of the reduction
          */
         public T reduce(final T identity, final BinaryOperator<T> accumulator) {
             makeTerminated();
@@ -569,9 +569,9 @@ public class Streams {
     /**
      * Shorthand for {@code Streams.failableStream(value == null ? Stream.empty() : Stream.of(value))}.
      *
-     * @param <T> the type of stream elements.
-     * @param value the single element of the new stream, may be {@code null}.
-     * @return the new FailableStream on {@code value} or an empty stream.
+     * @param <T> The type of stream elements.
+     * @param value The single element of the new stream, may be {@code null}.
+     * @return The new FailableStream on {@code value} or an empty stream.
      * @since 3.15.0
      */
     public static <T> FailableStream<T> failableStream(final T value) {
@@ -581,9 +581,9 @@ public class Streams {
     /**
      * Shorthand for {@code Streams.failableStream(Streams.of(arrayValues))}.
      *
-     * @param <T> the type of stream elements.
-     * @param values the elements of the new stream, may be {@code null}.
-     * @return the new FailableStream on {@code values} or an empty stream.
+     * @param <T> The type of stream elements.
+     * @param values The elements of the new stream, may be {@code null}.
+     * @return The new FailableStream on {@code values} or an empty stream.
      * @since 3.14.0
      */
     @SafeVarargs // Creating a stream from an array is safe
@@ -600,9 +600,9 @@ public class Streams {
      * {@code (Stream<E>) Streams.toStream(collection).filter(collection, SomeClass.class::isInstance);}
      * </pre>
      *
-     * @param <E> the type of elements in the collection we want to stream.
-     * @param clazz the type of elements in the collection we want to stream.
-     * @param collection the collection to stream or null.
+     * @param <E> The type of elements in the collection we want to stream.
+     * @param clazz The type of elements in the collection we want to stream.
+     * @param collection The collection to stream or null.
      * @return A non-null stream that only provides instances we want.
      * @since 3.13.0
      */
@@ -618,8 +618,8 @@ public class Streams {
     /**
      * Streams the non-null elements of a collection.
      *
-     * @param <E> the type of elements in the collection.
-     * @param collection the collection to stream or null.
+     * @param <E> The type of elements in the collection.
+     * @param collection The collection to stream or null.
      * @return A non-null stream that filters out null elements.
      * @since 3.13.0
      */
@@ -630,8 +630,8 @@ public class Streams {
     /**
      * Streams the non-null element.
      *
-     * @param <E> the type of elements in the collection.
-     * @param array the element to stream or null.
+     * @param <E> The type of elements in the collection.
+     * @param array The element to stream or null.
      * @return A non-null stream that filters out a null element.
      * @since 3.15.0
      */
@@ -642,8 +642,8 @@ public class Streams {
     /**
      * Streams the non-null elements of an array.
      *
-     * @param <E> the type of elements in the collection.
-     * @param array the array to stream or null.
+     * @param <E> The type of elements in the collection.
+     * @param array The array to stream or null.
      * @return A non-null stream that filters out null elements.
      * @since 3.13.0
      */
@@ -655,8 +655,8 @@ public class Streams {
     /**
      * Streams the non-null elements of a stream.
      *
-     * @param <E> the type of elements in the collection.
-     * @param stream the stream to stream or null.
+     * @param <E> The type of elements in the collection.
+     * @param stream The stream to stream or null.
      * @return A non-null stream that filters out null elements.
      * @since 3.13.0
      */
@@ -667,8 +667,8 @@ public class Streams {
     /**
      * Delegates to {@link Collection#stream()} or returns {@link Stream#empty()} if the collection is null.
      *
-     * @param <E> the type of elements in the collection.
-     * @param collection the collection to stream or null.
+     * @param <E> The type of elements in the collection.
+     * @param collection The collection to stream or null.
      * @return {@link Collection#stream()} or {@link Stream#empty()} if the collection is null.
      * @since 3.13.0
      */
@@ -681,7 +681,7 @@ public class Streams {
      *
      * @param <E> The enumeration element type.
      * @param enumeration The enumeration to stream.
-     * @return a new stream.
+     * @return A new stream.
      * @since 3.13.0
      */
     public static <E> Stream<E> of(final Enumeration<E> enumeration) {
@@ -691,9 +691,9 @@ public class Streams {
     /**
      * Creates a sequential stream on the given Iterable.
      *
-     * @param <E> the type of elements in the Iterable.
-     * @param iterable the Iterable to stream or null.
-     * @return a new Stream or {@link Stream#empty()} if the Iterable is null.
+     * @param <E> The type of elements in the Iterable.
+     * @param iterable The Iterable to stream or null.
+     * @return A new Stream or {@link Stream#empty()} if the Iterable is null.
      * @since 3.13.0
      */
     public static <E> Stream<E> of(final Iterable<E> iterable) {
@@ -703,9 +703,9 @@ public class Streams {
     /**
      * Creates a sequential stream on the given Iterator.
      *
-     * @param <E> the type of elements in the Iterator.
-     * @param iterator the Iterator to stream or null.
-     * @return a new Stream or {@link Stream#empty()} if the Iterator is null.
+     * @param <E> The type of elements in the Iterator.
+     * @param iterator The Iterator to stream or null.
+     * @return A new Stream or {@link Stream#empty()} if the Iterator is null.
      * @since 3.13.0
      */
     public static <E> Stream<E> of(final Iterator<E> iterator) {
@@ -715,9 +715,9 @@ public class Streams {
     /**
      * Returns the stream or {@link Stream#empty()} if the stream is null.
      *
-     * @param <E> the type of elements in the collection.
-     * @param stream the stream to stream or null.
-     * @return the stream or {@link Stream#empty()} if the stream is null.
+     * @param <E> The type of elements in the collection.
+     * @param stream The stream to stream or null.
+     * @return The stream or {@link Stream#empty()} if the stream is null.
      * @since 3.13.0
      */
     private static <E> Stream<E> of(final Stream<E> stream) {
@@ -727,9 +727,9 @@ public class Streams {
     /**
      * Null-safe version of {@link Stream#of(Object[])}.
      *
-     * @param <T> the type of stream elements.
-     * @param values the elements of the new stream, may be {@code null}.
-     * @return the new stream on {@code values} or {@link Stream#empty()}.
+     * @param <T> The type of stream elements.
+     * @param values The elements of the new stream, may be {@code null}.
+     * @return The new stream on {@code values} or {@link Stream#empty()}.
      * @since 3.13.0
      */
     @SafeVarargs // Creating a stream from an array is safe
@@ -834,9 +834,9 @@ public class Streams {
     /**
      * Returns a {@link Collector} that accumulates the input elements into a new array.
      *
-     * @param <T> the type of the input elements
+     * @param <T> The type of the input elements
      * @param elementType Type of an element in the array.
-     * @return a {@link Collector} which collects all the input elements into an array, in encounter order
+     * @return A {@link Collector} which collects all the input elements into an array, in encounter order
      */
     public static <T> Collector<T, List<T>, T[]> toArray(final Class<T> elementType) {
         return new ArrayCollector<>(elementType);

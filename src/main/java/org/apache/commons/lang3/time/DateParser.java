@@ -39,14 +39,14 @@ public interface DateParser {
     /**
      * Gets the locale used by this parser.
      *
-     * @return the locale
+     * @return The locale
      */
     Locale getLocale();
 
     /**
      * Gets the pattern used by this parser.
      *
-     * @return the pattern, {@link java.text.SimpleDateFormat} compatible.
+     * @return The pattern, {@link java.text.SimpleDateFormat} compatible.
      */
     String getPattern();
 
@@ -58,7 +58,7 @@ public interface DateParser {
      * the format pattern.
      * </p>
      *
-     * @return the time zone
+     * @return The time zone
      */
     TimeZone getTimeZone();
 
@@ -69,7 +69,7 @@ public interface DateParser {
      *
      * @param source A {@link String} whose beginning should be parsed.
      * @return A {@link Date} parsed from the string.
-     * @throws ParseException if the beginning of the specified string cannot be parsed.
+     * @throws ParseException Thrown if the beginning of the specified string cannot be parsed.
      */
     Date parse(String source) throws ParseException;
 
@@ -82,7 +82,7 @@ public interface DateParser {
      * @param pos A {@link ParsePosition} object with index and error index information
      * as described above.
      * @return A {@link Date} parsed from the string. In case of error, returns null.
-     * @throws NullPointerException if text or pos is null.
+     * @throws NullPointerException Thrown if text or pos is null.
      */
     Date parse(String source, ParsePosition pos);
 
@@ -96,7 +96,7 @@ public interface DateParser {
      * @param pos On input, the position in the source to start parsing, on output, updated position.
      * @param calendar The calendar into which to set parsed fields.
      * @return true, if source has been parsed (pos parsePosition is updated); otherwise false (and pos errorIndex is updated)
-     * @throws IllegalArgumentException when Calendar has been set to be not lenient, and a parsed field is
+     * @throws IllegalArgumentException Thrown when Calendar has been set to be not lenient, and a parsed field is
      * out of range.
      *
      * @since 3.5
@@ -107,8 +107,8 @@ public interface DateParser {
      * Parses text from a string to produce a Date.
      *
      * @param source A {@link String} whose beginning should be parsed.
-     * @return a {@link java.util.Date} object.
-     * @throws ParseException if the beginning of the specified string cannot be parsed.
+     * @return A {@link java.util.Date} object.
+     * @throws ParseException Thrown if the beginning of the specified string cannot be parsed.
      * @see java.text.DateFormat#parseObject(String)
      */
     Object parseObject(String source) throws ParseException;
@@ -117,8 +117,8 @@ public interface DateParser {
      * Parses a date/time string according to the given parse position.
      *
      * @param source A {@link String} whose beginning should be parsed.
-     * @param pos the parse position.
-     * @return a {@link java.util.Date} object.
+     * @param pos The parse position.
+     * @return A {@link java.util.Date} object.
      * @see java.text.DateFormat#parseObject(String, ParsePosition)
      */
     Object parseObject(String source, ParsePosition pos);

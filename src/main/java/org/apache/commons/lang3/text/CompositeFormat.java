@@ -61,9 +61,9 @@ public class CompositeFormat extends Format {
     /**
      * Uses the formatter Format instance.
      *
-     * @param obj the object to format
-     * @param toAppendTo the {@link StringBuffer} to append to
-     * @param pos the FieldPosition to use (or ignore).
+     * @param obj The object to format
+     * @param toAppendTo The {@link StringBuffer} to append to
+     * @param pos The FieldPosition to use (or ignore).
      * @return {@code toAppendTo}
      * @see Format#format(Object, StringBuffer, FieldPosition)
      */
@@ -74,16 +74,16 @@ public class CompositeFormat extends Format {
     }
 
     /**
-     * Provides access to the parser Format implementation.
+     * Gets the formatter Format implementation.
      *
-     * @return formatter Format implementation
+     * @return The formatter Format implementation.
      */
     public Format getFormatter() {
         return this.formatter;
     }
 
     /**
-     * Provides access to the parser Format implementation.
+     * Gets the parser Format implementation.
      *
      * @return parser Format implementation
      */
@@ -94,11 +94,11 @@ public class CompositeFormat extends Format {
     /**
      * Uses the parser Format instance.
      *
-     * @param source the String source
-     * @param pos the ParsePosition containing the position to parse from, will
+     * @param source The String source
+     * @param pos The ParsePosition containing the position to parse from, will
      *            be updated according to parsing success (index) or failure
      *            (error index)
-     * @return the parsed Object
+     * @return The parsed Object
      * @see Format#parseObject(String, ParsePosition)
      */
     @Override
@@ -111,7 +111,7 @@ public class CompositeFormat extends Format {
      *
      * @param input String to reformat
      * @return A reformatted String
-     * @throws ParseException thrown by parseObject(String) call
+     * @throws ParseException Thrown by parseObject(String) call.
      */
     public String reformat(final String input) throws ParseException {
         return format(parseObject(input));

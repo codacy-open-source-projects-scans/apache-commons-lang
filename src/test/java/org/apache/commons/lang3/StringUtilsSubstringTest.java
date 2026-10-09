@@ -17,8 +17,10 @@
 package org.apache.commons.lang3;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
@@ -83,6 +85,35 @@ class StringUtilsSubstringTest extends AbstractLangTest {
     }
 
     @Test
+    void testLeftSurrogatePair() {
+        // U+1F600 GRINNING FACE is a supplementary code point stored as a surrogate pair
+        final String grin = "😀";
+        assertEquals("", StringUtils.left(grin, 0));
+        assertEquals("", StringUtils.left(grin, 1));
+        assertEquals(grin, StringUtils.left(grin, 2));
+        assertEquals(grin, StringUtils.left(grin, 3));
+
+        assertEquals("a", StringUtils.left("a" + grin, 1));
+        assertEquals("a", StringUtils.left("a" + grin, 2));
+        assertEquals("a" + grin, StringUtils.left("a" + grin, 3));
+
+        final String source = "a" + grin + "b" + grin + "cd" + grin + "ef";
+        for (int len = 0; len <= source.length(); len++) {
+            final String result = StringUtils.left(source, len);
+            assertTrue(result.length() <= len, () -> "result longer than len: " + result);
+            for (int i = 0; i < result.length(); i++) {
+                final char ch = result.charAt(i);
+                if (Character.isHighSurrogate(ch)) {
+                    assertTrue(i + 1 < result.length() && Character.isLowSurrogate(result.charAt(i + 1)), "lone high surrogate in: " + result);
+                    i++; // skip the paired low surrogate
+                } else {
+                    assertFalse(Character.isLowSurrogate(ch), "lone low surrogate in: " + result);
+                }
+            }
+        }
+    }
+
+    @Test
     void testMid_String() {
         assertSame(null, StringUtils.mid(null, -1, 0));
         assertSame(null, StringUtils.mid(null, 0, -1));
@@ -102,6 +133,41 @@ class StringUtilsSubstringTest extends AbstractLangTest {
         assertEquals(BAR, StringUtils.mid(FOOBAR, 3, 80));
         assertEquals("", StringUtils.mid(FOOBAR, 9, 3));
         assertEquals(FOO, StringUtils.mid(FOOBAR, -1, 3));
+        // LANG: a len that overflows pos + len must still return the rest
+        assertEquals(BAR, StringUtils.mid(FOOBAR, 3, Integer.MAX_VALUE));
+        assertEquals(FOOBAR, StringUtils.mid(FOOBAR, 0, Integer.MAX_VALUE));
+    }
+
+    @Test
+    void testMidSurrogatePair() {
+        // U+1F600 GRINNING FACE is a supplementary code point stored as a surrogate pair
+        final String grin = "😀";
+        assertEquals("", StringUtils.mid(grin, 0, 0));
+        assertEquals("", StringUtils.mid(grin, 0, 1));
+        assertEquals(grin, StringUtils.mid(grin, 0, 2));
+        assertEquals(grin, StringUtils.mid(grin, 0, 3));
+        assertEquals("", StringUtils.mid(grin, 1, 1));
+        assertEquals("", StringUtils.mid(grin, 1, 2));
+
+        assertEquals("a", StringUtils.mid("a" + grin + "b", 0, 2));
+        assertEquals(grin, StringUtils.mid("a" + grin + "b", 1, 2));
+        assertEquals("b", StringUtils.mid("a" + grin + "b", 2, 2));
+
+        final String source = "a" + grin + "b" + grin + "cd" + grin + "ef";
+        for (int pos = 0; pos <= source.length(); pos++) {
+            for (int len = 0; len <= source.length(); len++) {
+                final String result = StringUtils.mid(source, pos, len);
+                for (int i = 0; i < result.length(); i++) {
+                    final char ch = result.charAt(i);
+                    if (Character.isHighSurrogate(ch)) {
+                        assertTrue(i + 1 < result.length() && Character.isLowSurrogate(result.charAt(i + 1)), "lone high surrogate in: " + result);
+                        i++; // skip the paired low surrogate
+                    } else {
+                        assertFalse(Character.isLowSurrogate(ch), "lone low surrogate in: " + result);
+                    }
+                }
+            }
+        }
     }
 
     @Test
@@ -118,6 +184,35 @@ class StringUtilsSubstringTest extends AbstractLangTest {
         assertEquals("", StringUtils.right(FOOBAR, 0));
         assertEquals(BAR, StringUtils.right(FOOBAR, 3));
         assertSame(FOOBAR, StringUtils.right(FOOBAR, 80));
+    }
+
+    @Test
+    void testRightSurrogatePair() {
+        // U+1F600 GRINNING FACE is a supplementary code point stored as a surrogate pair
+        final String grin = "😀";
+        assertEquals("", StringUtils.right(grin, 0));
+        assertEquals("", StringUtils.right(grin, 1));
+        assertEquals(grin, StringUtils.right(grin, 2));
+        assertEquals(grin, StringUtils.right(grin, 3));
+
+        assertEquals("a", StringUtils.right(grin + "a", 1));
+        assertEquals("a", StringUtils.right(grin + "a", 2));
+        assertEquals(grin + "a", StringUtils.right(grin + "a", 3));
+
+        final String source = "a" + grin + "b" + grin + "cd" + grin + "ef";
+        for (int len = 0; len <= source.length(); len++) {
+            final String result = StringUtils.right(source, len);
+            assertTrue(result.length() <= len, () -> "result longer than len: " + result);
+            for (int i = 0; i < result.length(); i++) {
+                final char ch = result.charAt(i);
+                if (Character.isHighSurrogate(ch)) {
+                    assertTrue(i + 1 < result.length() && Character.isLowSurrogate(result.charAt(i + 1)), "lone high surrogate in: " + result);
+                    i++; // skip the paired low surrogate
+                } else {
+                    assertFalse(Character.isLowSurrogate(ch), "lone low surrogate in: " + result);
+                }
+            }
+        }
     }
 
     @Test
@@ -172,6 +267,12 @@ class StringUtilsSubstringTest extends AbstractLangTest {
         assertEquals("cba", StringUtils.substringAfter("abcba", 'b'));
         assertEquals("", StringUtils.substringAfter("abc", 'c'));
         assertEquals("", StringUtils.substringAfter("abc", 'd'));
+
+        // a supplementary code point occupies two chars
+        final int grin = 0x1F600;
+        final String s = new String(Character.toChars(grin));
+        assertEquals("world", StringUtils.substringAfter("hello" + s + "world", grin));
+        assertEquals("", StringUtils.substringAfter("hello" + s, grin));
     }
 
     @Test
@@ -208,6 +309,13 @@ class StringUtilsSubstringTest extends AbstractLangTest {
         assertEquals("a", StringUtils.substringAfterLast("abcba", 'b'));
         assertEquals("", StringUtils.substringAfterLast("abc", 'c'));
         assertEquals("", StringUtils.substringAfterLast("", 'd'));
+
+        // a supplementary code point occupies two chars
+        final int grin = 0x1F600;
+        final String s = new String(Character.toChars(grin));
+        assertEquals("", StringUtils.substringAfterLast("hello" + s, grin));
+        assertEquals("x", StringUtils.substringAfterLast(s + "a" + s + "x", grin));
+        assertEquals("world", StringUtils.substringAfterLast("a" + s + "world", grin));
     }
 
     @Test

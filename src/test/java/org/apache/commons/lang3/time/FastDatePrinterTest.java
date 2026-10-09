@@ -93,12 +93,12 @@ class FastDatePrinterTest extends AbstractLangTest {
     }
 
     /**
-     * Override this method in derived tests to change the construction of instances
+     * Gets the printer instance to use for testing. Override this method in derived tests to change how instances are constructed.
      *
-     * @param format   the format string to use
-     * @param timeZone the time zone to use
-     * @param locale   the locale to use
-     * @return the DatePrinter to use for testing
+     * @param format   The format string to use
+     * @param timeZone The time zone to use
+     * @param locale   The locale to use
+     * @return The DatePrinter to use for testing
      */
     protected DatePrinter getInstance(final String format, final TimeZone timeZone, final Locale locale) {
         return new FastDatePrinter(format, timeZone, locale);
@@ -165,6 +165,49 @@ class FastDatePrinterTest extends AbstractLangTest {
         assertEquals(printer1.hashCode(), printer2.hashCode());
 
         assertNotEquals(printer1, new Object());
+    }
+
+    /**
+     * Tests that 'G' names the era of the calendar being formatted when that calendar is not of the type the locale defaults to, like SimpleDateFormat.
+     */
+    @Test
+    void testEraMixedCalendarTypes() {
+        final Calendar cal = Calendar.getInstance(TimeZones.GMT, Locale.US);
+        cal.clear();
+        cal.set(2024, Calendar.MAY, 1);
+        final Date date = cal.getTime();
+        // Gregorian, Thai Buddhist and Japanese Imperial calendars.
+        final Locale[] locales = { Locale.US, new Locale("th", "TH"), new Locale("ja", "JP", "JP") };
+        for (final Locale locale : locales) {
+            for (final Locale calendarLocale : locales) {
+                final Calendar calendar = Calendar.getInstance(TimeZones.GMT, calendarLocale);
+                calendar.setTime(date);
+                for (final String pattern : new String[] { "G", "GGGG" }) {
+                    final SimpleDateFormat sdf = new SimpleDateFormat(pattern, locale);
+                    sdf.setCalendar((Calendar) calendar.clone());
+                    assertEquals(sdf.format(date), getInstance(pattern, TimeZones.GMT, locale).format(calendar),
+                            () -> locale + " " + calendar.getCalendarType() + " " + pattern);
+                }
+            }
+        }
+    }
+
+    /**
+     * Tests that 'G' uses the era names of the locale's calendar when that calendar is not Gregorian, like SimpleDateFormat.
+     */
+    @Test
+    void testEraNonGregorianCalendar() {
+        final Calendar cal = Calendar.getInstance(TimeZones.GMT, Locale.US);
+        cal.clear();
+        cal.set(2024, Calendar.MAY, 1);
+        final Date date = cal.getTime();
+        for (final Locale locale : new Locale[] { new Locale("th", "TH"), new Locale("ja", "JP", "JP") }) {
+            for (final String pattern : new String[] { "G", "GGGG" }) {
+                final SimpleDateFormat sdf = new SimpleDateFormat(pattern, locale);
+                sdf.setTimeZone(TimeZones.GMT);
+                assertEquals(sdf.format(date), getInstance(pattern, TimeZones.GMT, locale).format(date), () -> locale + " " + pattern);
+            }
+        }
     }
 
     @DefaultLocale(language = "en", country = "US")
@@ -445,5 +488,27 @@ class FastDatePrinterTest extends AbstractLangTest {
         assertEquals("2021", printer4DigitsFallback.format(cal));
         assertEquals("2021", printer4DigitAnotherFallback.format(cal));
         assertEquals("21", printer2Digits.format(cal));
+    }
+
+    @DefaultLocale(language = "en", country = "US")
+    @DefaultTimeZone("America/New_York")
+    @Test
+    void testWeekYearBc() {
+        final GregorianCalendar cal = new GregorianCalendar(42, Calendar.JULY, 15);
+        cal.set(Calendar.ERA, GregorianCalendar.BC);
+        assertEquals(-41, cal.getWeekYear());
+        assertEquals(new SimpleDateFormat("YYYY").format(cal.getTime()), getInstance("YYYY").format(cal));
+        assertEquals(new SimpleDateFormat("YYYYY").format(cal.getTime()), getInstance("YYYYY").format(cal));
+        assertEquals(new SimpleDateFormat("YY").format(cal.getTime()), getInstance("YY").format(cal));
+        assertEquals("-0041", getInstance("YYYY").format(cal));
+        assertEquals("-00041", getInstance("YYYYY").format(cal));
+        assertEquals("-41", getInstance("YY").format(cal));
+        // Padded to four digits like the AD case, see testWeekYear.
+        assertEquals("-0041", getInstance("YYY").format(cal));
+        assertEquals("-0041", getInstance("Y").format(cal));
+        // The week year of 1 BC is 0, which the digit rules already render.
+        final GregorianCalendar oneBc = new GregorianCalendar(1, Calendar.JULY, 15);
+        oneBc.set(Calendar.ERA, GregorianCalendar.BC);
+        assertEquals("0000", getInstance("YYYY").format(oneBc));
     }
 }

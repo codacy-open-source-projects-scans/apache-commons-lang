@@ -21,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.Duration;
@@ -113,7 +114,7 @@ class TimedSemaphoreTest extends AbstractLangTest {
         /**
          * Invokes the latch if one is set.
          *
-         * @throws InterruptedException because it is declared that way in TimedSemaphore
+         * @throws InterruptedException Thrown if a TimedSemaphore operation fails.
          */
         @Override
         public synchronized void acquire() throws InterruptedException {
@@ -133,9 +134,9 @@ class TimedSemaphoreTest extends AbstractLangTest {
         }
 
         /**
-         * Returns the number of invocations of the endOfPeriod() method.
+         * Gets the number of invocations of the endOfPeriod() method.
          *
-         * @return the endOfPeriod() invocations
+         * @return The endOfPeriod() invocations
          */
         int getPeriodEnds() {
             synchronized (this) {
@@ -198,8 +199,8 @@ class TimedSemaphoreTest extends AbstractLangTest {
     /**
      * Prepares an executor service mock to expect the start of the timer.
      *
-     * @param service the mock
-     * @param future the future
+     * @param service The mock
+     * @param future The future
      */
     private void prepareStartTimer(final ScheduledExecutorService service,
             final ScheduledFuture<?> future) {
@@ -210,7 +211,7 @@ class TimedSemaphoreTest extends AbstractLangTest {
     /**
      * Tests the acquire() method if a limit is set.
      *
-     * @throws InterruptedException so we don't have to catch it
+     * @throws InterruptedException Thrown if an operation in the test fails.
      */
     @Test
     void testAcquireLimit() throws InterruptedException {
@@ -242,7 +243,7 @@ class TimedSemaphoreTest extends AbstractLangTest {
      * semaphore a large number of times. While it runs at last one end of a
      * period should be reached.
      *
-     * @throws InterruptedException so we don't have to catch it
+     * @throws InterruptedException Thrown if an operation in the test fails.
      */
     @Test
     void testAcquireMultiplePeriods() throws InterruptedException {
@@ -263,7 +264,7 @@ class TimedSemaphoreTest extends AbstractLangTest {
      * semaphore's limit is set to 1, so in each period only a single thread can
      * acquire the semaphore.
      *
-     * @throws InterruptedException so we don't have to catch it
+     * @throws InterruptedException Thrown if an operation in the test fails.
      */
     @Test
     void testAcquireMultipleThreads() throws InterruptedException {
@@ -297,7 +298,7 @@ class TimedSemaphoreTest extends AbstractLangTest {
      * that calls the semaphore a large number of times. Even if the semaphore's
      * period does not end, the thread should never block.
      *
-     * @throws InterruptedException so we don't have to catch it
+     * @throws InterruptedException Thrown if an operation in the test fails.
      */
     @Test
     void testAcquireNoLimit() throws InterruptedException {
@@ -317,7 +318,7 @@ class TimedSemaphoreTest extends AbstractLangTest {
     /**
      * Tests whether the available non-blocking calls can be queried.
      *
-     * @throws InterruptedException so we don't have to catch it
+     * @throws InterruptedException Thrown if an operation in the test fails.
      */
     @Test
     void testGetAvailablePermits() throws InterruptedException {
@@ -338,7 +339,7 @@ class TimedSemaphoreTest extends AbstractLangTest {
     /**
      * Tests the methods for statistics.
      *
-     * @throws InterruptedException so we don't have to catch it
+     * @throws InterruptedException Thrown if an operation in the test fails.
      */
     @Test
     void testGetAverageCallsPerPeriod() throws InterruptedException {
@@ -411,7 +412,7 @@ class TimedSemaphoreTest extends AbstractLangTest {
     /**
      * Tests multiple invocations of the shutdown() method.
      *
-     * @throws InterruptedException so we don't have to catch it
+     * @throws InterruptedException Thrown if an operation in the test fails.
      */
     @Test
     void testShutdownMultipleTimes() throws InterruptedException {
@@ -458,7 +459,7 @@ class TimedSemaphoreTest extends AbstractLangTest {
      * Tests the shutdown() method for a shared executor after the task was
      * started. In this case the task must be canceled.
      *
-     * @throws InterruptedException so we don't have to catch it
+     * @throws InterruptedException Thrown if an operation in the test fails.
      */
     @Test
     void testShutdownSharedExecutorTask() throws InterruptedException {
@@ -475,9 +476,69 @@ class TimedSemaphoreTest extends AbstractLangTest {
     }
 
     /**
+     * TimedSemaphore.shutdown() must wake threads blocked in acquire().
+     *
+     * <p>
+     * Pre-patch ({@code shutdown()} sets the flag but does not call {@code notifyAll()}): a thread parked in {@code wait()} inside {@code acquire()} stays
+     * parked indefinitely — until the periodic {@code endOfPeriod()} task fires, which never happens here because we deliberately use a long period (60 s).
+     * </p>
+     *
+     * <p>
+     * Post-patch: {@code shutdown()} calls {@code notifyAll()} after setting the flag, and {@code acquire()} re-checks the flag on wake to throw
+     * {@link IllegalStateException}.
+     * </p>
+     *
+     * <p>
+     * Differences from the previous (vacuous) version of this PoC:
+     * </p>
+     * <ul>
+     * <li>Uses period = 60 s (was 1 s). With a 1-second period, the periodic {@code endOfPeriod()} task wakes the blocker on the next tick, hiding the
+     * bug.</li>
+     * <li>Asserts {@code !blocker.isAlive()} after the join. {@code Thread.join(timeout)} returns silently after the timeout regardless of whether the thread
+     * terminated, so the previous assertion ({@code assertTimeout(2s, () -> blocker.join(1500))}) was satisfied even when the blocker was still parked.</li>
+     * <li>Uses {@code assertTimeoutPreemptively} so the test framework forcibly interrupts a hanging test rather than hanging the JVM.</li>
+     * <li>Waits for the blocker to actually reach {@code Thread.State.WAITING} before calling {@code shutdown()}, removing the {@code Thread.sleep(100)}
+     * race.</li>
+     * </ul>
+     */
+    @Test
+    public void testShutdownWakesBlockedAcquireThreads() {
+        assertTimeoutPreemptively(Duration.ofSeconds(10), () -> {
+            // Period of 60s ensures endOfPeriod() does NOT fire during the test
+            // window. The only way the blocker can wake is via shutdown() calling
+            // notifyAll().
+            final TimedSemaphore sem = TimedSemaphore.builder().setPeriod(60).setTimeUnit(TimeUnit.SECONDS).setLimit(1).get();
+            sem.acquire(); // consume the only permit for this period.
+            final Thread blocker = new Thread(() -> {
+                try {
+                    sem.acquire(); // limit=1 already taken => blocks in wait().
+                } catch (final InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                } catch (final IllegalStateException e) {
+                    // Acceptable post-patch outcome: re-check of shutdown flag throws.
+                }
+            }, "testShutdownWakesBlockedAcquireThreads");
+            blocker.setDaemon(true);
+            blocker.start();
+            // Wait until blocker is parked in Object.wait() inside acquire().
+            final long parkDeadline = System.nanoTime() + Duration.ofSeconds(2).toNanos();
+            while (System.nanoTime() < parkDeadline && blocker.getState() != Thread.State.WAITING) {
+                Thread.sleep(10);
+            }
+            sem.shutdown();
+            // At HEAD (patched): blocker wakes from notifyAll(), re-checks flag,
+            // throws ISE, and terminates within milliseconds.
+            // At baseline: blocker stays in WAITING for 60s — well past this join.
+            blocker.join(5000);
+            assertFalse(blocker.isAlive(), "TimedSemaphore.shutdown() failed to wake thread blocked in acquire(): blocker still alive in state="
+                    + blocker.getState() + " 5s after shutdown(). Bug present (shutdown() does not call notifyAll()).");
+        });
+    }
+
+    /**
      * Tests starting the timer.
      *
-     * @throws InterruptedException so we don't have to catch it
+     * @throws InterruptedException Thrown if an operation in the test fails.
      */
     @Test
     void testStartTimer() throws InterruptedException {

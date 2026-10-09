@@ -1825,6 +1825,27 @@ class ArrayUtilsTest extends AbstractLangTest {
     }
 
     @Test
+    void testLastIndexOfDoubleInfinity() {
+        final double[] array = { Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Double.NEGATIVE_INFINITY };
+        assertEquals(2, ArrayUtils.lastIndexOf(array, Double.POSITIVE_INFINITY));
+        assertEquals(3, ArrayUtils.lastIndexOf(array, Double.NEGATIVE_INFINITY));
+        assertEquals(0, ArrayUtils.lastIndexOf(array, Double.POSITIVE_INFINITY, 1));
+        assertEquals(1, ArrayUtils.lastIndexOf(array, Double.NEGATIVE_INFINITY, 2));
+        assertEquals(2, ArrayUtils.lastIndexOf(array, Double.POSITIVE_INFINITY, array.length, (double) 0));
+        assertEquals(1, ArrayUtils.lastIndexOf(array, Double.NEGATIVE_INFINITY, 2, (double) 0));
+    }
+
+    @Test
+    void testLastIndexOfDoubleNaN() {
+        final double[] array = { Double.NaN, Double.NEGATIVE_INFINITY, Double.NaN, Double.POSITIVE_INFINITY };
+        assertEquals(2, ArrayUtils.lastIndexOf(array, Double.NaN));
+        assertEquals(2, ArrayUtils.lastIndexOf(array, Double.NaN, (double) 0));
+        assertEquals(0, ArrayUtils.lastIndexOf(array, Double.NaN, 1));
+        assertEquals(0, ArrayUtils.lastIndexOf(array, Double.NaN, 1, (double) 0));
+        assertEquals(-1, ArrayUtils.lastIndexOf(array, Double.NaN, -1));
+    }
+
+    @Test
     void testLastIndexOfDoubleTolerance() {
         double[] array = null;
         assertEquals(-1, ArrayUtils.lastIndexOf(array, (double) 0, (double) 0));
@@ -1882,6 +1903,23 @@ class ArrayUtilsTest extends AbstractLangTest {
         assertEquals(2, ArrayUtils.lastIndexOf(array, 2));
         assertEquals(3, ArrayUtils.lastIndexOf(array, 3));
         assertEquals(-1, ArrayUtils.lastIndexOf(array, 99));
+    }
+
+    @Test
+    void testLastIndexOfFloatInfinity() {
+        final float[] array = { Float.POSITIVE_INFINITY, Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY, Float.NEGATIVE_INFINITY };
+        assertEquals(2, ArrayUtils.lastIndexOf(array, Float.POSITIVE_INFINITY));
+        assertEquals(3, ArrayUtils.lastIndexOf(array, Float.NEGATIVE_INFINITY));
+        assertEquals(0, ArrayUtils.lastIndexOf(array, Float.POSITIVE_INFINITY, 1));
+        assertEquals(1, ArrayUtils.lastIndexOf(array, Float.NEGATIVE_INFINITY, 2));
+    }
+
+    @Test
+    void testLastIndexOfFloatNaN() {
+        final float[] array = { Float.NaN, Float.NEGATIVE_INFINITY, Float.NaN, Float.POSITIVE_INFINITY };
+        assertEquals(2, ArrayUtils.lastIndexOf(array, Float.NaN));
+        assertEquals(0, ArrayUtils.lastIndexOf(array, Float.NaN, 1));
+        assertEquals(-1, ArrayUtils.lastIndexOf(array, Float.NaN, -1));
     }
 
     @Test
@@ -2769,6 +2807,47 @@ class ArrayUtilsTest extends AbstractLangTest {
         array = null;
         ArrayUtils.reverse(array, 0, 3);
         assertNull(array);
+    }
+
+    @Test
+    void testReverseRangeEndIntMinValue() {
+        // endIndexExclusive == Integer.MIN_VALUE is an undervalue (< start index), documented as no change.
+        // The unclamped `Math.min(length, end) - 1` underflowed to Integer.MAX_VALUE and indexed out of bounds.
+        final boolean[] booleans = {true, false, true};
+        ArrayUtils.reverse(booleans, 0, Integer.MIN_VALUE);
+        assertArrayEquals(new boolean[]{true, false, true}, booleans);
+
+        final byte[] bytes = {1, 2, 3};
+        ArrayUtils.reverse(bytes, 0, Integer.MIN_VALUE);
+        assertArrayEquals(new byte[]{1, 2, 3}, bytes);
+
+        final char[] chars = {'a', 'b', 'c'};
+        ArrayUtils.reverse(chars, 0, Integer.MIN_VALUE);
+        assertArrayEquals(new char[]{'a', 'b', 'c'}, chars);
+
+        final double[] doubles = {1, 2, 3};
+        ArrayUtils.reverse(doubles, 0, Integer.MIN_VALUE);
+        assertArrayEquals(new double[]{1, 2, 3}, doubles);
+
+        final float[] floats = {1, 2, 3};
+        ArrayUtils.reverse(floats, 0, Integer.MIN_VALUE);
+        assertArrayEquals(new float[]{1, 2, 3}, floats);
+
+        final int[] ints = {1, 2, 3};
+        ArrayUtils.reverse(ints, 0, Integer.MIN_VALUE);
+        assertArrayEquals(new int[]{1, 2, 3}, ints);
+
+        final long[] longs = {1, 2, 3};
+        ArrayUtils.reverse(longs, 0, Integer.MIN_VALUE);
+        assertArrayEquals(new long[]{1, 2, 3}, longs);
+
+        final Object[] objects = {"a", "b", "c"};
+        ArrayUtils.reverse(objects, 0, Integer.MIN_VALUE);
+        assertArrayEquals(new Object[]{"a", "b", "c"}, objects);
+
+        final short[] shorts = {1, 2, 3};
+        ArrayUtils.reverse(shorts, 0, Integer.MIN_VALUE);
+        assertArrayEquals(new short[]{1, 2, 3}, shorts);
     }
 
     @Test
@@ -5584,7 +5663,7 @@ class ArrayUtilsTest extends AbstractLangTest {
         // data is 1 short for expected at the end
         System.arraycopy(sig, 0, data, 0, sig.length - 1);
         assertFalse(ArrayUtils.startsWith(data, sig));
-        // data is mimatched at the start
+        // data is mismatched at the start
         System.arraycopy(sig, 0, data, 0, sig.length);
         data[0] = 0;
         assertFalse(ArrayUtils.startsWith(data, sig));

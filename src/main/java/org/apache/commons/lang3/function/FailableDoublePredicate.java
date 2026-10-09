@@ -62,19 +62,19 @@ public interface FailableDoublePredicate<E extends Throwable> {
     /**
      * Returns a composed {@link FailableDoublePredicate} like {@link DoublePredicate#and(DoublePredicate)}.
      *
-     * @param other a predicate that will be logically-ANDed with this predicate.
-     * @return a composed {@link FailableDoublePredicate} like {@link DoublePredicate#and(DoublePredicate)}.
-     * @throws NullPointerException if other is null
+     * @param other A predicate that will be logically-ANDed with this predicate.
+     * @return A composed {@link FailableDoublePredicate} like {@link DoublePredicate#and(DoublePredicate)}.
+     * @throws NullPointerException Thrown if other is null.
      */
     default FailableDoublePredicate<E> and(final FailableDoublePredicate<E> other) {
-        Objects.requireNonNull(other);
+        Objects.requireNonNull(other, "other");
         return t -> test(t) && other.test(t);
     }
 
     /**
      * Returns a predicate that negates this predicate.
      *
-     * @return a predicate that negates this predicate.
+     * @return A predicate that negates this predicate.
      */
     default FailableDoublePredicate<E> negate() {
         return t -> !test(t);
@@ -83,19 +83,19 @@ public interface FailableDoublePredicate<E extends Throwable> {
     /**
      * Returns a composed {@link FailableDoublePredicate} like {@link DoublePredicate#and(DoublePredicate)}.
      *
-     * @param other a predicate that will be logically-ORed with this predicate.
-     * @return a composed {@link FailableDoublePredicate} like {@link DoublePredicate#and(DoublePredicate)}.
-     * @throws NullPointerException if other is null
+     * @param other A predicate that will be logically-ORed with this predicate.
+     * @return A composed {@link FailableDoublePredicate} like {@link DoublePredicate#and(DoublePredicate)}.
+     * @throws NullPointerException Thrown if other is null.
      */
     default FailableDoublePredicate<E> or(final FailableDoublePredicate<E> other) {
-        Objects.requireNonNull(other);
+        Objects.requireNonNull(other, "other");
         return t -> test(t) || other.test(t);
     }
 
     /**
      * Tests the predicate.
      *
-     * @param value the parameter for the predicate to accept.
+     * @param value The parameter for the predicate to accept.
      * @return {@code true} if the input argument matches the predicate, {@code false} otherwise.
      * @throws E Thrown when the consumer fails.
      */

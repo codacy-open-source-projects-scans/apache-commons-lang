@@ -28,6 +28,7 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
+import java.nio.CharBuffer;
 import java.util.Random;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -164,6 +165,17 @@ class CharSequenceUtilsTest extends AbstractLangTest {
             // @formatter:on
     };
 
+    private static void assertRegionMatchesParity(final String source, final boolean ignoreCase, final int toffset, final String other,
+            final int ooffset, final int len) {
+        // String is the reference: whatever the running JDK does for String, every CharSequence type must match.
+        final boolean expected = source.regionMatches(ignoreCase, toffset, other, ooffset, len);
+        final CharSequence[] sources = {source, new StringBuilder(source), new StringBuffer(source), CharBuffer.wrap(source)};
+        for (final CharSequence cs : sources) {
+            assertEquals(expected, CharSequenceUtils.regionMatches(cs, ignoreCase, toffset, other, ooffset, len),
+                    cs.getClass().getSimpleName() + " differs from String for " + source + " vs " + other);
+        }
+    }
+
     static Stream<Arguments> lastIndexWithStandardCharSequence() {
         // @formatter:off
         return Stream.of(
@@ -192,6 +204,58 @@ class CharSequenceUtilsTest extends AbstractLangTest {
     @MethodSource("lastIndexWithStandardCharSequence")
     void testLastIndexOfWithDifferentCharSequences(final CharSequence cs, final CharSequence search, final int start, final int expected) {
         assertEquals(expected, CharSequenceUtils.lastIndexOf(cs, search, start));
+    }
+
+    /**
+     * Tests that the direct-scan fallback in {@link CharSequenceUtils#indexOf(CharSequence, CharSequence, int)} (taken by CharSequence
+     * types without a dedicated dispatch branch, such as {@code org.apache.commons.lang3.text.StrBuilder}) matches
+     * {@link String#indexOf(String, int)} semantics exactly and never materializes the searched sequence via {@code toString()}.
+     */
+    @Test
+    void testNewIndexOf() {
+        testNewIndexOfSingle("808087847-1321060740-635567660180086727-925755305", "-1321060740-635567660");
+        testNewIndexOfSingle("", "");
+        testNewIndexOfSingle("1", "");
+        testNewIndexOfSingle("", "1");
+        testNewIndexOfSingle("1", "1");
+        testNewIndexOfSingle("11", "1");
+        testNewIndexOfSingle("1", "11");
+        testNewIndexOfSingle("apache", "a");
+        testNewIndexOfSingle("apache", "p");
+        testNewIndexOfSingle("apache", "e");
+        testNewIndexOfSingle("apache", "x");
+        testNewIndexOfSingle("oraoraoraora", "r");
+        testNewIndexOfSingle("mudamudamudamuda", "d");
+        testNewIndexOfSingle("junk-ststarting", "starting");
+        // The searched sequence must not be copied by the fallback.
+        final CharSequence noToString = new WrapperString("hello world") {
+            @Override
+            public String toString() {
+                throw new AssertionError("cs.toString() must not be called by indexOf");
+            }
+        };
+        assertEquals(6, CharSequenceUtils.indexOf(noToString, "world", 0));
+        assertEquals(-1, CharSequenceUtils.indexOf(noToString, "worlds", 0));
+    }
+
+    private void testNewIndexOfSingle(final CharSequence a, final CharSequence b) {
+        final int maxa = Math.max(a.length(), b.length());
+        for (int i = -maxa - 10; i <= maxa + 10; i++) {
+            testNewIndexOfSingle(a, b, i);
+        }
+        testNewIndexOfSingle(a, b, Integer.MIN_VALUE);
+        testNewIndexOfSingle(a, b, Integer.MAX_VALUE);
+    }
+
+    private void testNewIndexOfSingle(final CharSequence a, final CharSequence b, final int start) {
+        testNewIndexOfSingleSingle(a, b, start);
+        testNewIndexOfSingleSingle(b, a, start);
+    }
+
+    private void testNewIndexOfSingleSingle(final CharSequence a, final CharSequence b, final int start) {
+        assertEquals(a.toString().indexOf(b.toString(), start),
+                CharSequenceUtils.indexOf(new WrapperString(a.toString()), new WrapperString(b.toString()), start),
+                "testNewIndexOf fails! original : " + a + " seg : " + b + " start : " + start);
     }
 
     @Test
@@ -274,6 +338,22 @@ class CharSequenceUtilsTest extends AbstractLangTest {
                 }
             }.run(data, "CSNonString");
         }
+    }
+
+    /**
+     * A supplementary code point split across a surrogate pair must fold the same way for every {@link CharSequence}
+     * type that it does for {@link String} on the running JDK. {@link String#regionMatches(boolean, int, String, int, int)}
+     * only folds such a code point from Java 9 on, so these rows are checked against {@link String} itself rather than a
+     * fixed result: {@link String}, {@link StringBuilder}, {@link StringBuffer} and {@link CharBuffer} all have to agree.
+     * Deseret CAPITAL LONG I (U+10400) folds to SMALL LONG I (U+10428).
+     */
+    @Test
+    void testRegionMatchesSupplementaryCaseFold() {
+        assertRegionMatchesParity("\uD801\uDC00", true, 0, "\uD801\uDC28", 0, 2);
+        assertRegionMatchesParity("\uD801\uDC00", false, 0, "\uD801\uDC28", 0, 2);
+        assertRegionMatchesParity("\uD801\uDC28", true, 0, "\uD801\uDC00", 0, 2);
+        assertRegionMatchesParity("x\uD801\uDC00", true, 1, "\uD801\uDC28", 0, 2);
+        assertRegionMatchesParity("\uD801\uDC00", true, 0, "\uD801\uDC29", 0, 2);
     }
 
     @Test

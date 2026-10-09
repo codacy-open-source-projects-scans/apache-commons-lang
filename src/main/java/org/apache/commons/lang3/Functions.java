@@ -78,7 +78,9 @@ public class Functions {
     /**
      * A functional interface like {@link BiConsumer} that declares a {@link Throwable}.
      *
-     * <p>TODO for 4.0: Move to org.apache.commons.lang3.function.</p>
+     * <p>
+     * TODO for 4.0: Move to org.apache.commons.lang3.function.
+     * </p>
      *
      * @param <O1> Consumed type 1.
      * @param <O2> Consumed type 2.
@@ -92,8 +94,8 @@ public class Functions {
         /**
          * Accepts the consumer.
          *
-         * @param object1 the first parameter for the consumable to accept
-         * @param object2 the second parameter for the consumable to accept
+         * @param object1 The first parameter for the consumable to accept
+         * @param object2 The second parameter for the consumable to accept
          * @throws T Thrown when the consumer fails.
          */
         void accept(O1 object1, O2 object2) throws T;
@@ -102,7 +104,9 @@ public class Functions {
     /**
      * A functional interface like {@link BiFunction} that declares a {@link Throwable}.
      *
-     * <p>TODO for 4.0: Move to org.apache.commons.lang3.function.</p>
+     * <p>
+     * TODO for 4.0: Move to org.apache.commons.lang3.function.
+     * </p>
      *
      * @param <O1> Input type 1.
      * @param <O2> Input type 2.
@@ -117,9 +121,9 @@ public class Functions {
         /**
          * Applies this function.
          *
-         * @param input1 the first input for the function
-         * @param input2 the second input for the function
-         * @return the result of the function
+         * @param input1 The first input for the function
+         * @param input2 The second input for the function
+         * @return The result of the function
          * @throws T Thrown when the function fails.
          */
         R apply(O1 input1, O2 input2) throws T;
@@ -128,7 +132,9 @@ public class Functions {
     /**
      * A functional interface like {@link BiPredicate} that declares a {@link Throwable}.
      *
-     * <p>TODO for 4.0: Move to org.apache.commons.lang3.function.</p>
+     * <p>
+     * TODO for 4.0: Move to org.apache.commons.lang3.function.
+     * </p>
      *
      * @param <O1> Predicate type 1.
      * @param <O2> Predicate type 2.
@@ -142,10 +148,10 @@ public class Functions {
         /**
          * Tests the predicate.
          *
-         * @param object1 the first object to test the predicate on
-         * @param object2 the second object to test the predicate on
-         * @return the predicate's evaluation
-         * @throws T if the predicate fails
+         * @param object1 The first object to test the predicate on
+         * @param object2 The second object to test the predicate on
+         * @return The predicate's evaluation
+         * @throws T Thrown if the predicate fails.
          */
         boolean test(O1 object1, O2 object2) throws T;
     }
@@ -153,7 +159,9 @@ public class Functions {
     /**
      * A functional interface like {@link java.util.concurrent.Callable} that declares a {@link Throwable}.
      *
-     * <p>TODO for 4.0: Move to org.apache.commons.lang3.function.</p>
+     * <p>
+     * TODO for 4.0: Move to org.apache.commons.lang3.function.
+     * </p>
      *
      * @param <R> Return type.
      * @param <T> Thrown exception.
@@ -167,7 +175,7 @@ public class Functions {
          * Calls the callable.
          *
          * @return The value returned from the callable
-         * @throws T if the callable fails
+         * @throws T Thrown if the callable fails.
          */
         R call() throws T;
     }
@@ -175,7 +183,9 @@ public class Functions {
     /**
      * A functional interface like {@link Consumer} that declares a {@link Throwable}.
      *
-     * <p>TODO for 4.0: Move to org.apache.commons.lang3.function.</p>
+     * <p>
+     * TODO for 4.0: Move to org.apache.commons.lang3.function.
+     * </p>
      *
      * @param <O> Consumed type 1.
      * @param <T> Thrown exception.
@@ -188,7 +198,7 @@ public class Functions {
         /**
          * Accepts the consumer.
          *
-         * @param object the parameter for the consumable to accept
+         * @param object The parameter for the consumable to accept
          * @throws T Thrown when the consumer fails.
          */
         void accept(O object) throws T;
@@ -197,7 +207,9 @@ public class Functions {
     /**
      * A functional interface like {@link Function} that declares a {@link Throwable}.
      *
-     * <p>TODO for 4.0: Move to org.apache.commons.lang3.function.</p>
+     * <p>
+     * TODO for 4.0: Move to org.apache.commons.lang3.function.
+     * </p>
      *
      * @param <I> Input type 1.
      * @param <R> Return type.
@@ -211,8 +223,8 @@ public class Functions {
         /**
          * Applies this function.
          *
-         * @param input the input for the function
-         * @return the result of the function
+         * @param input The input for the function
+         * @return The result of the function
          * @throws T Thrown when the function fails.
          */
         R apply(I input) throws T;
@@ -221,7 +233,9 @@ public class Functions {
     /**
      * A functional interface like {@link Predicate} that declares a {@link Throwable}.
      *
-     * <p>TODO for 4.0: Move to org.apache.commons.lang3.function.</p>
+     * <p>
+     * TODO for 4.0: Move to org.apache.commons.lang3.function.
+     * </p>
      *
      * @param <I> Predicate type 1.
      * @param <T> Thrown exception.
@@ -234,9 +248,9 @@ public class Functions {
         /**
          * Tests the predicate.
          *
-         * @param object the object to test the predicate on
-         * @return the predicate's evaluation
-         * @throws T if the predicate fails
+         * @param object The object to test the predicate on
+         * @return The predicate's evaluation
+         * @throws T Thrown if the predicate fails.
          */
         boolean test(I object) throws T;
     }
@@ -244,7 +258,9 @@ public class Functions {
     /**
      * A functional interface like {@link Runnable} that declares a {@link Throwable}.
      *
-     * <p>TODO for 4.0: Move to org.apache.commons.lang3.function.</p>
+     * <p>
+     * TODO for 4.0: Move to org.apache.commons.lang3.function.
+     * </p>
      *
      * @param <T> Thrown exception.
      * @deprecated Use {@link org.apache.commons.lang3.function.FailableRunnable}.
@@ -264,7 +280,9 @@ public class Functions {
     /**
      * A functional interface like {@link Supplier} that declares a {@link Throwable}.
      *
-     * <p>TODO for 4.0: Move to org.apache.commons.lang3.function.</p>
+     * <p>
+     * TODO for 4.0: Move to org.apache.commons.lang3.function.
+     * </p>
      *
      * @param <R> Return type.
      * @param <T> Thrown exception.
@@ -275,10 +293,10 @@ public class Functions {
     public interface FailableSupplier<R, T extends Throwable> {
 
         /**
-         * Supplies an object
+         * Gets an object.
          *
-         * @return a result
-         * @throws T if the supplier fails
+         * @return A result
+         * @throws T Thrown if the supplier fails.
          */
         R get() throws T;
     }
@@ -286,12 +304,12 @@ public class Functions {
     /**
      * Consumes a consumer and rethrows any exception as a {@link RuntimeException}.
      *
-     * @param consumer the consumer to consume
-     * @param object1 the first object to consume by {@code consumer}
-     * @param object2 the second object to consume by {@code consumer}
+     * @param consumer The consumer to consume
+     * @param object1 The first object to consume by {@code consumer}
+     * @param object2 The second object to consume by {@code consumer}
      * @param <O1> the type of the first argument the consumer accepts
      * @param <O2> the type of the second argument the consumer accepts
-     * @param <T> the type of checked exception the consumer may throw
+     * @param <T> The type of checked exception the consumer may throw
      */
     public static <O1, O2, T extends Throwable> void accept(final FailableBiConsumer<O1, O2, T> consumer,
         final O1 object1, final O2 object2) {
@@ -301,10 +319,10 @@ public class Functions {
     /**
      * Consumes a consumer and rethrows any exception as a {@link RuntimeException}.
      *
-     * @param consumer the consumer to consume
-     * @param object the object to consume by {@code consumer}
-     * @param <O> the type the consumer accepts
-     * @param <T> the type of checked exception the consumer may throw
+     * @param consumer The consumer to consume
+     * @param object The object to consume by {@code consumer}
+     * @param <O> The type the consumer accepts
+     * @param <T> The type of checked exception the consumer may throw
      */
     public static <O, T extends Throwable> void accept(final FailableConsumer<O, T> consumer, final O object) {
         run(() -> consumer.accept(object));
@@ -313,14 +331,14 @@ public class Functions {
     /**
      * Applies a function and rethrows any exception as a {@link RuntimeException}.
      *
-     * @param function the function to apply
-     * @param input1 the first input to apply {@code function} on
-     * @param input2 the second input to apply {@code function} on
+     * @param function The function to apply
+     * @param input1 The first input to apply {@code function} on
+     * @param input2 The second input to apply {@code function} on
      * @param <O1> the type of the first argument the function accepts
      * @param <O2> the type of the second argument the function accepts
-     * @param <O> the return type of the function
-     * @param <T> the type of checked exception the function may throw
-     * @return the value returned from the function
+     * @param <O> The return type of the function
+     * @param <T> The type of checked exception the function may throw
+     * @return The value returned from the function
      */
     public static <O1, O2, O, T extends Throwable> O apply(final FailableBiFunction<O1, O2, O, T> function,
         final O1 input1, final O2 input2) {
@@ -330,12 +348,12 @@ public class Functions {
     /**
      * Applies a function and rethrows any exception as a {@link RuntimeException}.
      *
-     * @param function the function to apply
-     * @param input the input to apply {@code function} on
-     * @param <I> the type of the argument the function accepts
-     * @param <O> the return type of the function
-     * @param <T> the type of checked exception the function may throw
-     * @return the value returned from the function
+     * @param function The function to apply
+     * @param input The input to apply {@code function} on
+     * @param <I> The type of the argument the function accepts
+     * @param <O> The return type of the function
+     * @param <T> The type of checked exception the function may throw
+     * @return The value returned from the function
      */
     public static <I, O, T extends Throwable> O apply(final FailableFunction<I, O, T> function, final I input) {
         return get(() -> function.apply(input));
@@ -346,8 +364,8 @@ public class Functions {
      *
      * @param <O1> the type of the first argument of the consumers
      * @param <O2> the type of the second argument of the consumers
-     * @param consumer a failable {@link BiConsumer}
-     * @return a standard {@link BiConsumer}
+     * @param consumer A failable {@link BiConsumer}
+     * @return A standard {@link BiConsumer}
      * @since 3.10
      */
     public static <O1, O2> BiConsumer<O1, O2> asBiConsumer(final FailableBiConsumer<O1, O2, ?> consumer) {
@@ -359,9 +377,9 @@ public class Functions {
      *
      * @param <O1> the type of the first argument of the input of the functions
      * @param <O2> the type of the second argument of the input of the functions
-     * @param <O> the type of the output of the functions
-     * @param function a {@link FailableBiFunction}
-     * @return a standard {@link BiFunction}
+     * @param <O> The type of the output of the functions
+     * @param function A {@link FailableBiFunction}
+     * @return A standard {@link BiFunction}
      * @since 3.10
      */
     public static <O1, O2, O> BiFunction<O1, O2, O> asBiFunction(final FailableBiFunction<O1, O2, O, ?> function) {
@@ -373,8 +391,8 @@ public class Functions {
      *
      * @param <O1> the type of the first argument used by the predicates
      * @param <O2> the type of the second argument used by the predicates
-     * @param predicate a {@link FailableBiPredicate}
-     * @return a standard {@link BiPredicate}
+     * @param predicate A {@link FailableBiPredicate}
+     * @return A standard {@link BiPredicate}
      * @since 3.10
      */
     public static <O1, O2> BiPredicate<O1, O2> asBiPredicate(final FailableBiPredicate<O1, O2, ?> predicate) {
@@ -384,9 +402,9 @@ public class Functions {
     /**
      * Converts the given {@link FailableCallable} into a standard {@link Callable}.
      *
-     * @param <O> the type used by the callables
-     * @param callable a {@link FailableCallable}
-     * @return a standard {@link Callable}
+     * @param <O> The type used by the callables
+     * @param callable A {@link FailableCallable}
+     * @return A standard {@link Callable}
      * @since 3.10
      */
     public static <O> Callable<O> asCallable(final FailableCallable<O, ?> callable) {
@@ -396,9 +414,9 @@ public class Functions {
     /**
      * Converts the given {@link FailableConsumer} into a standard {@link Consumer}.
      *
-     * @param <I> the type used by the consumers
-     * @param consumer a {@link FailableConsumer}
-     * @return a standard {@link Consumer}
+     * @param <I> The type used by the consumers
+     * @param consumer A {@link FailableConsumer}
+     * @return A standard {@link Consumer}
      * @since 3.10
      */
     public static <I> Consumer<I> asConsumer(final FailableConsumer<I, ?> consumer) {
@@ -408,10 +426,10 @@ public class Functions {
     /**
      * Converts the given {@link FailableFunction} into a standard {@link Function}.
      *
-     * @param <I> the type of the input of the functions
-     * @param <O> the type of the output of the functions
-     * @param function a {code FailableFunction}
-     * @return a standard {@link Function}
+     * @param <I> The type of the input of the functions
+     * @param <O> The type of the output of the functions
+     * @param function A {code FailableFunction}
+     * @return A standard {@link Function}
      * @since 3.10
      */
     public static <I, O> Function<I, O> asFunction(final FailableFunction<I, O, ?> function) {
@@ -421,9 +439,9 @@ public class Functions {
     /**
      * Converts the given {@link FailablePredicate} into a standard {@link Predicate}.
      *
-     * @param <I> the type used by the predicates
-     * @param predicate a {@link FailablePredicate}
-     * @return a standard {@link Predicate}
+     * @param <I> The type used by the predicates
+     * @param predicate A {@link FailablePredicate}
+     * @return A standard {@link Predicate}
      * @since 3.10
      */
     public static <I> Predicate<I> asPredicate(final FailablePredicate<I, ?> predicate) {
@@ -433,8 +451,8 @@ public class Functions {
     /**
      * Converts the given {@link FailableRunnable} into a standard {@link Runnable}.
      *
-     * @param runnable a {@link FailableRunnable}
-     * @return a standard {@link Runnable}
+     * @param runnable A {@link FailableRunnable}
+     * @return A standard {@link Runnable}
      * @since 3.10
      */
     public static Runnable asRunnable(final FailableRunnable<?> runnable) {
@@ -444,9 +462,9 @@ public class Functions {
     /**
      * Converts the given {@link FailableSupplier} into a standard {@link Supplier}.
      *
-     * @param <O> the type supplied by the suppliers
-     * @param supplier a {@link FailableSupplier}
-     * @return a standard {@link Supplier}
+     * @param <O> The type supplied by the suppliers
+     * @param supplier A {@link FailableSupplier}
+     * @return A standard {@link Supplier}
      * @since 3.10
      */
     public static <O> Supplier<O> asSupplier(final FailableSupplier<O, ?> supplier) {
@@ -456,20 +474,20 @@ public class Functions {
     /**
      * Calls a callable and rethrows any exception as a {@link RuntimeException}.
      *
-     * @param callable the callable to call
-     * @param <O> the return type of the callable
-     * @param <T> the type of checked exception the callable may throw
-     * @return the value returned from the callable
+     * @param callable The callable to call
+     * @param <O> The return type of the callable
+     * @param <T> The type of checked exception the callable may throw
+     * @return The value returned from the callable
      */
     public static <O, T extends Throwable> O call(final FailableCallable<O, T> callable) {
         return get(callable::call);
     }
 
     /**
-     * Invokes a supplier, and returns the result.
+     * Gets the result of invoking the supplier.
      *
      * @param supplier The supplier to invoke.
-     * @param <O> The suppliers output type.
+     * @param <O> The supplier's output type.
      * @param <T> The type of checked exception, which the supplier can throw.
      * @return The object, which has been created by the supplier
      * @since 3.10
@@ -483,7 +501,7 @@ public class Functions {
     }
 
     /**
-     * Invokes a boolean supplier, and returns the result.
+     * Gets the result of invoking the boolean supplier.
      *
      * @param supplier The boolean supplier to invoke.
      * @param <T> The type of checked exception, which the supplier can throw.
@@ -534,7 +552,7 @@ public class Functions {
      * Runs a runnable and rethrows any exception as a {@link RuntimeException}.
      *
      * @param runnable The runnable to run
-     * @param <T> the type of checked exception the runnable may throw
+     * @param <T> The type of checked exception the runnable may throw
      */
     public static <T extends Throwable> void run(final FailableRunnable<T> runnable) {
         try {
@@ -578,13 +596,13 @@ public class Functions {
     /**
      * Tests a predicate and rethrows any exception as a {@link RuntimeException}.
      *
-     * @param predicate the predicate to test
-     * @param object1 the first input to test by {@code predicate}
-     * @param object2 the second input to test by {@code predicate}
+     * @param predicate The predicate to test
+     * @param object1 The first input to test by {@code predicate}
+     * @param object2 The second input to test by {@code predicate}
      * @param <O1> the type of the first argument the predicate tests
      * @param <O2> the type of the second argument the predicate tests
-     * @param <T> the type of checked exception the predicate may throw
-     * @return the boolean value returned by the predicate
+     * @param <T> The type of checked exception the predicate may throw
+     * @return The boolean value returned by the predicate
      */
     public static <O1, O2, T extends Throwable> boolean test(final FailableBiPredicate<O1, O2, T> predicate,
         final O1 object1, final O2 object2) {
@@ -594,11 +612,11 @@ public class Functions {
     /**
      * Tests a predicate and rethrows any exception as a {@link RuntimeException}.
      *
-     * @param predicate the predicate to test
-     * @param object the input to test by {@code predicate}
-     * @param <O> the type of argument the predicate tests
-     * @param <T> the type of checked exception the predicate may throw
-     * @return the boolean value returned by the predicate
+     * @param predicate The predicate to test
+     * @param object The input to test by {@code predicate}
+     * @param <O> The type of argument the predicate tests
+     * @param <T> The type of checked exception the predicate may throw
+     * @return The boolean value returned by the predicate
      */
     public static <O, T extends Throwable> boolean test(final FailablePredicate<O, T> predicate, final O object) {
         return getAsBoolean(() -> predicate.test(object));

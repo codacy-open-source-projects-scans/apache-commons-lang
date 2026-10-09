@@ -96,10 +96,10 @@ public class DefaultExceptionContext implements ExceptionContext, Serializable {
     }
 
     /**
-     * Builds the message containing the contextual information.
+     * Gets the message containing the contextual information.
      *
-     * @param baseMessage  the base exception message <strong>without</strong> context information appended
-     * @return the exception message <strong>with</strong> context information appended, never null
+     * @param baseMessage  The base exception message <strong>without</strong> context information appended
+     * @return The exception message <strong>with</strong> context information appended, never null
      */
     @Override
     public String getFormattedExceptionMessage(final String baseMessage) {

@@ -39,8 +39,8 @@ class ConstantInitializerTest extends AbstractLangTest {
     /**
      * Helper method for testing equals() and hashCode().
      *
-     * @param obj the object to compare with the test instance
-     * @param expected the expected result
+     * @param obj The object to compare with the test instance
+     * @param expected The expected result
      */
     private void checkEquals(final Object obj, final boolean expected) {
         assertEquals(expected, init.equals(obj), "Wrong result of equals");
@@ -96,7 +96,7 @@ class ConstantInitializerTest extends AbstractLangTest {
     /**
      * Tests whether get() returns the correct object.
      *
-     * @throws org.apache.commons.lang3.concurrent.ConcurrentException so we don't have to catch it
+     * @throws org.apache.commons.lang3.concurrent.ConcurrentException Thrown if an operation in the test fails.
      */
     @Test
     void testGet() throws ConcurrentException {

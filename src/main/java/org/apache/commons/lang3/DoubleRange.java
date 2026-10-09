@@ -41,9 +41,10 @@ public final class DoubleRange extends NumberRange<Double> {
      * The arguments may be passed in the order (min, max) or (max,min). The getMinimum and getMaximum methods will return the correct values.
      * </p>
      *
-     * @param fromInclusive the first value that defines the edge of the range, inclusive.
-     * @param toInclusive the second value that defines the edge of the range, inclusive.
-     * @return the range object, not null.
+     * @param fromInclusive The first value that defines the edge of the range, inclusive.
+     * @param toInclusive The second value that defines the edge of the range, inclusive.
+     * @return The range object, not null.
+     * @throws IllegalArgumentException Thrown if either value is NaN.
      */
     public static DoubleRange of(final double fromInclusive, final double toInclusive) {
         return of(Double.valueOf(fromInclusive), Double.valueOf(toInclusive));
@@ -60,10 +61,11 @@ public final class DoubleRange extends NumberRange<Double> {
      * The arguments may be passed in the order (min, max) or (max,min). The getMinimum and getMaximum methods will return the correct values.
      * </p>
      *
-     * @param fromInclusive the first value that defines the edge of the range, inclusive.
-     * @param toInclusive the second value that defines the edge of the range, inclusive.
-     * @return the range object, not null.
-     * @throws NullPointerException if either element is null.
+     * @param fromInclusive The first value that defines the edge of the range, inclusive.
+     * @param toInclusive The second value that defines the edge of the range, inclusive.
+     * @return The range object, not null.
+     * @throws NullPointerException Thrown if either element is null.
+     * @throws IllegalArgumentException Thrown if either element is NaN.
      */
     public static DoubleRange of(final Double fromInclusive, final Double toInclusive) {
         return new DoubleRange(fromInclusive, toInclusive);
@@ -72,10 +74,11 @@ public final class DoubleRange extends NumberRange<Double> {
     /**
      * Creates an instance.
      *
-     * @param number1 the first element, not null.
-     * @param number2 the second element, not null.
-     * @throws NullPointerException when element1 is null.
-     * @throws NullPointerException when element2 is null.
+     * @param number1 The first element, not null.
+     * @param number2 The second element, not null.
+     * @throws NullPointerException Thrown when element1 is null.
+     * @throws NullPointerException Thrown when element2 is null.
+     * @throws IllegalArgumentException Thrown when element1 or element2 is NaN.
      */
     private DoubleRange(final Double number1, final Double number2) {
         super(number1, number2, null);
@@ -98,8 +101,8 @@ public final class DoubleRange extends NumberRange<Double> {
      * range.fit(99) -->  64
      * }</pre>
      *
-     * @param element the element to test.
-     * @return the minimum, the element, or the maximum depending on the element's location relative to the range.
+     * @param element The element to test.
+     * @return The minimum, the element, or the maximum depending on the element's location relative to the range.
      * @since 3.19.0
      */
     public double fit(final double element) {

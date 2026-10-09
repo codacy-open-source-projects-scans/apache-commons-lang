@@ -27,7 +27,7 @@ import org.apache.commons.lang3.function.FailableSupplier;
 /**
  * Abstracts and defines operations for {@link ConcurrentInitializer} implementations.
  *
- * @param <T> the type of the object managed by this initializer class.
+ * @param <T> The type of the object managed by this initializer class.
  * @param <E> The exception type thrown by {@link #initialize()}.
  * @since 3.14.0
  */
@@ -64,7 +64,7 @@ public abstract class AbstractConcurrentInitializer<T, E extends Exception> impl
         /**
          * Gets the closer consumer called by {@link #close()}.
          *
-         * @return the closer consumer called by {@link #close()}.
+         * @return The closer consumer called by {@link #close()}.
          */
         public FailableConsumer<T, ? extends Exception> getCloser() {
             return closer;
@@ -73,7 +73,7 @@ public abstract class AbstractConcurrentInitializer<T, E extends Exception> impl
         /**
          * Gets the initializer supplier called by {@link #initialize()}.
          *
-         * @return the initializer supplier called by {@link #initialize()}.
+         * @return The initializer supplier called by {@link #initialize()}.
          */
         public FailableSupplier<T, ? extends Exception> getInitializer() {
             return initializer;
@@ -82,7 +82,7 @@ public abstract class AbstractConcurrentInitializer<T, E extends Exception> impl
         /**
          * Sets the closer consumer called by {@link #close()}.
          *
-         * @param closer the consumer called by {@link #close()}.
+         * @param closer The consumer called by {@link #close()}.
          * @return {@code this} instance.
          */
         public B setCloser(final FailableConsumer<T, ? extends Exception> closer) {
@@ -93,7 +93,7 @@ public abstract class AbstractConcurrentInitializer<T, E extends Exception> impl
         /**
          * Sets the initializer supplier called by {@link #initialize()}.
          *
-         * @param initializer the supplier called by {@link #initialize()}.
+         * @param initializer The supplier called by {@link #initialize()}.
          * @return {@code this} instance.
          */
         public B setInitializer(final FailableSupplier<T, ? extends Exception> initializer) {
@@ -123,8 +123,8 @@ public abstract class AbstractConcurrentInitializer<T, E extends Exception> impl
     /**
      * Constructs a new instance.
      *
-     * @param initializer the initializer supplier called by {@link #initialize()}.
-     * @param closer the closer consumer called by {@link #close()}.
+     * @param initializer The initializer supplier called by {@link #initialize()}.
+     * @param closer The closer consumer called by {@link #close()}.
      */
     AbstractConcurrentInitializer(final FailableSupplier<? extends T, ? extends Exception> initializer, final FailableConsumer<? super T, ? extends Exception> closer) {
         this.closer = Objects.requireNonNull(closer, "closer");
@@ -158,7 +158,7 @@ public abstract class AbstractConcurrentInitializer<T, E extends Exception> impl
      * Gets an Exception with a type of E as defined by a concrete subclass of this class.
      *
      * @param e The actual exception that was thrown.
-     * @return a new exception with the actual type of E, that wraps e.
+     * @return A new exception with the actual type of E, that wraps e.
      */
     protected abstract E getTypedException(Exception e);
 
@@ -170,8 +170,8 @@ public abstract class AbstractConcurrentInitializer<T, E extends Exception> impl
      * Subclasses and clients that do not provide an initializer are expected to implement this method.
      * </p>
      *
-     * @return the managed data object.
-     * @throws E if an error occurs during object creation.
+     * @return The managed data object.
+     * @throws E Thrown if an error occurs during object creation.
      */
     @SuppressWarnings("unchecked")
     protected T initialize() throws E {

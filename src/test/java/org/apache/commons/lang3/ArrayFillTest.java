@@ -31,6 +31,60 @@ import org.junit.jupiter.api.Test;
 class ArrayFillTest extends AbstractLangTest {
 
     @Test
+    void testClearByteArray() {
+        final byte[] array = new byte[3];
+        final byte val = 0;
+        final byte[] actual = ArrayFill.clear(array);
+        assertSame(array, actual);
+        for (final byte v : actual) {
+            assertEquals(val, v);
+        }
+    }
+
+    @Test
+    void testClearByteArrayNull() {
+        final byte[] array = null;
+        final byte[] actual = ArrayFill.clear(array);
+        assertSame(array, actual);
+    }
+
+    @Test
+    void testClearCharArray() {
+        final char[] array = new char[3];
+        final char val = 0;
+        final char[] actual = ArrayFill.clear(array);
+        assertSame(array, actual);
+        for (final char v : actual) {
+            assertEquals(val, v);
+        }
+    }
+
+    @Test
+    void testClearCharArrayNull() {
+        final char[] array = null;
+        final char[] actual = ArrayFill.clear(array);
+        assertSame(array, actual);
+    }
+
+    @Test
+    void testClearCharArrayRange() {
+        final char[] array = {'A', 'B', 'C', 'D', 'E'};
+        final char[] actual = ArrayFill.clear(array, 1, 4);
+        assertSame(array, actual);
+        assertEquals('A', actual[0]);
+        assertEquals('\0', actual[1]);
+        assertEquals('\0', actual[2]);
+        assertEquals('\0', actual[3]);
+        assertEquals('E', actual[4]);
+    }
+
+    @Test
+    void testClearCharArrayRangeNull() {
+        final char[] actual = ArrayFill.clear(null, 0, 0);
+        assertNull(actual);
+    }
+
+    @Test
     void testFillBooleanArray() {
         final boolean[] array = new boolean[3];
         final boolean val = true;
@@ -85,6 +139,33 @@ class ArrayFillTest extends AbstractLangTest {
         final char val = 1;
         final char[] actual = ArrayFill.fill(array, val);
         assertSame(array, actual);
+    }
+
+    @Test
+    void testFillCharArrayRange() {
+        final char[] array = {'A', 'B', 'C', 'D', 'E'};
+        final char val = 'Z';
+        final char[] actual = ArrayFill.fill(array, 1, 4, val);
+        assertSame(array, actual);
+        assertEquals('A', actual[0]);
+        assertEquals('Z', actual[1]);
+        assertEquals('Z', actual[2]);
+        assertEquals('Z', actual[3]);
+        assertEquals('E', actual[4]);
+    }
+
+    @Test
+    void testFillCharArrayRangeEmpty() {
+        final char[] array = {'A', 'B', 'C'};
+        final char[] actual = ArrayFill.fill(array, 1, 1, 'Z');
+        assertSame(array, actual);
+        assertArrayEquals(new char[] {'A', 'B', 'C'}, actual);
+    }
+
+    @Test
+    void testFillCharArrayRangeNull() {
+        final char[] actual = ArrayFill.fill(null, 0, 0, 'Z');
+        assertNull(actual);
     }
 
     @Test

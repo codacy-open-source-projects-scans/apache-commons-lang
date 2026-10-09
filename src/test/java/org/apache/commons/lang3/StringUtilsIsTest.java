@@ -72,6 +72,19 @@ class StringUtilsIsTest extends AbstractLangTest {
     }
 
     @Test
+    void testIsAlphanumericSpaceSupplementary() {
+        // a supplementary letter and digit separated by a space
+        assertTrue(StringUtils.isAlphanumericSpace(new String(Character.toChars(0x10400)) + " " + new String(Character.toChars(0x1D7CE))));
+    }
+
+    @Test
+    void testIsAlphanumericSupplementary() {
+        // both a supplementary letter and a supplementary digit are alphanumeric
+        assertTrue(StringUtils.isAlphanumeric(new String(Character.toChars(0x10400))));
+        assertTrue(StringUtils.isAlphanumeric(new String(Character.toChars(0x1D7CE))));
+    }
+
+    @Test
     void testIsAlphaspace() {
         assertFalse(StringUtils.isAlphaSpace(null));
         assertTrue(StringUtils.isAlphaSpace(""));
@@ -84,6 +97,22 @@ class StringUtilsIsTest extends AbstractLangTest {
         assertFalse(StringUtils.isAlphaSpace("hkHKHik6iUGHKJgU7tUJgKJGI87GIkug"));
         assertFalse(StringUtils.isAlphaSpace("_"));
         assertFalse(StringUtils.isAlphaSpace("hkHKHik*khbkuh"));
+    }
+
+    @Test
+    void testIsAlphaSpaceSupplementary() {
+        // a supplementary letter plus a space stays alpha-space
+        assertTrue(StringUtils.isAlphaSpace(new String(Character.toChars(0x10400)) + " a"));
+        // a supplementary digit is not a letter
+        assertFalse(StringUtils.isAlphaSpace(new String(Character.toChars(0x1D7CE))));
+    }
+
+    @Test
+    void testIsAlphaSupplementary() {
+        // U+10400 DESERET CAPITAL LETTER LONG I is a supplementary Unicode letter
+        assertTrue(StringUtils.isAlpha(new String(Character.toChars(0x10400))));
+        // U+1D7CE MATHEMATICAL BOLD DIGIT ZERO is a supplementary digit, not a letter
+        assertFalse(StringUtils.isAlpha(new String(Character.toChars(0x1D7CE))));
     }
 
     @Test
@@ -152,6 +181,22 @@ class StringUtilsIsTest extends AbstractLangTest {
         assertFalse(StringUtils.isNumericSpace("hkHKHik6iUGHKJgU7tUJgKJGI87GIkug"));
         assertFalse(StringUtils.isNumericSpace("_"));
         assertFalse(StringUtils.isNumericSpace("hkHKHik*khbkuh"));
+    }
+
+    @Test
+    void testIsNumericSpaceSupplementary() {
+        // two supplementary digits separated by a space
+        assertTrue(StringUtils.isNumericSpace(new String(Character.toChars(0x1D7CE)) + " " + new String(Character.toChars(0x1D7CE))));
+        // a supplementary letter is not a digit
+        assertFalse(StringUtils.isNumericSpace(new String(Character.toChars(0x10400))));
+    }
+
+    @Test
+    void testIsNumericSupplementary() {
+        // U+1D7CE MATHEMATICAL BOLD DIGIT ZERO is a supplementary Unicode digit
+        assertTrue(StringUtils.isNumeric(new String(Character.toChars(0x1D7CE))));
+        // U+10400 DESERET CAPITAL LETTER LONG I is a supplementary letter, not a digit
+        assertFalse(StringUtils.isNumeric(new String(Character.toChars(0x10400))));
     }
 
     @Test

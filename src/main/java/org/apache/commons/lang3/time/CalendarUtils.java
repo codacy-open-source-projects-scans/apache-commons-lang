@@ -44,9 +44,9 @@ public class CalendarUtils {
     public static final CalendarUtils INSTANCE = getInstance();
 
     /**
-     * Creates a new instance based on the current time in the default time zone with the default {@link Category#FORMAT} locale.
+     * Gets a new instance based on the current time in the default time zone with the default {@link Category#FORMAT} locale.
      *
-     * @return a new instance.
+     * @return A new instance.
      * @since 3.14.0
      */
     public static CalendarUtils getInstance() {
@@ -57,8 +57,8 @@ public class CalendarUtils {
      * Gets a CalendarUtils using the default time zone and specified locale. The {@code CalendarUtils} returned is based on the current time in the
      * default time zone with the given locale.
      *
-     * @param locale the locale for the week data
-     * @return a Calendar.
+     * @param locale The locale for the week data
+     * @return A Calendar.
      */
     static CalendarUtils getInstance(final Locale locale) {
         return new CalendarUtils(Calendar.getInstance(locale), locale);
@@ -67,8 +67,8 @@ public class CalendarUtils {
     /**
      * Converts a Calendar to a LocalDateTime.
      *
-     * @param calendar the Calendar to convert.
-     * @return a LocalDateTime.
+     * @param calendar The Calendar to convert.
+     * @return A LocalDateTime.
      * @since 3.17.0
      */
     public static LocalDateTime toLocalDateTime(final Calendar calendar) {
@@ -76,10 +76,10 @@ public class CalendarUtils {
     }
 
     /**
-     * Converts a Calendar to a OffsetDateTime.
+     * Converts a Calendar to an OffsetDateTime.
      *
-     * @param calendar the Calendar to convert.
-     * @return a OffsetDateTime.
+     * @param calendar The Calendar to convert.
+     * @return A OffsetDateTime.
      * @since 3.17.0
      */
     public static OffsetDateTime toOffsetDateTime(final Calendar calendar) {
@@ -89,8 +89,8 @@ public class CalendarUtils {
     /**
      * Converts a Calendar to a ZonedDateTime.
      *
-     * @param calendar the Calendar to convert.
-     * @return a ZonedDateTime.
+     * @param calendar The Calendar to convert.
+     * @return A ZonedDateTime.
      * @since 3.17.0
      */
     public static ZonedDateTime toZonedDateTime(final Calendar calendar) {
@@ -128,7 +128,7 @@ public class CalendarUtils {
     /**
      * Gets the current day of month.
      *
-     * @return the current day of month.
+     * @return The current day of month.
      */
     public int getDayOfMonth() {
         return calendar.get(Calendar.DAY_OF_MONTH);
@@ -137,7 +137,7 @@ public class CalendarUtils {
     /**
      * Gets the current day of year.
      *
-     * @return the current day of year.
+     * @return The current day of year.
      * @since 3.13.0
      */
     public int getDayOfYear() {
@@ -147,7 +147,7 @@ public class CalendarUtils {
     /**
      * Gets the current month.
      *
-     * @return the current month.
+     * @return The current month.
      */
     public int getMonth() {
         return calendar.get(Calendar.MONTH);
@@ -192,7 +192,7 @@ public class CalendarUtils {
     /**
      * Gets the current year.
      *
-     * @return the current year.
+     * @return The current year.
      */
     public int getYear() {
         return calendar.get(Calendar.YEAR);
@@ -201,7 +201,7 @@ public class CalendarUtils {
     /**
      * Converts this instance to a {@link LocalDate}.
      *
-     * @return a LocalDate.
+     * @return A LocalDate.
      * @since 3.18.0
      */
     public LocalDate toLocalDate() {
@@ -211,7 +211,7 @@ public class CalendarUtils {
     /**
      * Converts this instance to a {@link LocalDateTime}.
      *
-     * @return a LocalDateTime.
+     * @return A LocalDateTime.
      * @since 3.17.0
      */
     public LocalDateTime toLocalDateTime() {
@@ -221,7 +221,7 @@ public class CalendarUtils {
     /**
      * Converts this instance to a {@link OffsetDateTime}.
      *
-     * @return a OffsetDateTime.
+     * @return A OffsetDateTime.
      * @since 3.17.0
      */
     public OffsetDateTime toOffsetDateTime() {
@@ -231,7 +231,7 @@ public class CalendarUtils {
     /**
      * Converts this instance to a {@link ZonedDateTime}.
      *
-     * @return a ZonedDateTime.
+     * @return A ZonedDateTime.
      * @since 3.17.0
      */
     public ZonedDateTime toZonedDateTime() {

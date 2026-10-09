@@ -39,7 +39,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
 import java.util.function.Supplier;
 import java.util.regex.PatternSyntaxException;
 
@@ -49,6 +48,7 @@ import org.apache.commons.lang3.text.WordUtils;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.junitpioneer.jupiter.DefaultLocale;
 import org.junitpioneer.jupiter.ReadsDefaultLocale;
@@ -399,6 +399,10 @@ class StringUtilsTest extends AbstractLangTest {
                 {null, null},
                 {"", ""},
                 {"a", ""},
+                // U+1F600: a trailing supplementary code point must be dropped whole, not split into a lone surrogate
+                {"\uD83D\uDE00", ""},
+                {"x\uD83D\uDE00", "x"},
+                {"\uD83D\uDE00x", "\uD83D\uDE00"},
         };
         for (final String[] chopCase : chopCases) {
             final String original = chopCase[0];
@@ -542,6 +546,11 @@ class StringUtilsTest extends AbstractLangTest {
         assertEquals("robot", StringUtils.difference("i am a machine", "i am a robot"));
         assertEquals("", StringUtils.difference("abc", "abc"));
         assertEquals("you are a robot", StringUtils.difference("i am a robot", "you are a robot"));
+        // 0x10400 and 0x10401 share the same high surrogate; the difference must not begin with a lone low surrogate
+        final String cp10400 = new String(Character.toChars(0x10400));
+        final String cp10401 = new String(Character.toChars(0x10401));
+        assertEquals(cp10401, StringUtils.difference(cp10400, cp10401));
+        assertEquals("Y", StringUtils.difference(cp10400 + "X", cp10400 + "Y"));
     }
 
     @Test
@@ -563,6 +572,11 @@ class StringUtilsTest extends AbstractLangTest {
         assertEquals(0, StringUtils.indexOfDifference("abcde", "xyz"));
         assertEquals(0, StringUtils.indexOfDifference("xyz", "abcde"));
         assertEquals(7, StringUtils.indexOfDifference("i am a machine", "i am a robot"));
+        // a difference that falls inside a shared surrogate pair is reported at the start of the pair, not mid-pair
+        final String cp10400 = new String(Character.toChars(0x10400));
+        final String cp10401 = new String(Character.toChars(0x10401));
+        assertEquals(0, StringUtils.indexOfDifference(new String[] {cp10400, cp10401}));
+        assertEquals(2, StringUtils.indexOfDifference(new String[] {cp10400 + "X", cp10400 + "Y"}));
     }
 
     @Test
@@ -576,6 +590,11 @@ class StringUtilsTest extends AbstractLangTest {
         assertEquals(7, StringUtils.indexOfDifference("i am a machine", "i am a robot"));
         assertEquals(-1, StringUtils.indexOfDifference("foo", "foo"));
         assertEquals(0, StringUtils.indexOfDifference("i am a robot", "you are a robot"));
+        // a difference that falls inside a shared surrogate pair is reported at the start of the pair, not mid-pair
+        final String cp10400 = new String(Character.toChars(0x10400));
+        final String cp10401 = new String(Character.toChars(0x10401));
+        assertEquals(0, StringUtils.indexOfDifference(cp10400, cp10401));
+        assertEquals(2, StringUtils.indexOfDifference(cp10400 + "X", cp10400 + "Y"));
     }
 
     /**
@@ -679,6 +698,11 @@ class StringUtilsTest extends AbstractLangTest {
         assertEquals("", StringUtils.getCommonPrefix("abcde", "xyz"));
         assertEquals("", StringUtils.getCommonPrefix("xyz", "abcde"));
         assertEquals("i am a ", StringUtils.getCommonPrefix("i am a machine", "i am a robot"));
+        // 0x10400 and 0x10401 share the high surrogate but differ; the common prefix must not be a lone high surrogate
+        final String cp10400 = new String(Character.toChars(0x10400));
+        final String cp10401 = new String(Character.toChars(0x10401));
+        assertEquals("", StringUtils.getCommonPrefix(cp10400, cp10401));
+        assertEquals(cp10400, StringUtils.getCommonPrefix(cp10400 + "X", cp10400 + "Y"));
     }
 
     @Test
@@ -695,6 +719,14 @@ class StringUtilsTest extends AbstractLangTest {
     @Test
     void testGetDigitsKeycaps() {
         assertEquals("0123456789", StringUtils.getDigits("0️⃣1️⃣2️⃣3️⃣4️⃣5️⃣6️⃣7️⃣8️⃣9️⃣#️⃣"));
+    }
+
+    @Test
+    void testGetDigitsSupplementary() {
+        // U+1D7CF MATHEMATICAL BOLD DIGIT ONE: Character.isDigit is true but it is a surrogate pair
+        final String mathOne = new String(Character.toChars(0x1D7CF));
+        assertEquals(mathOne, StringUtils.getDigits(mathOne));
+        assertEquals(mathOne + "9", StringUtils.getDigits("a" + mathOne + "9"));
     }
 
     @Test
@@ -928,6 +960,17 @@ class StringUtilsTest extends AbstractLangTest {
     }
 
     /**
+     * Test for {@link StringUtils#isAllLowerCase(CharSequence)} with supplementary code points.
+     */
+    @Test
+    void testIsAllLowerCaseSupplementary() {
+        // U+10428 DESERET SMALL LETTER LONG I is a lowercase supplementary letter
+        assertTrue(StringUtils.isAllLowerCase(new String(Character.toChars(0x10428))));
+        // U+10400 DESERET CAPITAL LETTER LONG I is an uppercase supplementary letter
+        assertFalse(StringUtils.isAllLowerCase(new String(Character.toChars(0x10400))));
+    }
+
+    /**
      * Test for {@link StringUtils#isAllUpperCase(CharSequence)}.
      */
     @Test
@@ -942,6 +985,17 @@ class StringUtilsTest extends AbstractLangTest {
         assertFalse(StringUtils.isAllUpperCase("A C"));
         assertFalse(StringUtils.isAllUpperCase("A1C"));
         assertFalse(StringUtils.isAllUpperCase("A/C"));
+    }
+
+    /**
+     * Test for {@link StringUtils#isAllUpperCase(CharSequence)} with supplementary code points.
+     */
+    @Test
+    void testIsAllUpperCaseSupplementary() {
+        // U+10400 DESERET CAPITAL LETTER LONG I is an uppercase supplementary letter
+        assertTrue(StringUtils.isAllUpperCase(new String(Character.toChars(0x10400))));
+        // U+10428 DESERET SMALL LETTER LONG I is a lowercase supplementary letter
+        assertFalse(StringUtils.isAllUpperCase(new String(Character.toChars(0x10428))));
     }
 
     /**
@@ -965,6 +1019,17 @@ class StringUtilsTest extends AbstractLangTest {
         assertTrue(StringUtils.isMixedCase("aBc\n"));
         assertTrue(StringUtils.isMixedCase("A1c"));
         assertTrue(StringUtils.isMixedCase("a/C"));
+    }
+
+    /**
+     * Test for {@link StringUtils#isMixedCase(CharSequence)} with supplementary code points.
+     */
+    @Test
+    void testIsMixedCaseSupplementary() {
+        // lowercase 'a' mixed with the uppercase supplementary letter U+10400
+        assertTrue(StringUtils.isMixedCase("a" + new String(Character.toChars(0x10400))));
+        // a single uppercase supplementary letter is not mixed case
+        assertFalse(StringUtils.isMixedCase(new String(Character.toChars(0x10400))));
     }
 
     @Test
@@ -1262,6 +1327,7 @@ class StringUtilsTest extends AbstractLangTest {
         assertEquals("     ", StringUtils.leftPad("", 5));
         assertEquals("  abc", StringUtils.leftPad("abc", 5));
         assertEquals("abc", StringUtils.leftPad("abc", 2));
+        assertEquals("abc", StringUtils.leftPad("abc", Integer.MIN_VALUE));
     }
 
     @Test
@@ -1272,6 +1338,7 @@ class StringUtilsTest extends AbstractLangTest {
         assertEquals("xxabc", StringUtils.leftPad("abc", 5, 'x'));
         assertEquals("\uffff\uffffabc", StringUtils.leftPad("abc", 5, '\uffff'));
         assertEquals("abc", StringUtils.leftPad("abc", 2, ' '));
+        assertEquals("abc", StringUtils.leftPad("abc", Integer.MIN_VALUE, ' '));
         final String str = StringUtils.leftPad("aaa", 10000, 'a');  // bigger than pad length
         assertEquals(10000, str.length());
         assertTrue(StringUtils.containsOnly(str, 'a'));
@@ -1289,6 +1356,7 @@ class StringUtilsTest extends AbstractLangTest {
         assertEquals("abc", StringUtils.leftPad("abc", -1, " "));
         assertEquals("  abc", StringUtils.leftPad("abc", 5, null));
         assertEquals("  abc", StringUtils.leftPad("abc", 5, ""));
+        assertEquals("abc", StringUtils.leftPad("abc", Integer.MIN_VALUE, " "));
     }
 
     @Test
@@ -1391,6 +1459,31 @@ class StringUtilsTest extends AbstractLangTest {
         assertEquals("abcdzzzz", StringUtils.overlay("abcdef", "zzzz", 10, 4));
         assertEquals("abcdefzzzz", StringUtils.overlay("abcdef", "zzzz", 8, 10));
         assertEquals("abcdefzzzz", StringUtils.overlay("abcdef", "zzzz", 10, 8));
+    }
+
+    @Test
+    void testOverlaySurrogatePair() {
+        final String grin = "😀";
+        // overlaying across surrogate pair boundary backs off start and advances end
+        assertEquals("X", StringUtils.overlay(grin, "X", 1, 1));
+        assertEquals("aXb", StringUtils.overlay("a" + grin + "b", "X", 1, 3));
+        assertEquals("aXb", StringUtils.overlay("a" + grin + "b", "X", 2, 2));
+
+        final String source = "a" + grin + "b" + grin + "cd" + grin + "ef";
+        for (int start = 0; start <= source.length(); start++) {
+            for (int end = 0; end <= source.length(); end++) {
+                final String result = StringUtils.overlay(source, "X", start, end);
+                for (int i = 0; i < result.length(); i++) {
+                    final char ch = result.charAt(i);
+                    if (Character.isHighSurrogate(ch)) {
+                        assertTrue(i + 1 < result.length() && Character.isLowSurrogate(result.charAt(i + 1)), "lone high surrogate in: " + result);
+                        i++; // skip the paired low surrogate
+                    } else {
+                        assertFalse(Character.isLowSurrogate(ch), "lone low surrogate in: " + result);
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -1718,6 +1811,7 @@ class StringUtilsTest extends AbstractLangTest {
         final String str = StringUtils.repeat("a", 10000);  // bigger than pad limit
         assertEquals(10000, str.length());
         assertTrue(StringUtils.containsOnly(str, 'a'));
+        assertThrows(IllegalArgumentException.class, () -> StringUtils.repeat("aa", 1_073_741_824));
     }
 
     @Test
@@ -1725,13 +1819,11 @@ class StringUtilsTest extends AbstractLangTest {
         assertNull(StringUtils.repeat(null, null, 2));
         assertNull(StringUtils.repeat(null, "x", 2));
         assertEquals("", StringUtils.repeat("", null, 2));
-
         assertEquals("", StringUtils.repeat("ab", "", 0));
         assertEquals("", StringUtils.repeat("", "", 2));
-
         assertEquals("xx", StringUtils.repeat("", "x", 3));
-
         assertEquals("?, ?, ?", StringUtils.repeat("?", ", ", 3));
+        assertThrows(IllegalArgumentException.class, () -> StringUtils.repeat("?", ", ", 1_073_741_824));
     }
 
     /**
@@ -1739,7 +1831,7 @@ class StringUtilsTest extends AbstractLangTest {
      */
     @Test
     void testReplace_StringStringArrayStringArray() {
-        //JAVADOC TESTS START
+        // JAVADOC TESTS START
         assertNull(StringUtils.replaceEach(null, new String[]{"a"}, new String[]{"b"}));
         assertEquals(StringUtils.replaceEach("", new String[]{"a"}, new String[]{"b"}), "");
         assertEquals(StringUtils.replaceEach("aba", null, null), "aba");
@@ -1751,7 +1843,7 @@ class StringUtilsTest extends AbstractLangTest {
         assertEquals(StringUtils.replaceEach("aba", new String[]{null}, new String[]{"a"}), "aba");
         assertEquals(StringUtils.replaceEach("abcde", new String[]{"ab", "d"}, new String[]{"w", "t"}), "wcte");
         assertEquals(StringUtils.replaceEach("abcde", new String[]{"ab", "d"}, new String[]{"d", "t"}), "dcte");
-        //JAVADOC TESTS END
+        // JAVADOC TESTS END
 
         assertEquals("bcc", StringUtils.replaceEach("abc", new String[]{"a", "b"}, new String[]{"b", "c"}));
         assertEquals("q651.506bera", StringUtils.replaceEach("d216.102oren",
@@ -1802,8 +1894,9 @@ class StringUtilsTest extends AbstractLangTest {
         assertThrows(IllegalStateException.class,
                 () -> StringUtils.replaceEachRepeatedly("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", new String[] { "aa" }, new String[] { "a" }),
                 "Cannot be resolved within the default time-to-live limit");
-        // Test larger TTL for larger search lists. Replace repeatedly until there are no more possible replacements.
-        assertEquals("000000000", StringUtils.replaceEachRepeatedly("aA0aA0aA0",
+        // The iteration budget is a fixed constant (no longer derived from the search-list size, which let the
+        // input choose the recursion depth): a 61-step replacement chain exceeds the budget and aborts.
+        assertThrows(IllegalStateException.class, () -> StringUtils.replaceEachRepeatedly("aA0aA0aA0",
                 new String[]{"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n",
                         "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "A", "B", "C", "D",
                         "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T",
@@ -1811,7 +1904,8 @@ class StringUtilsTest extends AbstractLangTest {
                 new String[]{"b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o",
                         "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "A", "B", "C", "D", "E",
                         "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U",
-                        "V", "W", "X", "Y", "Z", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0"}));
+                        "V", "W", "X", "Y", "Z", "1", "2", "3", "4", "5", "6", "7", "8", "9", "0"}),
+                "Cannot be resolved within the fixed time-to-live limit");
 
         // Test long infinite cycle: a -> b -> ... -> 9 -> 0 -> a -> b -> ...
         assertThrows(IllegalStateException.class,
@@ -2142,6 +2236,7 @@ class StringUtilsTest extends AbstractLangTest {
         assertEquals("abc  ", StringUtils.rightPad("abc", 5));
         assertEquals("abc", StringUtils.rightPad("abc", 2));
         assertEquals("abc", StringUtils.rightPad("abc", -1));
+        assertEquals("abc", StringUtils.rightPad("abc", Integer.MIN_VALUE));
     }
 
     @Test
@@ -2152,6 +2247,7 @@ class StringUtilsTest extends AbstractLangTest {
         assertEquals("abc", StringUtils.rightPad("abc", 2, ' '));
         assertEquals("abc", StringUtils.rightPad("abc", -1, ' '));
         assertEquals("abcxx", StringUtils.rightPad("abc", 5, 'x'));
+        assertEquals("abc", StringUtils.rightPad("abc", Integer.MIN_VALUE, ' '));
         final String str = StringUtils.rightPad("aaa", 10000, 'a');  // bigger than pad length
         assertEquals(10000, str.length());
         assertTrue(StringUtils.containsOnly(str, 'a'));
@@ -2169,6 +2265,7 @@ class StringUtilsTest extends AbstractLangTest {
         assertEquals("abc", StringUtils.rightPad("abc", -1, " "));
         assertEquals("abc  ", StringUtils.rightPad("abc", 5, null));
         assertEquals("abc  ", StringUtils.rightPad("abc", 5, ""));
+        assertEquals("abc", StringUtils.rightPad("abc", Integer.MIN_VALUE, " "));
     }
 
     @Test
@@ -2273,54 +2370,40 @@ class StringUtilsTest extends AbstractLangTest {
     void testSplitByCharacterType() {
         assertNull(StringUtils.splitByCharacterType(null));
         assertEquals(0, StringUtils.splitByCharacterType("").length);
-
-        assertTrue(Objects.deepEquals(new String[]{"ab", " ", "de", " ",
-                "fg"}, StringUtils.splitByCharacterType("ab de fg")));
-
-        assertTrue(Objects.deepEquals(new String[]{"ab", "   ", "de", " ",
-                "fg"}, StringUtils.splitByCharacterType("ab   de fg")));
-
-        assertTrue(Objects.deepEquals(new String[]{"ab", ":", "cd", ":",
-                "ef"}, StringUtils.splitByCharacterType("ab:cd:ef")));
-
-        assertTrue(Objects.deepEquals(new String[]{"number", "5"},
-                StringUtils.splitByCharacterType("number5")));
-
-        assertTrue(Objects.deepEquals(new String[]{"foo", "B", "ar"},
-                StringUtils.splitByCharacterType("fooBar")));
-
-        assertTrue(Objects.deepEquals(new String[]{"foo", "200", "B", "ar"},
-                StringUtils.splitByCharacterType("foo200Bar")));
-
-        assertTrue(Objects.deepEquals(new String[]{"ASFR", "ules"},
-                StringUtils.splitByCharacterType("ASFRules")));
+        assertArrayEquals(new String[] { "ab", " ", "de", " ", "fg" }, StringUtils.splitByCharacterType("ab de fg"));
+        assertArrayEquals(new String[] { "ab", "   ", "de", " ", "fg" }, StringUtils.splitByCharacterType("ab   de fg"));
+        assertArrayEquals(new String[] { "ab", ":", "cd", ":", "ef" }, StringUtils.splitByCharacterType("ab:cd:ef"));
+        assertArrayEquals(new String[] { "number", "5" }, StringUtils.splitByCharacterType("number5"));
+        assertArrayEquals(new String[] { "foo", "B", "ar" }, StringUtils.splitByCharacterType("fooBar"));
+        assertArrayEquals(new String[] { "foo", "200", "B", "ar" }, StringUtils.splitByCharacterType("foo200Bar"));
+        assertArrayEquals(new String[] { "ASFR", "ules" }, StringUtils.splitByCharacterType("ASFRules"));
+        // Supplementary code points are classified by their own type, not split apart as surrogates.
+        // U+1D400 MATHEMATICAL BOLD CAPITAL A is an upper-case letter, like ASCII 'A'.
+        final String boldA = new String(Character.toChars(0x1D400));
+        // U+1D7D3 MATHEMATICAL BOLD DIGIT FIVE is a decimal digit, like ASCII '5'.
+        final String boldFive = new String(Character.toChars(0x1D7D3));
+        assertArrayEquals(new String[] { "A" + boldA }, StringUtils.splitByCharacterType("A" + boldA));
+        assertArrayEquals(new String[] { "5" + boldFive }, StringUtils.splitByCharacterType("5" + boldFive));
+        assertArrayEquals(new String[] { boldA, "5" + boldFive, "z" }, StringUtils.splitByCharacterType(boldA + "5" + boldFive + "z"));
     }
 
     @Test
     void testSplitByCharacterTypeCamelCase() {
         assertNull(StringUtils.splitByCharacterTypeCamelCase(null));
         assertEquals(0, StringUtils.splitByCharacterTypeCamelCase("").length);
-
-        assertTrue(Objects.deepEquals(new String[]{"ab", " ", "de", " ",
-                "fg"}, StringUtils.splitByCharacterTypeCamelCase("ab de fg")));
-
-        assertTrue(Objects.deepEquals(new String[]{"ab", "   ", "de", " ",
-                "fg"}, StringUtils.splitByCharacterTypeCamelCase("ab   de fg")));
-
-        assertTrue(Objects.deepEquals(new String[]{"ab", ":", "cd", ":",
-                "ef"}, StringUtils.splitByCharacterTypeCamelCase("ab:cd:ef")));
-
-        assertTrue(Objects.deepEquals(new String[]{"number", "5"},
-                StringUtils.splitByCharacterTypeCamelCase("number5")));
-
-        assertTrue(Objects.deepEquals(new String[]{"foo", "Bar"},
-                StringUtils.splitByCharacterTypeCamelCase("fooBar")));
-
-        assertTrue(Objects.deepEquals(new String[]{"foo", "200", "Bar"},
-                StringUtils.splitByCharacterTypeCamelCase("foo200Bar")));
-
-        assertTrue(Objects.deepEquals(new String[]{"ASF", "Rules"},
-                StringUtils.splitByCharacterTypeCamelCase("ASFRules")));
+        assertArrayEquals(new String[] { "ab", " ", "de", " ", "fg" }, StringUtils.splitByCharacterTypeCamelCase("ab de fg"));
+        assertArrayEquals(new String[] { "ab", "   ", "de", " ", "fg" }, StringUtils.splitByCharacterTypeCamelCase("ab   de fg"));
+        assertArrayEquals(new String[] { "ab", ":", "cd", ":", "ef" }, StringUtils.splitByCharacterTypeCamelCase("ab:cd:ef"));
+        assertArrayEquals(new String[] { "number", "5" }, StringUtils.splitByCharacterTypeCamelCase("number5"));
+        assertArrayEquals(new String[] { "foo", "Bar" }, StringUtils.splitByCharacterTypeCamelCase("fooBar"));
+        assertArrayEquals(new String[] { "foo", "200", "Bar" }, StringUtils.splitByCharacterTypeCamelCase("foo200Bar"));
+        assertArrayEquals(new String[] { "ASF", "Rules" }, StringUtils.splitByCharacterTypeCamelCase("ASFRules"));
+        // A supplementary upper-case letter immediately before a lower-case run joins the following token,
+        // exactly as a BMP upper-case letter does. U+1D400 MATHEMATICAL BOLD CAPITAL A is an upper-case letter.
+        final String boldA = new String(Character.toChars(0x1D400));
+        assertArrayEquals(new String[] { boldA + "bc" }, StringUtils.splitByCharacterTypeCamelCase(boldA + "bc"));
+        assertArrayEquals(new String[] { "AB", boldA + "cd" }, StringUtils.splitByCharacterTypeCamelCase("AB" + boldA + "cd"));
+        assertArrayEquals(new String[] { "foo", boldA + "bar" }, StringUtils.splitByCharacterTypeCamelCase("foo" + boldA + "bar"));
     }
 
     @Test
@@ -2464,6 +2547,20 @@ class StringUtilsTest extends AbstractLangTest {
         for (int i = 0; i < splitOnStringExpectedResults.length; i++) {
             assertEquals(splitOnStringExpectedResults[i], splitOnStringResults[i]);
         }
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+        "a:b:,       :,   'a,b'",
+        "a:,         :,   a",
+        "ab-!-cd-!-, -!-, 'ab,cd'",
+    })
+    void testSplitByWholeStringDropsTrailingEmpty(final String str, final String separator, final String expected) {
+        final String[] expectedTokens = expected.split(",");
+        // a trailing separator must not leak an empty token (it is dropped, like leading and adjacent ones)
+        assertArrayEquals(expectedTokens, StringUtils.splitByWholeSeparator(str, separator));
+        // the preserve-all-tokens variant still keeps the trailing empty token
+        assertArrayEquals(ArrayUtils.add(expectedTokens, ""), StringUtils.splitByWholeSeparatorPreserveAllTokens(str, separator));
     }
 
     @Test
@@ -2936,7 +3033,7 @@ class StringUtilsTest extends AbstractLangTest {
     /**
      * Tests {@link StringUtils#toString(byte[], String)}
      *
-     * @throws UnsupportedEncodingException because the method under test max throw it
+     * @throws UnsupportedEncodingException Thrown if the method under test throws an exception.
      * @see StringUtils#toString(byte[], String)
      */
     @Test
@@ -3018,6 +3115,26 @@ class StringUtilsTest extends AbstractLangTest {
         assertEquals("", StringUtils.truncate("abcdefghijklmno", 15, 1));
         assertEquals("", StringUtils.truncate("abcdefghijklmno", 15, Integer.MAX_VALUE));
         assertEquals("", StringUtils.truncate("abcdefghijklmno", Integer.MAX_VALUE, Integer.MAX_VALUE));
+    }
+
+    @Test
+    void testTruncate_StringIntInt_surrogatePair() {
+        // U+1F600 GRINNING FACE is a single supplementary code point stored as a surrogate pair
+        final String grin = "😀";
+        // a cut that would land between the two halves keeps the result well formed instead of emitting a lone surrogate
+        assertEquals("a", StringUtils.truncate("a" + grin + "b", 0, 2));
+        assertEquals(grin, StringUtils.truncate("a" + grin + "b", 1, 2));
+        assertEquals("ab", StringUtils.truncate("ab" + grin, 0, 3));
+        // an offset that lands inside a pair skips the orphaned low surrogate
+        assertEquals("a", StringUtils.truncate(grin + "ab", 1, 2));
+        // an input that is only the pair stays whole or drops to empty, never a lone surrogate
+        assertEquals(grin, StringUtils.truncate(grin, 0, 2));
+        assertEquals(grin, StringUtils.truncate(grin, 0, 3));
+        assertEquals("", StringUtils.truncate(grin, 0, 0));
+        assertEquals("", StringUtils.truncate(grin, 0, 1));
+        assertEquals("", StringUtils.truncate(grin, 1, 1));
+        assertEquals("", StringUtils.truncate(grin, 1, 2));
+        assertEquals("", StringUtils.truncate(grin, 2, 2));
     }
 
     @Test

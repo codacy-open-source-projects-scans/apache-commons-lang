@@ -61,16 +61,36 @@ import org.junit.jupiter.api.Test;
  */
 class FieldUtilsTest extends AbstractLangTest {
 
+    interface InterfaceWithConstant {
+        int CONSTANT = 42;
+    }
+    static class MultiPathToConstant implements SubInterfaceA, SubInterfaceB {
+        // CONSTANT is reachable through both parents and through the grandparent interface
+    }
+    static class SinglePathToConstant implements SubInterfaceA {
+        // CONSTANT is reachable through the sub-interface and its super-interface
+    }
+    interface SubInterfaceA extends InterfaceWithConstant {
+        // inherits CONSTANT
+    }
+    interface SubInterfaceB extends InterfaceWithConstant {
+        // inherits CONSTANT
+    }
     private static final String JACOCO_DATA_FIELD_NAME = "$jacocoData";
     static final Integer I0 = Integer.valueOf(0);
     static final Integer I1 = Integer.valueOf(1);
     static final Double D0 = Double.valueOf(0.0);
+
     static final Double D1 = Double.valueOf(1.0);
+
     @Annotated
     private PublicChild publicChild;
+
     private PubliclyShadowedChild publiclyShadowedChild;
+
     @Annotated
     private PrivatelyShadowedChild privatelyShadowedChild;
+
     private final Class<? super PublicChild> parentClass = PublicChild.class.getSuperclass();
 
     /**
@@ -316,6 +336,15 @@ class FieldUtilsTest extends AbstractLangTest {
     @Test
     void testGetFieldIllegalArgumentException3() {
         assertIllegalArgumentException(() -> FieldUtils.getField(PublicChild.class, " "));
+    }
+
+    @Test
+    void testGetFieldInheritedThroughMultipleInterfacePaths() {
+        // A field reached through more than one interface path resolves to the same Field, so it is not ambiguous.
+        assertEquals(InterfaceWithConstant.class, FieldUtils.getField(SinglePathToConstant.class, "CONSTANT").getDeclaringClass());
+        assertEquals(InterfaceWithConstant.class, FieldUtils.getField(MultiPathToConstant.class, "CONSTANT").getDeclaringClass());
+        // A genuine clash of two different fields on unrelated interfaces is still ambiguous.
+        assertIllegalArgumentException(() -> FieldUtils.getField(Ambig.class, "VALUE"));
     }
 
     @Test

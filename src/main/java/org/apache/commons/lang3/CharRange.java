@@ -16,6 +16,9 @@
  */
 package org.apache.commons.lang3;
 
+import java.io.IOException;
+import java.io.InvalidObjectException;
+import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -24,9 +27,13 @@ import java.util.Objects;
 /**
  * A contiguous range of characters, optionally negated.
  *
- * <p>Instances are immutable.</p>
+ * <p>
+ * Instances are immutable.
+ * </p>
  *
- * <p>#ThreadSafe#</p>
+ * <p>
+ * #ThreadSafe#
+ * </p>
  *
  * @since 1.0
  * @since 3.21.0 {@code serialVersionUID} changed from {@code 8270183163158333422L} to {@code 2L}.
@@ -37,7 +44,9 @@ final class CharRange implements Iterable<Character>, Serializable {
 
     /**
      * Character {@link Iterator}.
-     * <p>#NotThreadSafe#</p>
+     * <p>
+     * #NotThreadSafe#
+     * </p>
      */
     private static final class CharacterIterator implements Iterator<Character> {
 
@@ -55,17 +64,14 @@ final class CharRange implements Iterable<Character>, Serializable {
         private CharacterIterator(final CharRange r) {
             range = r;
             hasNext = true;
-
-            if (range.negated) {
-                if (range.start == 0) {
-                    if (range.end == Character.MAX_VALUE) {
-                        // This range is an empty set
-                        hasNext = false;
-                    } else {
-                        current = (char) (range.end + 1);
-                    }
+            if (range.isEmpty()) {
+                // This range is an empty set
+                hasNext = false;
+            } else if (range.negated) {
+                if (range.isStartMin()) {
+                    current = (char) (range.end + 1);
                 } else {
-                    current = 0;
+                    current = Character.MIN_VALUE;
                 }
             } else {
                 current = range.start;
@@ -105,7 +111,7 @@ final class CharRange implements Iterable<Character>, Serializable {
                 if (current == Character.MAX_VALUE) {
                     hasNext = false;
                 } else if (current + 1 == range.start) {
-                    if (range.end == Character.MAX_VALUE) {
+                    if (range.isEndMax()) {
                         hasNext = false;
                     } else {
                         current = (char) (range.end + 1);
@@ -121,9 +127,9 @@ final class CharRange implements Iterable<Character>, Serializable {
         }
 
         /**
-         * Always throws UnsupportedOperationException.
+         * Always throws {@link UnsupportedOperationException}.
          *
-         * @throws UnsupportedOperationException Always thrown.
+         * @throws UnsupportedOperationException Thrown because this operation is unsupported.
          * @see java.util.Iterator#remove()
          */
         @Override
@@ -147,7 +153,7 @@ final class CharRange implements Iterable<Character>, Serializable {
      * Constructs a {@link CharRange} over a single character.
      *
      * @param ch  only character in this range.
-     * @return the new CharRange object.
+     * @return The new CharRange object.
      * @since 2.5
      */
     public static CharRange is(final char ch) {
@@ -157,12 +163,14 @@ final class CharRange implements Iterable<Character>, Serializable {
     /**
      * Constructs a {@link CharRange} over a set of characters.
      *
-     * <p>If start and end are in the wrong order, they are reversed.
-     * Thus {@code a-e} is the same as {@code e-a}.</p>
+     * <p>
+     * If start and end are in the wrong order, they are reversed.
+     * Thus {@code a-e} is the same as {@code e-a}.
+     * </p>
      *
      * @param start  first character, inclusive, in this range.
      * @param end  last character, inclusive, in this range.
-     * @return the new CharRange object.
+     * @return The new CharRange object.
      * @since 2.5
      */
     public static CharRange isIn(final char start, final char end) {
@@ -172,11 +180,13 @@ final class CharRange implements Iterable<Character>, Serializable {
     /**
      * Constructs a negated {@link CharRange} over a single character.
      *
-     * <p>A negated range includes everything except that defined by the
-     * single character.</p>
+     * <p>
+     * A negated range includes everything except that defined by the
+     * single character.
+     * </p>
      *
      * @param ch  only character in this range.
-     * @return the new CharRange object.
+     * @return The new CharRange object.
      * @since 2.5
      */
     public static CharRange isNot(final char ch) {
@@ -186,15 +196,19 @@ final class CharRange implements Iterable<Character>, Serializable {
     /**
      * Constructs a negated {@link CharRange} over a set of characters.
      *
-     * <p>A negated range includes everything except that defined by the
-     * start and end characters.</p>
+     * <p>
+     * A negated range includes everything except that defined by the
+     * start and end characters.
+     * </p>
      *
-     * <p>If start and end are in the wrong order, they are reversed.
-     * Thus {@code a-e} is the same as {@code e-a}.</p>
+     * <p>
+     * If start and end are in the wrong order, they are reversed.
+     * Thus {@code a-e} is the same as {@code e-a}.
+     * </p>
      *
      * @param start  first character, inclusive, in this range.
      * @param end  last character, inclusive, in this range.
-     * @return the new CharRange object.
+     * @return The new CharRange object.
      * @since 2.5
      */
     public static CharRange isNotIn(final char start, final char end) {
@@ -217,11 +231,15 @@ final class CharRange implements Iterable<Character>, Serializable {
      * Constructs a {@link CharRange} over a set of characters,
      * optionally negating the range.
      *
-     * <p>A negated range includes everything except that defined by the
-     * start and end characters.</p>
+     * <p>
+     * A negated range includes everything except that defined by the
+     * start and end characters.
+     * </p>
      *
-     * <p>If start and end are in the wrong order, they are reversed.
-     * Thus {@code a-e} is the same as {@code e-a}.</p>
+     * <p>
+     * If start and end are in the wrong order, they are reversed.
+     * Thus {@code a-e} is the same as {@code e-a}.
+     * </p>
      *
      * @param start  first character, inclusive, in this range.
      * @param end  last character, inclusive, in this range.
@@ -242,7 +260,7 @@ final class CharRange implements Iterable<Character>, Serializable {
     /**
      * Is the character specified contained in this range.
      *
-     * @param ch  the character to check.
+     * @param ch  The character to check.
      * @return {@code true} if this range contains the input character.
      */
     public boolean contains(final char ch) {
@@ -253,9 +271,9 @@ final class CharRange implements Iterable<Character>, Serializable {
      * Are all the characters of the passed in range contained in
      * this range.
      *
-     * @param range  the range to check against.
+     * @param range  The range to check against.
      * @return {@code true} if this range entirely contains the input range.
-     * @throws NullPointerException if {@code null} input.
+     * @throws NullPointerException Thrown if {@code null} input.
      */
     public boolean contains(final CharRange range) {
         Objects.requireNonNull(range, "range");
@@ -266,7 +284,19 @@ final class CharRange implements Iterable<Character>, Serializable {
             return range.end < start || range.start > end;
         }
         if (range.negated) {
-            return start == 0 && end == Character.MAX_VALUE;
+            // range denotes [0, range.start - 1] union [range.end + 1, Character.MAX_VALUE]
+            if (range.isEmpty()) {
+                return true; // range denotes the empty set
+            }
+            if (range.isStartMin()) {
+                // range denotes [range.end + 1, Character.MAX_VALUE]
+                return isEndMax() && start <= range.end + 1;
+            }
+            if (range.isEndMax()) {
+                // range denotes [0, range.start - 1]
+                return isStartMin() && end + 1 >= range.start;
+            }
+            return isStartMin() && isEndMax();
         }
         return start <= range.start && end >= range.end;
     }
@@ -275,7 +305,7 @@ final class CharRange implements Iterable<Character>, Serializable {
      * Compares two CharRange objects, returning true if they represent
      * exactly the same range of characters defined in the same way.
      *
-     * @param obj  the object to compare to.
+     * @param obj  The object to compare to.
      * @return true if equal.
      */
     @Override
@@ -293,7 +323,7 @@ final class CharRange implements Iterable<Character>, Serializable {
     /**
      * Gets the end character for this character range.
      *
-     * @return the end char (inclusive).
+     * @return The end char (inclusive).
      */
     public char getEnd() {
         return this.end;
@@ -302,7 +332,7 @@ final class CharRange implements Iterable<Character>, Serializable {
     /**
      * Gets the start character for this character range.
      *
-     * @return the start char (inclusive).
+     * @return The start char (inclusive).
      */
     public char getStart() {
         return this.start;
@@ -311,7 +341,7 @@ final class CharRange implements Iterable<Character>, Serializable {
     /**
      * Gets a hashCode compatible with the equals method.
      *
-     * @return a suitable hashCode.
+     * @return A suitable hashCode.
      */
     @Override
     public int hashCode() {
@@ -319,10 +349,32 @@ final class CharRange implements Iterable<Character>, Serializable {
     }
 
     /**
-     * Is this {@link CharRange} negated.
+     * Tests whether this range denotes the empty set.
      *
-     * <p>A negated range includes everything except that defined by the
-     * start and end characters.</p>
+     * <p>
+     * A plain (non-negated) range always contains at least one character and is
+     * therefore never empty. A negated range is empty if and only if it excludes the
+     * entire character space, i.e. if it was created via
+     * {@code isNotIn(Character.MIN_VALUE, Character.MAX_VALUE)}.
+     * </p>
+     *
+     * @return {@code true} if this range contains no characters, {@code false} otherwise.
+     */
+    boolean isEmpty() {
+        return negated && isStartMin() && isEndMax();
+    }
+
+    private boolean isEndMax() {
+        return end == Character.MAX_VALUE;
+    }
+
+    /**
+     * Tests whether this {@link CharRange} is negated.
+     *
+     * <p>
+     * A negated range includes everything except that defined by the
+     * start and end characters.
+     * </p>
      *
      * @return {@code true} if negated.
      */
@@ -330,17 +382,39 @@ final class CharRange implements Iterable<Character>, Serializable {
         return negated;
     }
 
+    private boolean isStartMin() {
+        return start == Character.MIN_VALUE;
+    }
+
     /**
      * Returns an iterator which can be used to walk through the characters described by this range.
      *
-     * <p>#NotThreadSafe# the iterator is not thread-safe</p>
+     * <p>
+     * #NotThreadSafe# the iterator is not thread-safe
+     * </p>
      *
-     * @return an iterator to the chars represented by this range
+     * @return An iterator to the chars represented by this range
      * @since 2.5
      */
     @Override
     public Iterator<Character> iterator() {
         return new CharacterIterator(this);
+    }
+
+    /**
+     * Re-asserts the {@code start <= end} invariant after default deserialization. The constructor reverses reversed endpoints, so a legitimately serialized
+     * instance always has {@code start <= end}; a stream that violates this did not come from the constructor and is rejected.
+     *
+     * @param in See {@link Serializable}.
+     * @throws IOException Thrown as described in {@link Serializable}.
+     * @throws ClassNotFoundException Thrown as described in {@link Serializable}.
+     * @throws InvalidObjectException Thrown if {@code start} is greater than {@code end}.
+     */
+    private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        if (start > end) {
+            throw new InvalidObjectException("CharRange start is greater than end.");
+        }
     }
 
     /**

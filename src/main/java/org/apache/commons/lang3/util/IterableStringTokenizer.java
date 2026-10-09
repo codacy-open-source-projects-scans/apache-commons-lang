@@ -37,7 +37,7 @@ public class IterableStringTokenizer extends StringTokenizer implements Iterable
     /**
      * Constructs a new instance like {@link StringTokenizer#StringTokenizer(String, String, boolean)}.
      *
-     * @param str a string to be parsed.
+     * @param str A string to be parsed.
      * @exception NullPointerException if str is {@code null}.
      */
     public IterableStringTokenizer(final String str) {
@@ -47,8 +47,8 @@ public class IterableStringTokenizer extends StringTokenizer implements Iterable
     /**
      * Constructs a new instance like {@link StringTokenizer#StringTokenizer(String, String, boolean)}.
      *
-     * @param str   a string to be parsed.
-     * @param delim the delimiters.
+     * @param str   A string to be parsed.
+     * @param delim The delimiters.
      * @exception NullPointerException if str is {@code null}.
      */
     public IterableStringTokenizer(final String str, final String delim) {
@@ -58,8 +58,8 @@ public class IterableStringTokenizer extends StringTokenizer implements Iterable
     /**
      * Constructs a new instance like {@link StringTokenizer#StringTokenizer(String, String, boolean)}.
      *
-     * @param str          a string to be parsed.
-     * @param delim        the delimiters.
+     * @param str          A string to be parsed.
+     * @param delim        The delimiters.
      * @param returnDelims flag indicating whether to return the delimiters as tokens.
      * @exception NullPointerException if str is {@code null}.
      */
@@ -86,7 +86,7 @@ public class IterableStringTokenizer extends StringTokenizer implements Iterable
     /**
      * Returns a new {@code String[]} containing the tokenizer elements.
      *
-     * @return a new {@code String[]}.
+     * @return A new {@code String[]}.
      */
     public String[] toArray() {
         return toList().toArray(ArrayUtils.EMPTY_STRING_ARRAY);
@@ -95,7 +95,7 @@ public class IterableStringTokenizer extends StringTokenizer implements Iterable
     /**
      * Returns a new {@link List} containing the tokenizer elements.
      *
-     * @return a new {@link List}.
+     * @return A new {@link List}.
      */
     public List<String> toList() {
         final List<String> list = new ArrayList<>();
@@ -106,7 +106,7 @@ public class IterableStringTokenizer extends StringTokenizer implements Iterable
     /**
      * Returns a sequential stream on this Iterable instance.
      *
-     * @return a sequential stream on this Iterable instance.
+     * @return A sequential stream on this Iterable instance.
      */
     public Stream<String> toStream() {
         return StreamSupport.stream(spliterator(), false);

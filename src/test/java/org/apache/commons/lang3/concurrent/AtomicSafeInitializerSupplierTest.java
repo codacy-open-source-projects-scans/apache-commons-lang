@@ -38,7 +38,7 @@ class AtomicSafeInitializerSupplierTest extends AbstractConcurrentInitializerClo
     /**
      * Creates the initializer to be tested.
      *
-     * @return the {@code AtomicSafeInitializer} under test
+     * @return The {@code AtomicSafeInitializer} under test
      */
     @Override
     protected ConcurrentInitializer<Object> createInitializer() {
@@ -84,8 +84,8 @@ class AtomicSafeInitializerSupplierTest extends AbstractConcurrentInitializerClo
     /**
      * Tests that initialize() is called only once.
      *
-     * @throws org.apache.commons.lang3.concurrent.ConcurrentException because {@link #testGetConcurrent()} may throw it
-     * @throws InterruptedException because {@link #testGetConcurrent()} may throw it
+     * @throws org.apache.commons.lang3.concurrent.ConcurrentException Thrown if {@link #testGetConcurrent()} throws an exception.
+     * @throws InterruptedException Thrown if {@link #testGetConcurrent()} throws an exception.
      */
     @Test
     void testNumberOfInitializeInvocations() throws ConcurrentException, InterruptedException {

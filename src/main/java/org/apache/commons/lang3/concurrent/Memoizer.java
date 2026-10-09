@@ -21,6 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 import java.util.function.Function;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -30,24 +31,26 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
  * results for the calculation will be cached for future requests.
  *
  * <p>
- * This is not a fully functional cache, there is no way of limiting or removing results once they have been generated.
- * However, it is possible to get the implementation to regenerate the result for a given parameter, if an error was
- * thrown during the previous calculation, by setting the option during the construction of the class. If this is not
- * set the class will return the cached exception.
+ * This is not a fully functional cache: it is unbounded, and there is no way of limiting or removing results once they
+ * have been generated. In particular, note the exception-caching default: unless the {@code recalculate} constructor
+ * option is set to {@code true}, the <em>first</em> exception thrown by a calculation for a given parameter is cached
+ * and rethrown for every future call with that parameter for the lifetime of this instance - a single transient
+ * failure permanently poisons that key. Set {@code recalculate} to {@code true} to retry failed calculations on
+ * subsequent calls instead.
  * </p>
  * <p>
  * Thanks go to Brian Goetz, Tim Peierls and the members of JCP JSR-166 Expert Group for coming up with the
  * original implementation of the class. It was also published within Java Concurrency in Practice as a sample.
  * </p>
  *
- * @param <I> the type of the input to the calculation
- * @param <O> the type of the output of the calculation
+ * @param <I> The type of the input to the calculation
+ * @param <O> The type of the output of the calculation
  * @since 3.6
  */
 public class Memoizer<I, O> implements Computable<I, O> {
 
     private final ConcurrentMap<I, Future<O>> cache = new ConcurrentHashMap<>();
-    private final Function<? super I, ? extends Future<O>> mappingFunction;
+    private final Function<? super I, FutureTask<O>> mappingFunction;
     private final boolean recalculate;
 
     /**
@@ -58,7 +61,7 @@ public class Memoizer<I, O> implements Computable<I, O> {
      * calls with the provided parameter.
      * </p>
      *
-     * @param computable the computation whose results should be memorized
+     * @param computable The computation whose results should be memorized
      */
     public Memoizer(final Computable<I, O> computable) {
         this(computable, false);
@@ -68,13 +71,13 @@ public class Memoizer<I, O> implements Computable<I, O> {
      * Constructs a Memoizer for the provided Computable calculation, with the option of whether a Computation that
      * experiences an error should recalculate on subsequent calls or return the same cached exception.
      *
-     * @param computable the computation whose results should be memorized
+     * @param computable The computation whose results should be memorized
      * @param recalculate determines whether the computation should be recalculated on subsequent calls if the previous call
      *        failed
      */
     public Memoizer(final Computable<I, O> computable, final boolean recalculate) {
         this.recalculate = recalculate;
-        this.mappingFunction = k -> FutureTasks.run(() -> computable.compute(k));
+        this.mappingFunction = k -> new FutureTask<>(() -> computable.compute(k));
     }
 
     /**
@@ -85,7 +88,7 @@ public class Memoizer<I, O> implements Computable<I, O> {
      * calls with the provided parameter.
      * </p>
      *
-     * @param function the function whose results should be memorized
+     * @param function The function whose results should be memorized
      * @since 2.13.0
      */
     public Memoizer(final Function<I, O> function) {
@@ -96,14 +99,14 @@ public class Memoizer<I, O> implements Computable<I, O> {
      * Constructs a Memoizer for the provided Function calculation, with the option of whether a Function that
      * experiences an error should recalculate on subsequent calls or return the same cached exception.
      *
-     * @param function the computation whose results should be memorized
+     * @param function The computation whose results should be memorized
      * @param recalculate determines whether the computation should be recalculated on subsequent calls if the previous call
      *        failed
      * @since 2.13.0
      */
      public Memoizer(final Function<I, O> function, final boolean recalculate) {
         this.recalculate = recalculate;
-        this.mappingFunction = k -> FutureTasks.run(() -> function.apply(k));
+        this.mappingFunction = k -> new FutureTask<>(() -> function.apply(k));
     }
 
     /**
@@ -111,18 +114,36 @@ public class Memoizer<I, O> implements Computable<I, O> {
      *
      * <p>
      * This cache will also cache exceptions that occur during the computation if the {@code recalculate} parameter in the
-     * constructor was set to {@code false}, or not set. Otherwise, if an exception happened on the previous calculation,
+     * constructor was set to {@code false}, or not set: the first exception thrown for a given argument is rethrown for
+     * every future call with that argument. Otherwise, if an exception happened on the previous calculation,
      * the method will attempt again to generate a value.
      * </p>
+     * <p>
+     * The calculation for a given argument runs at most once per cached entry and executes <em>outside</em> any internal
+     * lock of the backing map (the pattern published in <em>Java Concurrency in Practice</em>): a slow calculation for
+     * one key does not block calls for unrelated keys, and a calculation may itself use this Memoizer without
+     * deadlocking. Concurrent callers for the same argument wait on the same {@link Future}.
+     * </p>
      *
-     * @param arg the argument for the calculation
-     * @return the result of the calculation
-     * @throws InterruptedException thrown if the calculation is interrupted
+     * @param arg The argument for the calculation
+     * @return The result of the calculation
+     * @throws InterruptedException Thrown if the calculation is interrupted.
      */
     @Override
     public O compute(final I arg) throws InterruptedException {
         while (true) {
-            final Future<O> future = cache.computeIfAbsent(arg, mappingFunction);
+            Future<O> future = cache.get(arg);
+            if (future == null) {
+                final FutureTask<O> futureTask = mappingFunction.apply(arg);
+                future = cache.putIfAbsent(arg, futureTask);
+                if (future == null) {
+                    // This thread won the race to install the task: run the user computation here,
+                    // outside the ConcurrentHashMap's internal locks. Losing threads (and later
+                    // callers) block on futureTask.get() instead of on a map bin lock.
+                    future = futureTask;
+                    futureTask.run();
+                }
+            }
             try {
                 return future.get();
             } catch (final CancellationException e) {
@@ -137,11 +158,11 @@ public class Memoizer<I, O> implements Computable<I, O> {
     }
 
     /**
-     * This method launders a Throwable to either a RuntimeException, Error or any other Exception wrapped in an
-     * IllegalStateException.
+     * Always throws an unchecked exception or error, rethrowing a {@link RuntimeException} or {@link Error} unchanged
+     * and wrapping any other throwable in an {@link IllegalStateException}.
      *
-     * @param throwable the throwable to laundered
-     * @return a RuntimeException, Error or an IllegalStateException
+     * @param throwable The throwable to rethrow or wrap.
+     * @return Never returns normally.
      */
     private RuntimeException launderException(final Throwable throwable) {
         throw new IllegalStateException("Unchecked exception", ExceptionUtils.throwUnchecked(throwable));

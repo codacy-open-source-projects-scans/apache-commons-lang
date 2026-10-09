@@ -28,10 +28,10 @@ import java.util.function.Function;
  * {@link #apply(Object, Object, Object)}.
  * </p>
  *
- * @param <T> the type of the first argument to the function
- * @param <U> the type of the second argument to the function
- * @param <V> the type of the third argument to the function
- * @param <R> the type of the result of the function
+ * @param <T> The type of the first argument to the function
+ * @param <U> The type of the second argument to the function
+ * @param <V> The type of the third argument to the function
+ * @param <R> The type of the result of the function
  * @see Function
  * @since 3.12.0
  */
@@ -43,23 +43,23 @@ public interface TriFunction<T, U, V, R> {
      * function to the result. If evaluation of either function throws an exception, it is relayed to the caller of the
      * composed function.
      *
-     * @param <W> the type of output of the {@code after} function, and of the composed function
-     * @param after the function to apply after this function is applied
-     * @return a composed function that first applies this function and then applies the {@code after} function
-     * @throws NullPointerException if after is null
+     * @param <W> The type of output of the {@code after} function, and of the composed function
+     * @param after The function to apply after this function is applied
+     * @return A composed function that first applies this function and then applies the {@code after} function
+     * @throws NullPointerException Thrown if after is null.
      */
     default <W> TriFunction<T, U, V, W> andThen(final Function<? super R, ? extends W> after) {
-        Objects.requireNonNull(after);
+        Objects.requireNonNull(after, "after");
         return (final T t, final U u, final V v) -> after.apply(apply(t, u, v));
     }
 
     /**
      * Applies this function to the given arguments.
      *
-     * @param t the first function argument
-     * @param u the second function argument
-     * @param v the third function argument
-     * @return the function result
+     * @param t The first function argument
+     * @param u The second function argument
+     * @param v The third function argument
+     * @return The function result
      */
     R apply(T t, U u, V v);
 }

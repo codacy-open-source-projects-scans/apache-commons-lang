@@ -27,6 +27,16 @@ public class CharSequenceUtils {
 
     private static final int NOT_FOUND = -1;
 
+    /**
+     * Whether the running JDK folds a supplementary code point split across a surrogate pair when comparing case insensitively in
+     * {@link String#regionMatches(boolean, int, String, int, int)}. JDKs up to and including Java 11 compare surrogate by surrogate and never match such a
+     * pair; later JDKs fold the whole code point. Probing what {@link String} actually does (rather than gating on a version constant) keeps every
+     * {@link CharSequence} type in step with {@link String} on whatever JDK is running. DESERET CAPITAL LETTER LONG I (U+10400) folds to its small form
+     * (U+10428).
+     */
+    private static final boolean STRING_FOLDS_SUPPLEMENTARY_CASE = new String(Character.toChars(0x10400)).regionMatches(true, 0,
+            new String(Character.toChars(0x10428)), 0, 2);
+
     static final int TO_STRING_LIMIT = 16;
 
     private static boolean checkLaterThan1(final CharSequence cs, final CharSequence searchChar, final int len2, final int start1) {
@@ -39,12 +49,30 @@ public class CharSequenceUtils {
     }
 
     /**
-     * Used by the indexOf(CharSequence methods) as a green implementation of indexOf.
+     * Tests whether two code points are equal ignoring case, matching the folding used by {@link String#regionMatches(boolean, int, String, int, int)}.
      *
-     * @param cs         the {@link CharSequence} to be processed.
-     * @param searchChar the {@link CharSequence} to be searched for.
-     * @param start      the start index.
-     * @return the index where the search sequence was found, or {@code -1} if there is no such occurrence.
+     * @param cp1 The first code point.
+     * @param cp2 The second code point.
+     * @return whether the code points are equal ignoring case.
+     */
+    private static boolean equalsIgnoreCase(final int cp1, final int cp2) {
+        final int u1 = Character.toUpperCase(cp1);
+        final int u2 = Character.toUpperCase(cp2);
+        return u1 == u2 || Character.toLowerCase(u1) == Character.toLowerCase(u2);
+    }
+
+    /**
+     * Used by the indexOf(CharSequence methods) as a green implementation of indexOf.
+     * <p>
+     * {@link CharSequence} types without a dedicated branch are scanned in place rather than materialized with {@code toString()}: for builder
+     * types (for example {@code org.apache.commons.lang3.text.StrBuilder}), {@code toString()} copies the whole buffer, and callers that invoke
+     * this method once per occurrence (such as {@code deleteAll}/{@code replaceAll}) would multiply that copy into allocation-quadratic churn.
+     * </p>
+     *
+     * @param cs         The {@link CharSequence} to be processed.
+     * @param searchChar The {@link CharSequence} to be searched for.
+     * @param start      The start index.
+     * @return The index where the search sequence was found, or {@code -1} if there is no such occurrence.
      */
     static int indexOf(final CharSequence cs, final CharSequence searchChar, final int start) {
         if (cs == null || searchChar == null) {
@@ -59,16 +87,24 @@ public class CharSequenceUtils {
         if (cs instanceof StringBuffer) {
             return ((StringBuffer) cs).indexOf(searchChar.toString(), start);
         }
-        return cs.toString().indexOf(searchChar.toString(), start);
-//        if (cs instanceof String && searchChar instanceof String) {
-//            // TODO: Do we assume searchChar is usually relatively small;
-//            //       If so then calling toString() on it is better than reverting to
-//            //       the green implementation in the else block
-//            return ((String) cs).indexOf((String) searchChar, start);
-//        } else {
-//            // TODO: Implement rather than convert to String
-//            return cs.toString().indexOf(searchChar.toString(), start);
-//        }
+        // Direct scan without copying cs; matches the semantics of String.indexOf(String, int).
+        final int len1 = cs.length();
+        final int len2 = searchChar.length();
+        final int from = Math.max(start, 0);
+        if (len2 == 0) {
+            return Math.min(from, len1);
+        }
+        if (len2 > len1 - from) {
+            return StringUtils.INDEX_NOT_FOUND;
+        }
+        final char char0 = searchChar.charAt(0);
+        final int max = len1 - len2;
+        for (int i = from; i <= max; i++) {
+            if (cs.charAt(i) == char0 && checkLaterThan1(cs, searchChar, len2, i)) {
+                return i;
+            }
+        }
+        return StringUtils.INDEX_NOT_FOUND;
     }
 
     /**
@@ -101,10 +137,10 @@ public class CharSequenceUtils {
      * All indices are specified in {@code char} values (Unicode code units).
      * </p>
      *
-     * @param cs         the {@link CharSequence} to be processed, not null.
-     * @param searchChar the char to be searched for.
-     * @param start      the start index, negative starts at the string start.
-     * @return the index where the search char was found, -1 if not found.
+     * @param cs         The {@link CharSequence} to be processed, not null.
+     * @param searchChar The char to be searched for.
+     * @param start      The start index, negative starts at the string start.
+     * @return The index where the search char was found, -1 if not found.
      * @since 3.6 updated to behave more like {@link String}.
      */
     static int indexOf(final CharSequence cs, final int searchChar, int start) {
@@ -140,10 +176,10 @@ public class CharSequenceUtils {
     /**
      * Used by the lastIndexOf(CharSequence methods) as a green implementation of lastIndexOf
      *
-     * @param cs the {@link CharSequence} to be processed.
-     * @param searchChar the {@link CharSequence} to find.
-     * @param start the start index.
-     * @return the index where the search sequence was found.
+     * @param cs The {@link CharSequence} to be processed.
+     * @param searchChar The {@link CharSequence} to find.
+     * @param start The start index.
+     * @return The index where the search sequence was found.
      */
     static int lastIndexOf(final CharSequence cs, final CharSequence searchChar, int start) {
         if (searchChar == null || cs == null) {
@@ -233,10 +269,10 @@ public class CharSequenceUtils {
      * All indices are specified in {@code char} values (Unicode code units).
      * </p>
      *
-     * @param cs         the {@link CharSequence} to be processed.
-     * @param searchChar the char to be searched for.
-     * @param start      the start index, negative returns -1, beyond length starts at end.
-     * @return the index where the search char was found, -1 if not found.
+     * @param cs         The {@link CharSequence} to be processed.
+     * @param searchChar The char to be searched for.
+     * @param start      The start index, negative returns -1, beyond length starts at end.
+     * @return The index where the search char was found, -1 if not found.
      * @since 3.6 updated to behave more like {@link String}.
      */
     static int lastIndexOf(final CharSequence cs, final int searchChar, int start) {
@@ -262,11 +298,9 @@ public class CharSequenceUtils {
         //NOTE - we must do a forward traversal for this to avoid duplicating code points
         if (searchChar <= Character.MAX_CODE_POINT) {
             final char[] chars = Character.toChars(searchChar);
-            //make sure it's not the last index
-            if (start == sz - 1) {
-                return NOT_FOUND;
-            }
-            for (int i = start; i >= 0; i--) {
+            // A supplementary code point spans two chars, so its high surrogate can start no later
+            // than sz - 2; clamp the search origin instead of bailing out when start is the last index.
+            for (int i = Math.min(start, sz - 2); i >= 0; i--) {
                 final char high = cs.charAt(i);
                 final char low = cs.charAt(i + 1);
                 if (chars[0] == high && chars[1] == low) {
@@ -280,12 +314,12 @@ public class CharSequenceUtils {
     /**
      * Tests if two string regions are equal.
      *
-     * @param cs the {@link CharSequence} to be processed.
+     * @param cs         The {@link CharSequence} to be processed.
      * @param ignoreCase whether or not to be case-insensitive.
-     * @param thisStart the index to start on the {@code cs} CharSequence.
-     * @param substring the {@link CharSequence} to be looked for.
-     * @param start the index to start on the {@code substring} CharSequence.
-     * @param length character length of the region.
+     * @param thisStart  The index to start on the {@code cs} CharSequence.
+     * @param substring  The {@link CharSequence} to be looked for.
+     * @param start      The index to start on the {@code substring} CharSequence.
+     * @param length     character length of the region.
      * @return whether the region matched.
      * @see String#regionMatches(boolean, int, String, int, int)
      */
@@ -295,9 +329,6 @@ public class CharSequenceUtils {
         if (cs instanceof String && substring instanceof String) {
             return ((String) cs).regionMatches(ignoreCase, thisStart, (String) substring, start, length);
         }
-        int index1 = thisStart;
-        int index2 = start;
-        int tmpLen = length;
         // Extract these first so we detect NPEs the same as the java.lang.String version
         final int srcLen = cs.length() - thisStart;
         final int otherLen = substring.length() - start;
@@ -309,21 +340,52 @@ public class CharSequenceUtils {
         if (srcLen < length || otherLen < length) {
             return false;
         }
-        while (tmpLen-- > 0) {
-            final char c1 = cs.charAt(index1++);
-            final char c2 = substring.charAt(index2++);
+        final int end1 = thisStart + length;
+        final int end2 = start + length;
+        int index1 = thisStart;
+        int index2 = start;
+        while (index1 < end1 && index2 < end2) {
+            final char c1 = cs.charAt(index1);
+            final char c2 = substring.charAt(index2);
             if (c1 == c2) {
+                index1++;
+                index2++;
                 continue;
             }
             if (!ignoreCase) {
                 return false;
             }
-            // The real same check as in String#regionMatches(boolean, int, String, int, int):
-            final char u1 = Character.toUpperCase(c1);
-            final char u2 = Character.toUpperCase(c2);
-            if (u1 != u2 && Character.toLowerCase(u1) != Character.toLowerCase(u2)) {
-                return false;
+            // The same case-insensitive check as String#regionMatches(boolean, int, String, int, int).
+            if (!equalsIgnoreCase(c1, c2)) {
+                // Only fold a supplementary code point split across a surrogate pair where String itself does, so
+                // every CharSequence type gives the same result that String does on the running JDK (see field).
+                if (!STRING_FOLDS_SUPPLEMENTARY_CASE) {
+                    return false;
+                }
+                int cp1 = c1;
+                if (Character.isHighSurrogate(c1)) {
+                    if (index1 + 1 < end1 && Character.isLowSurrogate(cs.charAt(index1 + 1))) {
+                        cp1 = Character.toCodePoint(c1, cs.charAt(index1 + 1));
+                        index1++;
+                    }
+                } else if (Character.isLowSurrogate(c1) && index1 > thisStart && Character.isHighSurrogate(cs.charAt(index1 - 1))) {
+                    cp1 = Character.toCodePoint(cs.charAt(index1 - 1), c1);
+                }
+                int cp2 = c2;
+                if (Character.isHighSurrogate(c2)) {
+                    if (index2 + 1 < end2 && Character.isLowSurrogate(substring.charAt(index2 + 1))) {
+                        cp2 = Character.toCodePoint(c2, substring.charAt(index2 + 1));
+                        index2++;
+                    }
+                } else if (Character.isLowSurrogate(c2) && index2 > start && Character.isHighSurrogate(substring.charAt(index2 - 1))) {
+                    cp2 = Character.toCodePoint(substring.charAt(index2 - 1), c2);
+                }
+                if (!equalsIgnoreCase(cp1, cp2)) {
+                    return false;
+                }
             }
+            index1++;
+            index2++;
         }
         return true;
     }
@@ -332,14 +394,16 @@ public class CharSequenceUtils {
      * Returns a new {@link CharSequence} that is a subsequence of this
      * sequence starting with the {@code char} value at the specified index.
      *
-     * <p>This provides the {@link CharSequence} equivalent to {@link String#substring(int)}.
+     * <p>
+     * This provides the {@link CharSequence} equivalent to {@link String#substring(int)}.
      * The length (in {@code char}) of the returned sequence is {@code length() - start},
-     * so if {@code start == end} then an empty sequence is returned.</p>
+     * so if {@code start == end} then an empty sequence is returned.
+     * </p>
      *
-     * @param cs  the specified subsequence, null returns null.
-     * @param start  the start index, inclusive, valid.
-     * @return a new subsequence, may be null.
-     * @throws IndexOutOfBoundsException if {@code start} is negative or if
+     * @param cs  The specified subsequence, null returns null.
+     * @param start  The start index, inclusive, valid.
+     * @return A new subsequence, may be null.
+     * @throws IndexOutOfBoundsException Thrown if {@code start} is negative or if
      *  {@code start} is greater than {@code length()}.
      */
     public static CharSequence subSequence(final CharSequence cs, final int start) {
@@ -349,8 +413,8 @@ public class CharSequenceUtils {
     /**
      * Converts the given CharSequence to a char[].
      *
-     * @param source the {@link CharSequence} to be processed.
-     * @return the resulting char array, never null.
+     * @param source The {@link CharSequence} to be processed.
+     * @return The resulting char array, never null.
      * @since 3.11
      */
     public static char[] toCharArray(final CharSequence source) {
@@ -383,8 +447,10 @@ public class CharSequenceUtils {
      * {@link CharSequenceUtils} instances should NOT be constructed in
      * standard programming.
      *
-     * <p>This constructor is public to permit tools that require a JavaBean
-     * instance to operate.</p>
+     * <p>
+     * This constructor is public to permit tools that require a JavaBean
+     * instance to operate.
+     * </p>
      *
      * @deprecated TODO Make private in 4.0.
      */

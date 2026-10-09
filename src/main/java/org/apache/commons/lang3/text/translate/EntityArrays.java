@@ -213,7 +213,7 @@ public class EntityArrays {
         {"\u21D0", "&lArr;"}, // leftwards double arrow, U+21D0 ISOtech -->
         // <!-- ISO 10646 does not say that lArr is the same as the 'is implied by'
         // arrow but also does not have any other character for that function.
-        // So ? lArr canbe used for 'is implied by' as ISOtech suggests -->
+        // So ? lArr can be used for 'is implied by' as ISOtech suggests -->
         {"\u21D1", "&uArr;"}, // upwards double arrow, U+21D1 ISOamsa -->
         {"\u21D2", "&rArr;"}, // rightwards double arrow, U+21D2 ISOtech -->
         // <!-- ISO 10646 does not say this is the 'implies' character but does not
@@ -330,6 +330,7 @@ public class EntityArrays {
     private static final String[][] HTML40_EXTENDED_UNESCAPE = invert(HTML40_EXTENDED_ESCAPE);
 
     private static final String[][] BASIC_ESCAPE = {
+        {"'", "&#39;"},   // ' - apostrophe
         {"\"", "&quot;"}, // " - double-quote
         {"&", "&amp;"},   // & - ampersand
         {"<", "&lt;"},    // < - less-than
@@ -357,7 +358,7 @@ public class EntityArrays {
     /**
      * Mapping to escape the apostrophe character to its XML character entity.
      *
-     * @return the mapping table.
+     * @return The mapping table.
      */
     public static String[][] APOS_ESCAPE() {
         return APOS_ESCAPE.clone();
@@ -366,7 +367,7 @@ public class EntityArrays {
     /**
      * Reverse of {@link #APOS_ESCAPE()} for unescaping purposes.
      *
-     * @return the mapping table.
+     * @return The mapping table.
      */
     public static String[][] APOS_UNESCAPE() {
         return APOS_UNESCAPE.clone();
@@ -375,9 +376,11 @@ public class EntityArrays {
     /**
      * Mapping to escape the basic XML and HTML character entities.
      *
-     * Namely: {@code " & < >}
+     * <p>
+     * Namely: {@code " ' & < >}. The apostrophe is escaped as the numeric reference {@code &#39;}.
+     * </p>
      *
-     * @return the mapping table.
+     * @return The mapping table.
      */
     public static String[][] BASIC_ESCAPE() {
         return BASIC_ESCAPE.clone();
@@ -386,7 +389,7 @@ public class EntityArrays {
     /**
      * Reverse of {@link #BASIC_ESCAPE()} for unescaping purposes.
      *
-     * @return the mapping table.
+     * @return The mapping table.
      */
     public static String[][] BASIC_UNESCAPE() {
         return BASIC_UNESCAPE.clone();
@@ -397,7 +400,7 @@ public class EntityArrays {
      * references</a>. Note that this must be used with {@link #ISO8859_1_ESCAPE()} to get the full list of
      * HTML 4.0 character entities.
      *
-     * @return the mapping table.
+     * @return The mapping table.
      */
     public static String[][] HTML40_EXTENDED_ESCAPE() {
         return HTML40_EXTENDED_ESCAPE.clone();
@@ -406,7 +409,7 @@ public class EntityArrays {
     /**
      * Reverse of {@link #HTML40_EXTENDED_ESCAPE()} for unescaping purposes.
      *
-     * @return the mapping table.
+     * @return The mapping table.
      */
     public static String[][] HTML40_EXTENDED_UNESCAPE() {
         return HTML40_EXTENDED_UNESCAPE.clone();
@@ -431,7 +434,7 @@ public class EntityArrays {
      * Mapping to escape <a href="https://secure.wikimedia.org/wikipedia/en/wiki/ISO/IEC_8859-1">ISO-8859-1</a>
      * characters to their named HTML 3.x equivalents.
      *
-     * @return the mapping table.
+     * @return The mapping table.
      */
     public static String[][] ISO8859_1_ESCAPE() {
         return ISO8859_1_ESCAPE.clone();
@@ -440,7 +443,7 @@ public class EntityArrays {
     /**
      * Reverse of {@link #ISO8859_1_ESCAPE()} for unescaping purposes.
      *
-     * @return the mapping table.
+     * @return The mapping table.
      */
     public static String[][] ISO8859_1_UNESCAPE() {
         return ISO8859_1_UNESCAPE.clone();
@@ -452,7 +455,7 @@ public class EntityArrays {
      * Namely: {@code \b \n \t \f \r}
      * </p>
      *
-     * @return the mapping table.
+     * @return The mapping table.
      */
     public static String[][] JAVA_CTRL_CHARS_ESCAPE() {
         return JAVA_CTRL_CHARS_ESCAPE.clone();
@@ -461,7 +464,7 @@ public class EntityArrays {
     /**
      * Reverse of {@link #JAVA_CTRL_CHARS_ESCAPE()} for unescaping purposes.
      *
-     * @return the mapping table.
+     * @return The mapping table.
      */
     public static String[][] JAVA_CTRL_CHARS_UNESCAPE() {
         return JAVA_CTRL_CHARS_UNESCAPE.clone();

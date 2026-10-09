@@ -20,13 +20,12 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 /**
- * Tests {@link StringUtils} Trim/Strip methods.
+ * Tests {@link StringUtils} strip methods.
  */
-class StringUtilsTrimStripTest extends AbstractLangTest {
+class StringUtilsStripTest extends AbstractLangTest {
     private static final String FOO = "foo";
 
     @Test
@@ -56,16 +55,69 @@ class StringUtilsTrimStripTest extends AbstractLangTest {
     }
 
     @Test
+    void testStripAccentsBengali() {
+        // Bengali vowel sign O, both precomposed and decomposed.
+        assertEquals("\u09CB", StringUtils.stripAccents("\u09CB"));
+        assertEquals("\u09CB", StringUtils.stripAccents("\u09C7\u09BE"));
+    }
+
+    @Test
     void testStripAccentsIWithBar() {
         assertEquals("I i I i I", StringUtils.stripAccents("\u0197 \u0268 \u1D7B \u1DA4 \u1DA7"));
     }
 
     @Test
-    @Disabled
+    void testStripAccentsJapanese() {
+        // Katakana GA retains its dakuten in precomposed, decomposed, and halfwidth forms.
+        assertEquals("\u30AC", StringUtils.stripAccents("\u30AC"));
+        assertEquals("\u30AC", StringUtils.stripAccents("\u30AB\u3099"));
+        assertEquals("\u30AC", StringUtils.stripAccents("\uFF76\uFF9E"));
+    }
+
+    @Test
     void testStripAccentsKorean() {
         // LANG-1655
         final String input = "\uC78A\uC9C0\uB9C8 \uB10C \uD750\uB9B0 \uC5B4\uB460\uC0AC\uC774 \uC67C\uC190\uC73C\uB85C \uADF8\uB9B0 \uBCC4 \uD558\uB098";
         assertEquals(input, StringUtils.stripAccents(input), "Failed to handle Korean text");
+    }
+
+    @Test
+    void testStripAccentsKoreanJamo() {
+        // Compose modern Jamo with and without a trailing consonant.
+        assertEquals("\uAC00", StringUtils.stripAccents("\u1100\u1161"));
+        assertEquals("\uAC01", StringUtils.stripAccents("\u1100\u1161\u11A8"));
+        // Compatibility Jamo are still folded before composition.
+        assertEquals("\uAC00", StringUtils.stripAccents("\u3131\u314F"));
+    }
+
+    @Test
+    void testStripAccentsKoreanWithLatinAccents() {
+        final String expected = "\uAC00 \uAC01 cafe deja vu";
+        assertEquals(expected, StringUtils.stripAccents("\uAC00 \uAC01 caf\u00E9 d\u00E9j\u00E0 vu"));
+        assertEquals(expected, StringUtils.stripAccents("\u1100\u1161 \u1100\u1161\u11A8 cafe\u0301 de\u0301ja\u0300 vu"));
+    }
+
+    /**
+     * Decomposes ligatures and digraphs per the KD column in the <a href = "https://www.unicode.org/charts/normalization/">Unicode Normalization Chart.</a>
+     */
+    @Test
+    void testStripAccentsSymbolMath() {
+        // Noop
+        final String lt = "<";
+        assertEquals(lt, StringUtils.stripAccents(lt));
+        // https://www.unicode.org/charts/normalization/chart_Symbol-Math.html
+        assertEquals(lt, StringUtils.stripAccents("\uFE64"));
+        assertEquals(lt, StringUtils.stripAccents("\uFF1C"));
+        assertEquals(lt, StringUtils.stripAccents("\u226E"));
+        // Noop
+        final String gt = ">";
+        assertEquals(gt, StringUtils.stripAccents(gt));
+        // https://www.unicode.org/charts/normalization/chart_Symbol-Math.html
+        assertEquals(gt, StringUtils.stripAccents("\uFE65"));
+        assertEquals(gt, StringUtils.stripAccents("\uFE65"));
+        assertEquals(gt, StringUtils.stripAccents("\u226F"));
+        //
+        assertEquals("</script>", StringUtils.stripAccents("\uFF1C\uFF0Fscript\uFF1E"));
     }
 
     @Test
@@ -219,6 +271,24 @@ class StringUtilsTrimStripTest extends AbstractLangTest {
     }
 
     @Test
+    void testStripSupplementaryCodePoints() {
+        // U+1D51E and U+1D51F share the high surrogate \uD835; U+1D11E shares the low surrogate \uDD1E with U+1D51E.
+        final String mathA = "\uD835\uDD1E"; // U+1D51E
+        final String mathB = "\uD835\uDD1F"; // U+1D51F
+        final String clef = "\uD834\uDD1E";  // U+1D11E
+
+        // A supplementary strip character must not match a code point that only shares one surrogate half.
+        assertEquals(mathA + "abc", StringUtils.stripStart(mathA + "abc", mathB));
+        assertEquals("abc" + clef, StringUtils.stripEnd("abc" + clef, mathA));
+        assertEquals(mathA + "abc" + mathA, StringUtils.strip(mathA + "abc" + mathA, mathB));
+
+        // Genuine membership still strips the whole supplementary code point.
+        assertEquals("abc", StringUtils.stripStart(mathA + mathA + "abc", mathA));
+        assertEquals("abc", StringUtils.stripEnd("abc" + mathA + mathA, mathA));
+        assertEquals("abc", StringUtils.strip(mathA + "abc" + mathA, mathA));
+    }
+
+    @Test
     void testStripToEmptyString() {
         assertEquals("", StringUtils.stripToEmpty(null));
         assertEquals("", StringUtils.stripToEmpty(""));
@@ -238,44 +308,5 @@ class StringUtilsTrimStripTest extends AbstractLangTest {
         assertEquals("ab c", StringUtils.stripToNull("  ab c  "));
         assertEquals(StringUtilsTest.NON_WHITESPACE,
                 StringUtils.stripToNull(StringUtilsTest.WHITESPACE + StringUtilsTest.NON_WHITESPACE + StringUtilsTest.WHITESPACE));
-    }
-
-    @Test
-    void testTrim() {
-        assertEquals(FOO, StringUtils.trim(FOO + "  "));
-        assertEquals(FOO, StringUtils.trim(" " + FOO + "  "));
-        assertEquals(FOO, StringUtils.trim(" " + FOO));
-        assertEquals(FOO, StringUtils.trim(FOO + ""));
-        assertEquals("", StringUtils.trim(" \t\r\n\b "));
-        assertEquals("", StringUtils.trim(StringUtilsTest.TRIMMABLE));
-        assertEquals(StringUtilsTest.NON_TRIMMABLE, StringUtils.trim(StringUtilsTest.NON_TRIMMABLE));
-        assertEquals("", StringUtils.trim(""));
-        assertNull(StringUtils.trim(null));
-    }
-
-    @Test
-    void testTrimToEmpty() {
-        assertEquals(FOO, StringUtils.trimToEmpty(FOO + "  "));
-        assertEquals(FOO, StringUtils.trimToEmpty(" " + FOO + "  "));
-        assertEquals(FOO, StringUtils.trimToEmpty(" " + FOO));
-        assertEquals(FOO, StringUtils.trimToEmpty(FOO + ""));
-        assertEquals("", StringUtils.trimToEmpty(" \t\r\n\b "));
-        assertEquals("", StringUtils.trimToEmpty(StringUtilsTest.TRIMMABLE));
-        assertEquals(StringUtilsTest.NON_TRIMMABLE, StringUtils.trimToEmpty(StringUtilsTest.NON_TRIMMABLE));
-        assertEquals("", StringUtils.trimToEmpty(""));
-        assertEquals("", StringUtils.trimToEmpty(null));
-    }
-
-    @Test
-    void testTrimToNull() {
-        assertEquals(FOO, StringUtils.trimToNull(FOO + "  "));
-        assertEquals(FOO, StringUtils.trimToNull(" " + FOO + "  "));
-        assertEquals(FOO, StringUtils.trimToNull(" " + FOO));
-        assertEquals(FOO, StringUtils.trimToNull(FOO + ""));
-        assertNull(StringUtils.trimToNull(" \t\r\n\b "));
-        assertNull(StringUtils.trimToNull(StringUtilsTest.TRIMMABLE));
-        assertEquals(StringUtilsTest.NON_TRIMMABLE, StringUtils.trimToNull(StringUtilsTest.NON_TRIMMABLE));
-        assertNull(StringUtils.trimToNull(""));
-        assertNull(StringUtils.trimToNull(null));
     }
 }

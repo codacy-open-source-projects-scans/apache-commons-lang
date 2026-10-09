@@ -18,6 +18,7 @@ package org.apache.commons.lang3;
 
 import static org.apache.commons.lang3.Supplementary.CharU20000;
 import static org.apache.commons.lang3.Supplementary.CharU20001;
+import static org.apache.commons.lang3.Supplementary.CharU24000;
 import static org.apache.commons.lang3.Supplementary.CharUSuppCharHigh;
 import static org.apache.commons.lang3.Supplementary.CharUSuppCharLow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -403,6 +404,19 @@ class StringUtilsEqualsIndexOfTest extends AbstractLangTest {
     }
 
     /**
+     * A low surrogate that is the low half of a supplementary code point in the search set must not match the low half of a different code point in the input,
+     * otherwise the returned index points inside a surrogate pair. See https://www.oracle.com/technical-resources/articles/javase/supplementary.html
+     */
+    @Test
+    void testIndexOfAny_StringCharArrayWithSharedLowSurrogate() {
+        assertEquals(CharU20000.charAt(1), CharU24000.charAt(1));
+        assertEquals(-1, StringUtils.indexOfAny(CharU20000, CharU24000.toCharArray()));
+        assertEquals(-1, StringUtils.indexOfAny("abc" + CharU20000, CharU24000.toCharArray()));
+        // A genuine occurrence of the same pair is found at the start of the pair.
+        assertEquals(3, StringUtils.indexOfAny("abc" + CharU24000, CharU24000.toCharArray()));
+    }
+
+    /**
      * See https://www.oracle.com/technical-resources/articles/javase/supplementary.html
      */
     @Test
@@ -411,6 +425,10 @@ class StringUtilsEqualsIndexOfTest extends AbstractLangTest {
         assertEquals(2, StringUtils.indexOfAny(CharU20000 + CharU20001, CharU20001.toCharArray()));
         assertEquals(0, StringUtils.indexOfAny(CharU20000, CharU20000.toCharArray()));
         assertEquals(-1, StringUtils.indexOfAny(CharU20000, CharU20001.toCharArray()));
+        // An unpaired trailing high surrogate must not match a supplementary code point, matching containsAny.
+        assertEquals(-1, StringUtils.indexOfAny(CharUSuppCharHigh, CharU20001.toCharArray()));
+        assertFalse(StringUtils.containsAny(CharUSuppCharHigh, CharU20001.toCharArray()));
+        assertEquals(-1, StringUtils.indexOfAny("abc" + CharUSuppCharHigh, CharU20000.toCharArray()));
     }
 
     @Test
@@ -610,6 +628,13 @@ class StringUtilsEqualsIndexOfTest extends AbstractLangTest {
         assertEquals(5, StringUtils.lastIndexOf("aabaabaa", 'b'));
 
         assertEquals(5, StringUtils.lastIndexOf(new StringBuilder("aabaabaa"), 'b'));
+
+        // LANG-1300: supplementary code points searched in a non-String CharSequence must agree with String
+        final int supp = 0x2070E;
+        final String suppStr = new String(Character.toChars(supp));
+        assertEquals(suppStr.lastIndexOf(supp), StringUtils.lastIndexOf(new StringBuilder(suppStr), supp));
+        assertEquals(("x" + suppStr).lastIndexOf(supp), StringUtils.lastIndexOf(new StringBuilder("x" + suppStr), supp));
+        assertEquals((suppStr + "y").lastIndexOf(supp), StringUtils.lastIndexOf(new StringBuilder(suppStr + "y"), supp));
     }
 
     @Test

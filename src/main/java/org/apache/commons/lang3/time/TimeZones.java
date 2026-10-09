@@ -27,7 +27,7 @@ import org.apache.commons.lang3.SystemProperties;
 import org.apache.commons.lang3.SystemUtils;
 
 /**
- * Helps dealing with {@link java.util.TimeZone}s.
+ * Helps work with {@link java.util.TimeZone}s.
  *
  * @since 3.7
  */
@@ -43,7 +43,7 @@ public class TimeZones {
      *
      * @since 3.13.0
      */
-    public static final TimeZone GMT = TimeZones.getTimeZone(GMT_ID);
+    public static final TimeZone GMT = new ImmutableTimeZone(TimeZones.getTimeZone(GMT_ID));
 
     private static final boolean JAVA_25 = SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_25);
 
@@ -57,7 +57,7 @@ public class TimeZones {
     static final String[] SORTED_AVAILABLE_IDS = ArraySorter.sort(TimeZone.getAvailableIDs().clone());
 
     /**
-     * Delegates to {@link TimeZone#getTimeZone(String)}, on Java 25 and up, maps an ID if it's a key in {@link ZoneId#SHORT_IDS}.
+     * Gets the time zone using {@link TimeZone#getTimeZone(String)}. On Java 25 and later, maps IDs found in {@link ZoneId#SHORT_IDS}.
      * <p>
      * On Java 25, calling {@link TimeZone#getTimeZone(String)} with an ID in {@link ZoneId#SHORT_IDS} writes a message to {@link System#err} in the form:
      * </p>
@@ -84,8 +84,8 @@ public class TimeZones {
     /**
      * Returns the given TimeZone if non-{@code null}, otherwise {@link TimeZone#getDefault()}.
      *
-     * @param timeZone a locale or {@code null}.
-     * @return the given locale if non-{@code null}, otherwise {@link TimeZone#getDefault()}.
+     * @param timeZone A locale or {@code null}.
+     * @return The given locale if non-{@code null}, otherwise {@link TimeZone#getDefault()}.
      * @since 3.13.0
      */
     public static TimeZone toTimeZone(final TimeZone timeZone) {

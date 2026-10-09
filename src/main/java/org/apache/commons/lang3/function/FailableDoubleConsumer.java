@@ -47,7 +47,7 @@ public interface FailableDoubleConsumer<E extends Throwable> {
     /**
      * Accepts the given arguments.
      *
-     * @param value the parameter for the consumable to accept
+     * @param value The parameter for the consumable to accept
      * @throws E Thrown when the consumer fails.
      */
     void accept(double value) throws E;
@@ -55,12 +55,12 @@ public interface FailableDoubleConsumer<E extends Throwable> {
     /**
      * Returns a composed {@link FailableDoubleConsumer} like {@link DoubleConsumer#andThen(DoubleConsumer)}.
      *
-     * @param after the operation to perform after this one.
-     * @return a composed {@link FailableDoubleConsumer} like {@link DoubleConsumer#andThen(DoubleConsumer)}.
-     * @throws NullPointerException when {@code after} is null.
+     * @param after The operation to perform after this one.
+     * @return A composed {@link FailableDoubleConsumer} like {@link DoubleConsumer#andThen(DoubleConsumer)}.
+     * @throws NullPointerException Thrown when {@code after} is null.
      */
     default FailableDoubleConsumer<E> andThen(final FailableDoubleConsumer<E> after) {
-        Objects.requireNonNull(after);
+        Objects.requireNonNull(after, "after");
         return (final double t) -> {
             accept(t);
             after.accept(t);
