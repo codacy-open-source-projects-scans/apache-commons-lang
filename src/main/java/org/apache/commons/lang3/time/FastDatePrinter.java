@@ -37,8 +37,10 @@ import java.util.concurrent.ConcurrentMap;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.CharUtils;
 import org.apache.commons.lang3.ClassUtils;
+import org.apache.commons.lang3.JavaVersion;
 import org.apache.commons.lang3.LocaleUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.SystemUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
@@ -1015,6 +1017,9 @@ public class FastDatePrinter implements DatePrinter, Serializable {
 
     private static final int MAX_DIGITS = 10; // log10(Integer.MAX_VALUE) ~= 9.3
 
+    /** Whether SimpleDateFormat formats a month-only pattern with the standalone month names; since Java 9 (JDK-8114833). */
+    private static final boolean STANDALONE_MONTH_PATTERN = SystemUtils.isJavaVersionAtLeast(JavaVersion.JAVA_9);
+
     private static final ConcurrentMap<TimeZoneDisplayKey, String> timeZoneDisplayCache = new ConcurrentHashMap<>(7);
 
     /**
@@ -1436,6 +1441,39 @@ public class FastDatePrinter implements DatePrinter, Serializable {
     }
 
     /**
+     * Tests whether the pattern contains exactly one {@code M} field occurrence and no other fields.
+     * <p>
+     * Since Java 9, {@link SimpleDateFormat} formats the text month of such a pattern with standalone month names. In some languages, like the Slavic and
+     * Baltic ones, these have a different grammatical form from the names used next to a day ("{@code MMMM}" alone prints Russian February as nominative
+     * "{@code февраль}" where "{@code d MMMM}" prints genitive "{@code февраля}"). Quoted and unquoted literals are ignored, but repeated fields such as
+     * "{@code MMM MMM}" prevent standalone formatting.
+     * </p>
+     *
+     * @return Whether the pattern contains exactly one {@code M} field occurrence and no other fields.
+     */
+    private boolean isMonthOnlyPattern() {
+        final int[] indexRef = new int[1];
+        boolean monthField = false;
+        for (int i = 0; i < pattern.length(); i++) {
+            indexRef[0] = i;
+            final String token = parseToken(pattern, indexRef);
+            i = indexRef[0];
+            if (token.isEmpty()) {
+                break;
+            }
+            final char c = token.charAt(0);
+            if (c == '\'') {
+                continue;
+            }
+            if (c != 'M' || monthField) {
+                return false;
+            }
+            monthField = true;
+        }
+        return monthField;
+    }
+
+    /**
      * Creates a new Calendar instance.
      *
      * @return A new Calendar instance.
@@ -1462,6 +1500,8 @@ public class FastDatePrinter implements DatePrinter, Serializable {
 
         final int length = pattern.length();
         final int[] indexRef = new int[1];
+        final boolean monthOnly = STANDALONE_MONTH_PATTERN && isMonthOnlyPattern();
+        CalendarUtils calendarUtils = null;
 
         for (int i = 0; i < length; i++) {
             indexRef[0] = i;
@@ -1475,6 +1515,9 @@ public class FastDatePrinter implements DatePrinter, Serializable {
 
             Rule rule;
             final char c = token.charAt(0);
+            if (calendarUtils == null && tokenLen >= 3 && (c == 'L' || c == 'M' && monthOnly)) {
+                calendarUtils = CalendarUtils.getInstance(locale);
+            }
 
             switch (c) {
             case 'G': // era designator (text)
@@ -1493,9 +1536,9 @@ public class FastDatePrinter implements DatePrinter, Serializable {
                 break;
             case 'M': // month in year (text and number)
                 if (tokenLen >= 4) {
-                    rule = new TextField(Calendar.MONTH, months);
+                    rule = new TextField(Calendar.MONTH, monthOnly ? calendarUtils.getStandaloneLongMonthNames() : months);
                 } else if (tokenLen == 3) {
-                    rule = new TextField(Calendar.MONTH, shortMonths);
+                    rule = new TextField(Calendar.MONTH, monthOnly ? calendarUtils.getStandaloneShortMonthNames() : shortMonths);
                 } else if (tokenLen == 2) {
                     rule = TwoDigitMonthField.INSTANCE;
                 } else {
@@ -1504,9 +1547,9 @@ public class FastDatePrinter implements DatePrinter, Serializable {
                 break;
             case 'L': // month in year (text and number)
                 if (tokenLen >= 4) {
-                    rule = new TextField(Calendar.MONTH, CalendarUtils.getInstance(locale).getStandaloneLongMonthNames());
+                    rule = new TextField(Calendar.MONTH, calendarUtils.getStandaloneLongMonthNames());
                 } else if (tokenLen == 3) {
-                    rule = new TextField(Calendar.MONTH, CalendarUtils.getInstance(locale).getStandaloneShortMonthNames());
+                    rule = new TextField(Calendar.MONTH, calendarUtils.getStandaloneShortMonthNames());
                 } else if (tokenLen == 2) {
                     rule = TwoDigitMonthField.INSTANCE;
                 } else {

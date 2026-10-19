@@ -52,8 +52,23 @@ The <action> type attribute can be add,update,fix,remove.
     <action issue="LANG-1655" type="fix" dev="ggregory" due-to="Efe, Gary Gregory">Preserve Korean text in stripAccents (#1799).</action>
     <action issue="LANG-1835" type="fix" dev="ggregory" due-to="William Degrange, zemiles, Gary Gregory">Ignore synthetic methods in AnnotationUtils (#1810).</action>
     <action issue="LANG-1836" type="fix" dev="ggregory" due-to="William Degrange, Sharang Gupta, Gary Gregory">Make TypeUtils.containsTypeVariables and unrollVariables honour the owner type of a ParameterizedType (#1812).</action>
+    <action                   type="fix" dev="ggregory" due-to="alhuda, Gary Gregory">Recurse into nested annotation arrays in AnnotationUtils.hashCode (#1814).</action>
+    <action                   type="fix" dev="ggregory" due-to="Tarun Kishore, Gary Gregory">[javadoc] Correct CharUtils default-value conversion descriptions (#1816).</action>
+    <action                   type="fix" dev="ggregory" due-to="alhuda, Gary Gregory">Preserve enclosing context and member names in ClassUtils.getShortClassName(Class) (#1818).</action>
+    <action                   type="fix" dev="ggregory" due-to="alhuda, Gary Gregory">Keep RandomUtils's randomDouble() and randomFloat() below the exclusive upper bound (#1817).</action>
+    <action                   type="fix" dev="ggregory" due-to="alhuda, Gary Gregory">Use standalone month names for month-only patterns in FastDatePrinter (#1815).</action>
+    <action                   type="fix" dev="ggregory" due-to="XenoAmess, Gary Gregory">Fix TypeUtils.isAssignable rejecting Class&lt;X&gt; to Class&lt;?&gt; assignments (#1820).</action>
+    <action issue="LANG-1837" type="fix" dev="ggregory" due-to="Aosen Xiong, Gary Gregory">Prevent null returns from lazily initialized string caches.</action>
+    <action                   type="fix" dev="ggregory" due-to="alhuda, Gary Gregory">Escape CharSequence values in ToStringStyle.JSON_STYLE (#1821).</action>
+    <action issue="LANG-796"  type="fix" dev="ggregory" due-to="Nicola Barbiero, Adrian Crum, Thomas Neidhart, Joerg Schaible, Duncan Jones, Josh Chaitin-Pollak, gaurav kumar pandey, Gary Gregory">Clarify DateUtils calendar arithmetic and daylight saving time behavior.</action>
+    <action                   type="fix" dev="ggregory" due-to="alhuda, Gary Gregory">Treat an unmatched quote as closed in ExtendedMessageFormat (#1819).</action>
+    <action                   type="fix" dev="ggregory" due-to="gaurav kumar pandey, Gary Gregory">Prevent StringUtils padding from splitting surrogate pairs (#1813).</action>
+    <action issue="LANG-441"  type="fix" dev="ggregory" due-to="Sebb, Valentin Rocher, Adarsh Kumar Omrey, Gary Gregory">DateUtils Javadoc does not fully define round() behavior.</action>
+    <action issue="LANG-1838" type="fix" dev="ggregory" due-to="Aryan R. Ganjoo, Gary Gregory">Fix resource paths for unnamed packages (#1824).</action>
+    <action                   type="fix" dev="ggregory" due-to="alhuda, Gary Gregory">Keep EventCountCircuitBreaker event count from wrapping on int overflow (#1825).</action>
     <!-- ADD -->
     <!-- UPDATE -->
+    <action type="update" dev="ggregory" due-to="Gary Gregory">Bump org.apache.commons:commons-parent from 105 to 106.</action>
   </release>
   <release version="3.21.0" date="2026-09-25" description="This is a feature and maintenance release. Java 8 or later is required.">
     <!-- FIX -->

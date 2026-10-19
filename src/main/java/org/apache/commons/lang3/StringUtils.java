@@ -649,6 +649,9 @@ public class StringUtils {
      *
      * <p>
      * If the size is less than the String length, the String is returned. A {@code null} String returns {@code null}. A negative size is treated as zero.
+     * If the requested padding length on either side would split a Unicode surrogate pair in {@code padStr}, the padding is shortened by one {@code char}
+     * (via delegation to {@link #leftPad(String, int, String)} and {@link #rightPad(String, int, String)}) to avoid introducing an unpaired
+     * surrogate by splitting the pair. In that case, the returned String may be shorter than {@code size}, but by no more than one {@code char}.
      * </p>
      *
      * <pre>
@@ -661,6 +664,8 @@ public class StringUtils {
      * StringUtils.center("a", 4, "yz")   = "yayz"
      * StringUtils.center("abc", 7, null) = "  abc  "
      * StringUtils.center("abc", 7, "")   = "  abc  "
+     * StringUtils.center("a", 2, "\uD83D\uDE00")   = "a"
+     * StringUtils.center("a", 3, "\uD83D\uDE00")   = "a\uD83D\uDE00"
      * </pre>
      *
      * @param str    The String to center, may be null.
@@ -5246,7 +5251,9 @@ public class StringUtils {
      * Left pad a String with a specified String.
      *
      * <p>
-     * Pad to a size of {@code size}.
+     * Pad to a size of {@code size}. If the requested padding length would split a Unicode surrogate pair in {@code padStr},
+     * the padding is shortened by one {@code char} to avoid introducing an unpaired surrogate by splitting the pair. In that case, the
+     * returned String has a length of {@code size - 1}.
      * </p>
      *
      * <pre>
@@ -5259,6 +5266,8 @@ public class StringUtils {
      * StringUtils.leftPad("bat", -1, "yz") = "bat"
      * StringUtils.leftPad("bat", 5, null)  = "  bat"
      * StringUtils.leftPad("bat", 5, "")    = "  bat"
+     * StringUtils.leftPad("a", 2, "\uD83D\uDE00")    = "a"
+     * StringUtils.leftPad("a", 3, "\uD83D\uDE00")    = "\uD83D\uDE00a"
      * </pre>
      *
      * @param str    The String to pad out, may be null.
@@ -5275,12 +5284,19 @@ public class StringUtils {
         }
         final int padLen = padStr.length();
         final int strLen = str.length();
-        final int pads = size - strLen;
+        int pads = size - strLen;
         if (pads <= 0) {
             return str; // returns original String when possible
         }
         if (padLen == 1 && pads <= PAD_LIMIT) {
             return leftPad(str, size, padStr.charAt(0));
+        }
+        // Keep the padding boundary off the middle of a surrogate pair to avoid introducing a lone surrogate.
+        if (splitsSurrogatePair(padStr, pads % padLen)) {
+            pads--;
+        }
+        if (pads <= 0) {
+            return str;
         }
         if (pads == padLen) {
             return padStr.concat(str);
@@ -5468,37 +5484,27 @@ public class StringUtils {
     }
 
     /**
-     * Similar to <a href="https://www.w3.org/TR/xpath/#function-normalize-space">https://www.w3.org/TR/xpath/#function-normalize -space</a>
+     * Normalizes whitespace in a String.
      *
-     * <p>
-     * This function returns the argument string with whitespace normalized by using {@code {@link #trim(String)}} to remove leading and trailing whitespace and
-     * then replacing sequences of whitespace characters by a single space.
-     * </p>
-     * In XML, whitespace characters are the same as those allowed by the <a href="https://www.w3.org/TR/REC-xml/#NT-S">S</a> production, which is S ::= (#x20 |
-     * #x9 | #xD | #xA)+
-     * <p>
-     * Java's regexp pattern \s defines whitespace as [ \t\n\x0B\f\r]
-     * </p>
-     * <p>
-     * For reference:
-     * </p>
-     * <ul>
-     * <li>\x0B = vertical tab</li>
-     * <li>\f = #xC = form feed</li>
-     * <li>#x20 = space</li>
-     * <li>#x9 = \t</li>
-     * <li>#xA = \n</li>
-     * <li>#xD = \r</li>
-     * </ul>
+     * <p>Removes leading and trailing whitespace and replaces each remaining sequence of characters recognized by {@link Character#isWhitespace(char)}
+     * with a single ordinary space ({@code U+0020}). This includes Unicode whitespace beyond the characters matched by the default regular expression
+     * {@code \s}, such as EM SPACE ({@code U+2003}).</p>
      *
-     * <p>
-     * The difference is that Java's whitespace includes vertical tab and form feed, which this function will also normalize. Additionally {@code {@link
-     * #trim(String)}} removes control characters (char &lt;= 32) from both ends of this String.
-     * </p>
+     * <p>Additionally, converts each non-breaking space ({@code U+00A0}) to an ordinary space, even though {@link Character#isWhitespace(char)} excludes it.
+     * These conversions do not collapse adjacent spaces: for example, <code>"a&#92;u00A0&#92;u00A0b"</code> becomes {@code "a  b"}. Finally,
+     * {@link String#trim()} removes
+     * leading and trailing characters whose values are at most {@code U+0020}, including converted non-breaking spaces. Other non-breaking spaces, such as
+     * FIGURE SPACE ({@code U+2007}) and NARROW NO-BREAK SPACE ({@code U+202F}), are preserved.</p>
+     *
+     * <p>This method was inspired by XPath's
+     * <a href="https://www.w3.org/TR/xpath/#function-normalize-space">normalize-space</a> function, but does not reproduce its behavior.
+     * XPath normalizes only XML
+     * whitespace ({@code U+0020}, {@code U+0009}, {@code U+000D}, and {@code U+000A}) and preserves non-breaking spaces. This method additionally normalizes
+     * Java whitespace, converts {@code U+00A0}, and trims leading and trailing control characters as described above.</p>
      *
      * @param str The source String to normalize whitespaces from, may be null.
      * @return The modified string with whitespace normalized, {@code null} if null String input.
-     * @see Pattern
+     * @see Character#isWhitespace(char)
      * @see #trim(String)
      * @see <a href="https://www.w3.org/TR/xpath/#function-normalize-space">https://www.w3.org/TR/xpath/#function-normalize-space</a>
      * @since 3.0
@@ -7060,7 +7066,9 @@ public class StringUtils {
      * Right pad a String with a specified String.
      *
      * <p>
-     * The String is padded to the size of {@code size}.
+     * The String is padded to the size of {@code size}. If the requested padding length would split a Unicode surrogate pair
+     * in {@code padStr}, the padding is shortened by one {@code char} to avoid introducing an unpaired surrogate by splitting the pair.
+     * In that case, the returned String has a length of {@code size - 1}.
      * </p>
      *
      * <pre>
@@ -7073,6 +7081,8 @@ public class StringUtils {
      * StringUtils.rightPad("bat", -1, "yz") = "bat"
      * StringUtils.rightPad("bat", 5, null)  = "bat  "
      * StringUtils.rightPad("bat", 5, "")    = "bat  "
+     * StringUtils.rightPad("a", 2, "\uD83D\uDE00")    = "a"
+     * StringUtils.rightPad("a", 3, "\uD83D\uDE00")    = "a\uD83D\uDE00"
      * </pre>
      *
      * @param str    The String to pad out, may be null.
@@ -7089,12 +7099,19 @@ public class StringUtils {
         }
         final int padLen = padStr.length();
         final int strLen = str.length();
-        final int pads = size - strLen;
+        int pads = size - strLen;
         if (pads <= 0) {
             return str; // returns original String when possible
         }
         if (padLen == 1 && pads <= PAD_LIMIT) {
             return rightPad(str, size, padStr.charAt(0));
+        }
+        // Keep the padding boundary off the middle of a surrogate pair to avoid introducing a lone surrogate.
+        if (splitsSurrogatePair(padStr, pads % padLen)) {
+            pads--;
+        }
+        if (pads <= 0) {
+            return str;
         }
         if (pads == padLen) {
             return str.concat(padStr);

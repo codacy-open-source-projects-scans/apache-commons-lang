@@ -41,14 +41,17 @@ import java.util.List;
 import java.util.Locale;
 import java.util.function.Supplier;
 import java.util.regex.PatternSyntaxException;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.function.Suppliers;
+import org.apache.commons.lang3.function.TriFunction;
 import org.apache.commons.lang3.mutable.MutableInt;
 import org.apache.commons.lang3.text.WordUtils;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.junitpioneer.jupiter.DefaultLocale;
 import org.junitpioneer.jupiter.ReadsDefaultLocale;
@@ -137,6 +140,26 @@ class StringUtilsTest extends AbstractLangTest {
     private static final boolean[] ARRAY_FALSE_FALSE = {false, false};
     private static final boolean[] ARRAY_FALSE_TRUE = {false, true};
     private static final boolean[] ARRAY_FALSE_TRUE_FALSE = {false, true, false};
+
+    private static void assertNoLoneSurrogates(final String result) {
+        for (int i = 0; i < result.length(); i++) {
+            final char ch = result.charAt(i);
+            if (Character.isHighSurrogate(ch)) {
+                assertTrue(i + 1 < result.length() && Character.isLowSurrogate(result.charAt(i + 1)),
+                        "lone high surrogate in: " + result);
+                i++; // skip the paired low surrogate
+            } else {
+                assertFalse(Character.isLowSurrogate(ch), "lone low surrogate in: " + result);
+            }
+        }
+    }
+
+    static Stream<TriFunction<String, Integer, String, String>> testPadSurrogatePair() {
+        return Stream.of(
+                StringUtils::center,
+                StringUtils::leftPad,
+                StringUtils::rightPad);
+    }
 
     private void innerTestSplit(final char separator, final String sepStr, final char noMatch) {
         final String msg = "Failed on separator hex(" + Integer.toHexString(separator) +
@@ -338,6 +361,17 @@ class StringUtilsTest extends AbstractLangTest {
         assertEquals("yzyayzy", StringUtils.center("a", 7, "yz"));
         assertEquals("  abc  ", StringUtils.center("abc", 7, null));
         assertEquals("  abc  ", StringUtils.center("abc", 7, ""));
+    }
+
+    @Test
+    void testCenterSurrogatePair() {
+        final String grin = "\uD83D\uDE00";
+        assertEquals("a", StringUtils.center("a", 2, grin));
+        assertEquals("a" + grin, StringUtils.center("a", 3, grin));
+        assertEquals("a" + grin, StringUtils.center("a", 4, grin));
+        assertEquals(grin + "a" + grin, StringUtils.center("a", 5, grin));
+        assertEquals(grin + "a" + grin, StringUtils.center("a", 6, grin));
+        assertEquals(grin + "a" + grin + grin, StringUtils.center("a", 7, grin));
     }
 
     @Test
@@ -1360,6 +1394,15 @@ class StringUtilsTest extends AbstractLangTest {
     }
 
     @Test
+    void testLeftPadSurrogatePair() {
+        final String grin = "\uD83D\uDE00";
+        assertEquals("a", StringUtils.leftPad("a", 2, grin));
+        assertEquals(grin + "a", StringUtils.leftPad("a", 3, grin));
+        assertEquals(grin + "a", StringUtils.leftPad("a", 4, grin));
+        assertEquals(grin + grin + "a", StringUtils.leftPad("a", 5, grin));
+    }
+
+    @Test
     void testLength_CharBuffer() {
         assertEquals(0, StringUtils.length(CharBuffer.wrap("")));
         assertEquals(1, StringUtils.length(CharBuffer.wrap("A")));
@@ -1408,7 +1451,7 @@ class StringUtilsTest extends AbstractLangTest {
 
     @Test
     void testNormalizeSpace() {
-        // Java says a non-breaking whitespace is not a whitespace.
+        // Character.isWhitespace excludes non-breaking space; normalizeSpace converts it explicitly.
         assertFalse(Character.isWhitespace('\u00A0'));
         //
         assertNull(StringUtils.normalizeSpace(null));
@@ -1431,6 +1474,26 @@ class StringUtilsTest extends AbstractLangTest {
         assertEquals("a   b c", StringUtils.normalizeSpace("a\t\f\r  " + HARD_SPACE + HARD_SPACE + "b\u000B   c\n"));
         assertEquals("b", StringUtils.normalizeSpace("\u0000b"));
         assertEquals("b", StringUtils.normalizeSpace("b\u0000"));
+    }
+
+    @Test
+    void testNormalizeSpaceNonBreakingSpace() {
+        assertEquals("", StringUtils.normalizeSpace("\u00A0"));
+        assertEquals("", StringUtils.normalizeSpace("\u00A0\u00A0"));
+        assertEquals("a", StringUtils.normalizeSpace("\u00A0a"));
+        assertEquals("a", StringUtils.normalizeSpace("a\u00A0"));
+        assertEquals("a", StringUtils.normalizeSpace(" \u00A0a\u00A0 "));
+        assertEquals("a b", StringUtils.normalizeSpace("a\u00A0b"));
+        assertEquals("a  b", StringUtils.normalizeSpace("a\u00A0\u00A0b"));
+        assertEquals("a  b", StringUtils.normalizeSpace("a\u00A0 b"));
+        assertEquals("a  b", StringUtils.normalizeSpace("a \u00A0b"));
+        assertEquals("\u2007a\u2007", StringUtils.normalizeSpace("\u2007a\u2007"));
+        assertEquals("\u202Fa\u202F", StringUtils.normalizeSpace("\u202Fa\u202F"));
+    }
+
+    @Test
+    void testNormalizeSpaceUnicodeWhitespace() {
+        assertEquals("a b", StringUtils.normalizeSpace("\u2003a\u2003\u2003b\u2003"));
     }
 
     @Test
@@ -1480,6 +1543,48 @@ class StringUtilsTest extends AbstractLangTest {
                         i++; // skip the paired low surrogate
                     } else {
                         assertFalse(Character.isLowSurrogate(ch), "lone low surrogate in: " + result);
+                    }
+                }
+            }
+        }
+    }
+
+    @Test
+    void testPadMixedSurrogatePair() {
+        final String grin = "\uD83D\uDE00";
+        final String pad = "a" + grin + "b";
+        // A cut inside the first occurrence of the pad string.
+        assertEquals("ax", StringUtils.leftPad("x", 3, pad));
+        assertEquals("xa", StringUtils.rightPad("x", 3, pad));
+        // A cut inside a repeated occurrence of the pad string.
+        assertEquals("a" + grin + "bax", StringUtils.leftPad("x", 7, pad));
+        assertEquals("xa" + grin + "ba", StringUtils.rightPad("x", 7, pad));
+        // Preserve complete pairs before and after a complete repetition.
+        assertEquals("a" + grin + "x", StringUtils.leftPad("x", 4, pad));
+        assertEquals("xa" + grin + "ba" + grin, StringUtils.rightPad("x", 8, pad));
+        // Right padding can either leave the result short or compensate for a shortened left pad.
+        assertEquals("axa", StringUtils.center("x", 4, pad));
+        assertEquals("axa" + grin + "b", StringUtils.center("x", 6, pad));
+        assertEquals("a" + grin + "xa" + grin, StringUtils.center("x", 7, pad));
+    }
+
+    @ParameterizedTest
+    @MethodSource
+    void testPadSurrogatePair(final TriFunction<String, Integer, String, String> padFunction) {
+        final String grin = "\uD83D\uDE00";
+        final String[] testStrings = {"", "a", "hello", grin, "a" + grin + "b"};
+        final String[] padStrings = {grin, "a" + grin, grin + "b", "a" + grin + "b", grin + "\uD83C\uDF89"};
+        for (final String str : testStrings) {
+            for (final String padStr : padStrings) {
+                for (int size = 0; size <= 15; size++) {
+                    final String result = padFunction.apply(str, size, padStr);
+                    assertNoLoneSurrogates(result);
+                    if (size <= str.length()) {
+                        assertEquals(str, result);
+                    } else {
+                        assertTrue(result.length() == size || result.length() == size - 1,
+                                "Unexpected result length " + result.length() + " for requested size " + size);
+                        assertTrue(result.contains(str));
                     }
                 }
             }
@@ -2266,6 +2371,15 @@ class StringUtilsTest extends AbstractLangTest {
         assertEquals("abc  ", StringUtils.rightPad("abc", 5, null));
         assertEquals("abc  ", StringUtils.rightPad("abc", 5, ""));
         assertEquals("abc", StringUtils.rightPad("abc", Integer.MIN_VALUE, " "));
+    }
+
+    @Test
+    void testRightPadSurrogatePair() {
+        final String grin = "\uD83D\uDE00";
+        assertEquals("a", StringUtils.rightPad("a", 2, grin));
+        assertEquals("a" + grin, StringUtils.rightPad("a", 3, grin));
+        assertEquals("a" + grin, StringUtils.rightPad("a", 4, grin));
+        assertEquals("a" + grin + grin, StringUtils.rightPad("a", 5, grin));
     }
 
     @Test

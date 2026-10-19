@@ -19,6 +19,7 @@ package org.apache.commons.lang3.builder;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -263,6 +264,39 @@ class JsonToStringStyleTest extends AbstractBuilderTest {
         assertThrows(UnsupportedOperationException.class, () -> toStringBuilder.append((Object) array).toString());
         assertThrows(UnsupportedOperationException.class, () -> toStringBuilder.append((long[]) null).toString());
         assertThrows(UnsupportedOperationException.class, () -> toStringBuilder.append((Object) array).toString());
+    }
+
+    @Test
+    void testCharSequenceIsEscaped() {
+        final String text = "{},\"admin\":true,\"x\":{}";
+        final String expected = "{\"name\":\"{},\\\"admin\\\":true,\\\"x\\\":{}\"}";
+        assertEquals(expected, new ToStringBuilder(base).append("name", text).toString());
+        assertEquals(expected, new ToStringBuilder(base).append("name", new StringBuilder(text)).toString());
+        assertEquals(expected, new ToStringBuilder(base).append("name", new StringBuffer(text)).toString());
+        assertEquals(expected, new ToStringBuilder(base).append("name", CharBuffer.wrap(text)).toString());
+        assertEquals("{\"name\":[\"[1]\"]}", new ToStringBuilder(base).append("name", Arrays.asList(new StringBuilder("[1]"))).toString());
+    }
+
+    @Test
+    void testCharSequenceMapValueIsEscaped() {
+        assertEquals("{\"name\":{\"key\":\"{},\\\"admin\\\":true,\\\"x\\\":{}\"}}",
+                new ToStringBuilder(base).append("name", Collections.singletonMap("key", new StringBuilder("{},\"admin\":true,\"x\":{}"))).toString());
+    }
+
+    @Test
+    void testCharSequenceObjectArrayElementIsEscaped() {
+        assertEquals("{\"name\":[\"{},\\\"admin\\\":true,\\\"x\\\":{}\"]}",
+                new ToStringBuilder(base).append("name", new Object[] { new StringBuilder("{},\"admin\":true,\"x\":{}") }).toString());
+    }
+
+    @Test
+    void testCharSequencePlainTextIsEscaped() {
+        final String text = "text\"\\\n\r\t\b\f";
+        final String expected = "{\"name\":\"text\\\"\\\\\\n\\r\\t\\b\\f\"}";
+        assertEquals(expected, new ToStringBuilder(base).append("name", text).toString());
+        assertEquals(expected, new ToStringBuilder(base).append("name", new StringBuilder(text)).toString());
+        assertEquals(expected, new ToStringBuilder(base).append("name", new StringBuffer(text)).toString());
+        assertEquals(expected, new ToStringBuilder(base).append("name", CharBuffer.wrap(text)).toString());
     }
 
     @Test
